@@ -274,3 +274,8 @@ body.modal-open{overflow:hidden}
   .card,.day,.btn{transition:background .15s,border-color .15s,box-shadow .15s}
 }
 .grp{display:flex;gap:8px;align-items:baseline;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid var(--ink)}
+.sv{font-size:12.5px;color:var(--ink-2);white-space:nowrap}
+.sv.ok{color:var(--ok);font-weight:600}
+.sv.warn{color:var(--warn);font-weight:600}
+.btn:focus-within{outline:2px solid var(--accent);outline-offset:2px}
+details>summary{list-style-position:inside}

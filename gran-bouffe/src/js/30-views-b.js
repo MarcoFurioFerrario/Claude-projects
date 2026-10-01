@@ -127,6 +127,7 @@ A.suggest=()=>{
 A['suggest-cancel']=()=>{UI.sugg=false;render();};
 A['suggest-go']=async()=>{
   UI.sugg=false;
+  await makeBackup('prima del menu suggerito',true);
   const plan=suggest();let ok=true;
   for(const r of S.recipes){
     const want=plan[r.id]||'';
@@ -136,6 +137,7 @@ A['suggest-go']=async()=>{
   render();
 };
 A['clear-menu']=async()=>{
+  await makeBackup('prima di svuotare il menu',true);
   for(const r of slotted())await write('update','recipes/'+r.id,{slot:''});
   toast('Selezione svuotata');
 };

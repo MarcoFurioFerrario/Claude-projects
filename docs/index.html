@@ -287,6 +287,11 @@ body.modal-open{overflow:hidden}
   .card,.day,.btn{transition:background .15s,border-color .15s,box-shadow .15s}
 }
 .grp{display:flex;gap:8px;align-items:baseline;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid var(--ink)}
+.sv{font-size:12.5px;color:var(--ink-2);white-space:nowrap}
+.sv.ok{color:var(--ok);font-weight:600}
+.sv.warn{color:var(--warn);font-weight:600}
+.btn:focus-within{outline:2px solid var(--accent);outline-offset:2px}
+details>summary{list-style-position:inside}
 
 </style>
 
@@ -398,7 +403,7 @@ function mergeSettings(d){
 }
 
 /* ============ stato ============ */
-const S={meId:null,participants:[],recipes:[],votes:{},spesa:{},settings:mergeSettings(),settingsExists:false,loaded:{},dbOk:null,readOnly:false,owner:false};
+const S={meId:null,participants:[],recipes:[],allRecipes:[],trash:[],backups:[],metaExists:false,pending:0,dirty:false,offline:false,lastOk:0,votes:{},spesa:{},settings:mergeSettings(),settingsExists:false,loaded:{},dbOk:null,readOnly:false,owner:false};
 const UI={tab:'proposte',dish:null,q:'',cat:'',reg:'',ver:'',mine:false,vcat:'antipasti',vmode:'mia',draft:{},sday:'',sshop:'',shide:false,confirm:'',sugg:false,login:{conf:true}};
 let db=null,sampleCap=null,dlCap=null,userCap=null;
 
@@ -434,14 +439,32 @@ function errMsg(e){
   if(c==='revoked')return 'Accesso alla pagina revocato.';
   return 'Salvataggio non riuscito'+(e&&e.message?': '+e.message:'.');
 }
+const BACKUP_EVERY=window.GB_BACKUP_EVERY||15*60*1000,BACKUP_KEEP=60;
+function saveHtml(){
+  if(S.offline)return '<span class="sv warn">Offline: le modifiche restano in coda</span>';
+  if(S.pending>0)return '<span class="sv">Salvataggio…</span>';
+  return '<span class="sv ok">✓ Tutto salvato'+(S.lastOk?' · '+new Date(S.lastOk).toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'}):'')+'</span>';
+}
+function paintSave(){['savestat','savestat2'].forEach(id=>{const e=document.getElementById(id);if(e)e.innerHTML=saveHtml();});}
+/* Scrittura con indicatore di stato: se il server non risponde entro 7 s la modifica resta in coda
+   (il database la completa appena torna la rete) e l'interfaccia non si blocca. */
 async function write(op,path,data){
   if(!db){toast('Database non disponibile in questa vista.','err');return false;}
   if(S.readOnly){toast('Sei in sola lettura: non puoi modificare i dati.','err');return false;}
+  const task=(async()=>{const ref=db.doc(path);if(op==='set')await ref.set(data);else if(op==='update')await ref.update(data);else await ref.delete();})();
+  S.pending++;S.dirty=true;paintSave();
+  const done=ok=>{S.pending=Math.max(0,S.pending-1);if(ok)S.lastOk=Date.now();paintSave();};
+  let timer;
   try{
-    const ref=db.doc(path);
-    if(op==='set')await ref.set(data);else if(op==='update')await ref.update(data);else if(op==='delete')await ref.delete();
-    return true;
-  }catch(e){console.error(path,e);toast(errMsg(e),'err');return false;}
+    const r=await Promise.race([task.then(()=>'ok'),new Promise(res=>{timer=setTimeout(()=>res('slow'),7000);})]);
+    clearTimeout(timer);
+    if(r==='slow'){
+      toast('Connessione lenta o assente: la modifica è in coda e si salva appena torna la rete. Non chiudere la pagina.');
+      task.then(()=>done(true),e=>{done(false);console.error(path,e);toast(errMsg(e),'err');});
+      return true;
+    }
+    done(true);return true;
+  }catch(e){clearTimeout(timer);done(false);console.error(path,e);toast(errMsg(e),'err');return false;}
 }
 function openModal(html,onMount){
   const m=$('#modal');
@@ -741,7 +764,7 @@ function vHeader(){
   return `<header class="wrap top">
     <div class="brand"><div class="mark">Gran Bouffe <i>${esc(st.tema||'Triveneto')}</i></div>
     <div class="sub">${esc(st.edizione||'')} edizione · dal film di Marco Ferreri, 1973</div></div>
-    <div class="who">${me()?`<span>Ciao, <b>${esc(me().name)}</b>${isOrg()?' · organizzatore':''}</span> <button class="link" data-act="logout">Cambia nome</button>`:''}</div>
+    <div class="who">${me()?`<span>Ciao, <b>${esc(me().name)}</b>${isOrg()?' · organizzatore':''}</span> <button class="link" data-act="logout">Cambia nome</button>`:''} <span id="savestat">${saveHtml()}</span></div>
   </header>
   <div class="wrap"><ol class="rail" aria-label="Fasi del progetto">${rail}</ol>
   <div class="stats"><span><b class="num">${nConf()}</b> confermati</span><span><b class="num">${S.recipes.length}</b> proposte</span>
@@ -815,7 +838,15 @@ function vProposte(){
       <label class="checkline"><input type="checkbox" id="fmine" data-chg="fmine" ${UI.mine?'checked':''}> Solo le mie</label>
     </div>
     <div class="filterchips">${chips}</div>
-    ${body}</section>`;
+    ${body}
+    ${vTrash()}</section>`;
+}
+function vTrash(){
+  if(!S.trash.length)return '';
+  return `<details class="panel" id="trash" ${UI.trashOpen?'open':''}><summary style="cursor:pointer;font-weight:600">Cestino (${S.trash.length})</summary>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px">${S.trash.map(r=>`<div class="row spread"><span>${esc(r.title)} <span class="small muted">· proposta da ${esc(pname(r.proposerId))}</span></span>
+      <span class="row">${canDelRecipe(r)?`<button class="btn sm" data-act="restore-recipe" data-id="${esc(r.id)}">Ripristina</button>`:''}
+      ${isOrg()?`<button class="btn sm danger" data-act="purge-recipe" data-id="${esc(r.id)}">${UI.confirm==='purge:'+r.id?'Sì, elimina per sempre':'Elimina per sempre'}</button>`:''}</span></div>`).join('')}</div></details>`;
 }
 
 A.tab=t=>{UI.tab=t.dataset.v;UI.dish=null;setHash(UI.tab);render();window.scrollTo(0,0);};
@@ -826,7 +857,16 @@ A['del-recipe']=async t=>{
   const id=t.dataset.id;
   if(UI.confirm!=='del:'+id){UI.confirm='del:'+id;render();return;}
   UI.confirm='';
-  if(await write('delete','recipes/'+id))toast('Proposta eliminata');
+  await makeBackup('prima di eliminare una proposta',true);
+  if(await write('update','recipes/'+id,{eliminata:true,eliminataDa:S.meId||'',eliminataIl:Date.now(),slot:''}))toast('Proposta spostata nel cestino: la trovi in fondo alla pagina.');
+  render();
+};
+A['restore-recipe']=async t=>{if(await write('update','recipes/'+t.dataset.id,{eliminata:false}))toast('Proposta ripristinata');};
+A['purge-recipe']=async t=>{
+  const id=t.dataset.id;
+  if(UI.confirm!=='purge:'+id){UI.confirm='purge:'+id;render();return;}
+  UI.confirm='';
+  if(await write('delete','recipes/'+id))toast('Eliminata per sempre');
   render();
 };
 A['open-dish']=t=>{UI.dish=t.dataset.id;UI.tab='menu';setHash('piatto-'+t.dataset.id);render();window.scrollTo(0,0);};
@@ -968,6 +1008,7 @@ A.suggest=()=>{
 A['suggest-cancel']=()=>{UI.sugg=false;render();};
 A['suggest-go']=async()=>{
   UI.sugg=false;
+  await makeBackup('prima del menu suggerito',true);
   const plan=suggest();let ok=true;
   for(const r of S.recipes){
     const want=plan[r.id]||'';
@@ -977,6 +1018,7 @@ A['suggest-go']=async()=>{
   render();
 };
 A['clear-menu']=async()=>{
+  await makeBackup('prima di svuotare il menu',true);
   for(const r of slotted())await write('update','recipes/'+r.id,{slot:''});
   toast('Selezione svuotata');
 };
@@ -1177,6 +1219,7 @@ function vPersone(){
       <div class="row"><input type="text" id="np" placeholder="Nome" autocomplete="off" style="flex:1;min-width:160px"><label class="checkline"><input type="checkbox" id="npc"> Confermato</label>
       <button class="btn primary" type="submit">Aggiungi</button></div><p class="err" id="nperr" hidden></p></form>
     ${orgs}
+    ${vBackup()}
     <div class="panel"><div class="row spread"><h3>Il weekend</h3>${org?`<button class="btn sm" data-act="edit-settings">Modifica</button>`:''}</div>
       <dl class="kv" style="margin-top:10px"><dt>Data del venerdì</dt><dd>${st.dataVen?esc(dayLabel(0)):'<span class="muted">da definire</span>'}</dd>
       <dt>Arrivo</dt><dd>venerdì alle ${esc(st.arrivo)}</dd>
@@ -1199,6 +1242,7 @@ A['rm-person']=async t=>{
     UI.confirm='rm:'+id;render();return;
   }
   UI.confirm='';
+  await makeBackup('prima di rimuovere un partecipante',true);
   if(await write('delete','participants/'+id)){toast('Partecipante rimosso');if(id===S.meId)doLogout();}
   render();
 };
@@ -1424,6 +1468,122 @@ A['save-settings']=async()=>{
   if(await saveSettings(patch)){closeModal();toast('Impostazioni salvate');DR=null;}
 };
 
+/* ============ copie di sicurezza, scarico e ripristino ============ */
+const fmtWhen=ts=>new Date(ts).toLocaleString('it-IT',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+let backingUp=false;
+
+function snapshotNow(motivo){
+  return{at:Date.now(),by:S.meId||'',motivo,
+    p:JSON.stringify(S.participants),r:JSON.stringify(S.allRecipes),v:JSON.stringify(S.votes),s:JSON.stringify(S.spesa),
+    m:JSON.stringify(S.settingsExists?S.settings:null)};
+}
+async function makeBackup(motivo,silent){
+  if(!db||S.readOnly||backingUp||!S.loaded.p||!S.loaded.r)return false;
+  if(!S.participants.length&&!S.allRecipes.length)return false;
+  backingUp=true;
+  try{
+    const snap=snapshotNow(motivo);
+    if(snap.p.length+snap.r.length+snap.v.length+snap.s.length+snap.m.length>900000){
+      if(!silent)toast('I dati sono troppo grandi per la copia online: scarica la copia come file.','err');
+      return false;
+    }
+    const id='b'+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+    if(!await write('set','backups/'+id,snap))return false;
+    const item={id,at:snap.at,motivo,by:snap.by,n:{p:S.participants.length,r:S.recipes.length,v:Object.keys(S.votes).length,m:slotted().length}};
+    const items=[item].concat(S.backups||[]);
+    const keep=items.slice(0,BACKUP_KEEP),drop=items.slice(BACKUP_KEEP);
+    const ok=S.metaExists?await write('update','meta/backups',{items:keep}):await write('set','meta/backups',{items:keep});
+    for(const d of drop)await write('delete','backups/'+d.id);
+    S.dirty=false;
+    if(!silent&&ok)toast('Copia di sicurezza salvata');
+    return ok;
+  }finally{backingUp=false;}
+}
+
+const validBackup=o=>o&&typeof o==='object'&&Array.isArray(o.p)&&Array.isArray(o.r)&&o.v&&typeof o.v==='object'&&o.s&&typeof o.s==='object'
+  &&o.p.every(x=>x&&typeof x.id==='string'&&typeof x.name==='string')&&o.r.every(x=>x&&typeof x.id==='string'&&typeof x.title==='string');
+
+async function restoreData(d){
+  await makeBackup('prima del ripristino',true);
+  const jobs=[];
+  const arrMap=a=>Object.fromEntries((a||[]).map(x=>{const c=Object.assign({},x);delete c.id;return[x.id,c];}));
+  const sync=(coll,cur,target)=>{
+    for(const id of cur)if(!(id in target))jobs.push(()=>write('delete',coll+'/'+id));
+    for(const id of Object.keys(target))jobs.push(()=>write('set',coll+'/'+id,target[id]));
+  };
+  sync('participants',S.participants.map(x=>x.id),arrMap(d.p));
+  sync('recipes',S.allRecipes.map(x=>x.id),arrMap(d.r));
+  sync('votes',Object.keys(S.votes),d.v||{});
+  sync('spesa',Object.keys(S.spesa),d.s||{});
+  if(d.m)jobs.push(()=>write('set','settings/main',d.m));
+  let all=true;
+  for(let i=0;i<jobs.length;i+=8){
+    const rs=await Promise.all(jobs.slice(i,i+8).map(f=>f()));
+    if(rs.includes(false))all=false;
+    const el=$('#rs-prog');if(el)el.textContent=Math.min(i+8,jobs.length)+' di '+jobs.length;
+  }
+  return all;
+}
+function confirmRestore(d,label){
+  DR={restore:d};
+  const nr=d.r.filter(x=>!x.eliminata).length,nm=d.r.filter(x=>x.slot&&!x.eliminata).length,nv=Object.keys(d.v||{}).length;
+  openModal(`<header><div><h3>Ripristinare questa copia?</h3><p class="hint">${esc(label)}</p></div><button class="btn sm" data-act="modal-close">Annulla</button></header>
+    <p>La copia contiene <b>${nr}</b> proposte, <b>${nm}</b> piatti in menu, <b>${d.p.length}</b> partecipanti e i voti di <b>${nv}</b> persone.</p>
+    <div class="note warn">I dati attuali verranno sostituiti da questa copia. Prima il sito salva una copia dello stato di adesso, così puoi tornare indietro.</div>
+    <div class="foot"><button class="btn" data-act="modal-close">Annulla</button><button class="btn danger" data-act="restore-go">Sì, ripristina</button></div>`);
+}
+A['restore-go']=async()=>{
+  const d=DR&&DR.restore;if(!d)return;
+  const sheet=$('.sheet');
+  sheet.innerHTML=`<h3>Ripristino in corso…</h3><p>Non chiudere la pagina. Passaggi completati: <b id="rs-prog">0</b></p>`;
+  const ok=await restoreData(d);
+  closeModal();DR=null;
+  toast(ok?'Ripristino completato':'Ripristino finito con qualche errore: controlla i dati.',ok?'':'err');
+};
+A['restore-snap']=async t=>{
+  try{
+    const s=await db.doc('backups/'+t.dataset.id).get();
+    if(!s.exists){toast('Copia non trovata.','err');return;}
+    const o=s.data(),d={p:JSON.parse(o.p),r:JSON.parse(o.r),v:JSON.parse(o.v),s:JSON.parse(o.s),m:JSON.parse(o.m)};
+    if(!validBackup(d)){toast('La copia non è leggibile.','err');return;}
+    confirmRestore(d,fmtWhen(o.at)+' · '+(o.motivo||'automatica'));
+  }catch(e){console.error(e);toast('Non riesco a leggere la copia.','err');}
+};
+A['backup-now']=async()=>{
+  if(!await makeBackup('manuale'))toast('Copia non riuscita: riprova.','err');
+};
+A['backup-download']=async()=>{
+  const s=snapshotNow('file'),pad=n=>String(n).padStart(2,'0'),d=new Date(s.at);
+  const body=JSON.stringify({app:'gran-bouffe',versione:1,at:s.at,p:JSON.parse(s.p),r:JSON.parse(s.r),v:JSON.parse(s.v),s:JSON.parse(s.s),m:JSON.parse(s.m)},null,1);
+  const filename=`gran-bouffe-backup-${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}.json`;
+  if(!dlCap){copyText(body,'Copia negli appunti: incollala in un file di testo e conservala.');return;}
+  try{await dlCap.save({filename,data:body});toast('Copia scaricata: conservala in un posto sicuro.');}
+  catch(e){if(!e||e.code!=='declined')toast('Download non riuscito.','err');}
+};
+CH['bk-file']=async t=>{
+  const f=t.files&&t.files[0];if(!f)return;
+  try{
+    const o=JSON.parse(await f.text());
+    if(!validBackup(o))throw new Error('formato');
+    confirmRestore(o,'File '+f.name+(o.at?' · '+fmtWhen(o.at):''));
+  }catch(e){toast('Il file non è una copia valida della Gran Bouffe.','err');}
+  t.value='';
+};
+
+function vBackup(){
+  const org=isOrg(),bs=S.backups||[],last=bs[0];
+  const list=bs.slice(0,20).map(b=>`<div class="row spread" style="padding:7px 0;border-top:1px dashed var(--line)">
+    <span><b>${esc(fmtWhen(b.at))}</b> <span class="small muted">· ${esc(b.motivo||'automatica')}${b.n?` · ${b.n.r} proposte, ${b.n.m} in menu, ${b.n.v} votanti`:''}</span></span>
+    ${org?`<button class="btn sm" data-act="restore-snap" data-id="${esc(b.id)}">Ripristina</button>`:''}</div>`).join('');
+  return `<div class="panel"><div class="row spread"><h3>Salvataggi e copie di sicurezza</h3><span id="savestat2">${saveHtml()}</span></div>
+    <p style="margin-top:8px">Ogni modifica viene salvata online subito. In più, ogni ${Math.round(BACKUP_EVERY/60000)} minuti, se ci sono novità, il sito crea una copia di sicurezza e conserva le ultime ${BACKUP_KEEP}. ${last?`Ultima copia: <b>${esc(fmtWhen(last.at))}</b>.`:'La prima copia arriva dopo le prime modifiche.'}</p>
+    ${org?`<div class="row" style="margin-top:10px"><button class="btn" data-act="backup-now">Salva una copia ora</button>
+      <button class="btn" data-act="backup-download">Scarica una copia sul dispositivo</button>
+      <label class="btn" style="cursor:pointer">Ripristina da file<input type="file" id="bk-file" accept=".json,application/json" data-chg="bk-file" class="sr"></label></div>`
+      :`<p class="hint" style="margin-top:8px">Il ripristino lo fanno gli organizzatori.</p>`}
+    ${bs.length?`<details id="bk" style="margin-top:12px" ${UI.bkOpen?'open':''}><summary style="cursor:pointer;font-weight:600">Copie precedenti (${bs.length})</summary>${list}</details>`:''}</div>`;
+}
+
 /* ============ avvio, sottoscrizioni, eventi ============ */
 const SUB={};
 function setHash(h){try{history.replaceState(null,'','#'+h);}catch(e){try{location.hash=h;}catch(e2){}}}
@@ -1449,7 +1609,7 @@ function build(){
   if(!me())return vLogin();
   const views={proposte:vProposte,voto:vVoto,menu:vMenu,spesa:vSpesa,programma:vProgramma,persone:vPersone};
   const view=UI.dish?vPiatto():(views[UI.tab]||vProposte)();
-  return vHeader()+vNav()+`<main class="wrap">${S.readOnly?`<div class="note bad" style="margin-top:16px"><b>Sola lettura.</b> Puoi guardare tutto ma non modificare: chiedi a Marco di darti accesso come collaboratore.</div>`:''}${view}</main>`;
+  return vHeader()+vNav()+`<main class="wrap">${S.offline?`<div class="note warn" style="margin-top:16px"><b>Sei offline.</b> Puoi continuare: le modifiche restano in coda e si salvano appena torna la connessione. Non chiudere la pagina.</div>`:''}${S.readOnly?`<div class="note bad" style="margin-top:16px"><b>Sola lettura.</b> Puoi guardare tutto ma non modificare: chiedi a Marco di darti accesso come collaboratore.</div>`:''}${view}</main>`;
 }
 function render(){
   const root=$('#app');if(!root)return;
@@ -1520,7 +1680,8 @@ window.addEventListener('hashchange',()=>{routeFromHash();render();});
 function subscribe(){
   const onErr=k=>e=>{console.error('snapshot',k,e);S.loaded[k]=true;if(e&&e.code==='permission-denied'){S.permDenied=true;S.dbOk=false;}schedule();};
   db.collection('participants').onSnapshot(s=>{S.participants=s.docs.map(d=>Object.assign({},d.data(),{id:d.id}));S.loaded.p=true;schedule();},onErr('p'));
-  db.collection('recipes').onSnapshot(s=>{S.recipes=s.docs.map(d=>Object.assign({},d.data(),{id:d.id}));S.loaded.r=true;schedule();},onErr('r'));
+  db.collection('recipes').onSnapshot(s=>{S.allRecipes=s.docs.map(d=>Object.assign({},d.data(),{id:d.id}));S.recipes=S.allRecipes.filter(r=>!r.eliminata);S.trash=S.allRecipes.filter(r=>r.eliminata);S.loaded.r=true;schedule();},onErr('r'));
+  db.doc('meta/backups').onSnapshot(d=>{S.metaExists=!!d.exists;S.backups=d.exists?(d.data().items||[]):[];schedule();},onErr('meta'));
   db.collection('votes').onSnapshot(s=>{const v={};s.docs.forEach(d=>{v[d.id]=d.data();});S.votes=v;S.loaded.v=true;schedule();},onErr('v'));
   db.collection('spesa').onSnapshot(s=>{const v={};s.docs.forEach(d=>{v[d.id]=d.data();});S.spesa=v;S.loaded.sp=true;schedule();},onErr('sp'));
   db.doc('settings/main').onSnapshot(d=>{S.settingsExists=!!d.exists;S.settings=mergeSettings(d.exists?d.data():null);S.loaded.s=true;schedule();},onErr('s'));
@@ -1545,6 +1706,7 @@ async function initArtifact(c){
 function fsAdapter(fs){
   return{
     doc:p=>{const r=fs.doc(p);return{
+      get:()=>r.get(),
       set:d=>r.set(d),
       update:async d=>{const s=await r.get();if(!s.exists)throw{code:'invalid_argument',message:'documento inesistente'};return r.set(d,{merge:true});},
       delete:()=>r.delete(),
@@ -1557,15 +1719,31 @@ function initStandalone(){
   const cfg=window.GB_FIREBASE;
   if(!cfg||!cfg.projectId){S.noConfig=true;S.dbOk=false;render();return;}
   if(!window.firebase||!window.firebase.firestore){S.dbOk=false;render();return;}
-  try{window.firebase.initializeApp(cfg);db=fsAdapter(window.firebase.firestore());}
-  catch(e){console.error(e);S.dbOk=false;render();return;}
+  try{
+    window.firebase.initializeApp(cfg);
+    const f=window.firebase.firestore();
+    try{f.enablePersistence({synchronizeTabs:true}).catch(()=>{});}catch(e){}
+    db=fsAdapter(f);
+  }catch(e){console.error(e);S.dbOk=false;render();return;}
   dlCap={save:async({filename,data})=>{
-    const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type:'text/csv;charset=utf-8'}));a.download=filename;
+    const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type:/\.json$/i.test(filename)?'application/json':'text/csv;charset=utf-8'}));a.download=filename;
     document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1500);return{status:'saved'};}};
   S.dbOk=true;
   subscribe();
 }
+window.addEventListener('offline',()=>{S.offline=true;paintSave();schedule();});
+window.addEventListener('online',()=>{S.offline=false;paintSave();schedule();});
+document.addEventListener('click',e=>{ // ricorda se i riquadri a tendina sono aperti, anche dopo un aggiornamento dei dati
+  const sm=e.target.closest&&e.target.closest('details#trash>summary,details#bk>summary');
+  if(sm){const d=sm.parentElement;if(d.id==='trash')UI.trashOpen=!d.open;else UI.bkOpen=!d.open;}
+},true);
+setInterval(()=>{ // copia di sicurezza periodica, solo se ci sono state modifiche
+  if(!db||!S.dirty||S.pending>0||S.offline)return;
+  const last=(S.backups[0]&&S.backups[0].at)||0;
+  if(Date.now()-last>=BACKUP_EVERY)makeBackup('automatico',true);
+},window.GB_TICK||60000);
 async function init(){
+  S.offline=typeof navigator!=='undefined'&&navigator.onLine===false;
   S.meId=store.get('gb.me')||null;
   routeFromHash();
   render();

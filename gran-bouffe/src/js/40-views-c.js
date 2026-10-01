@@ -190,6 +190,7 @@ function vPersone(){
       <div class="row"><input type="text" id="np" placeholder="Nome" autocomplete="off" style="flex:1;min-width:160px"><label class="checkline"><input type="checkbox" id="npc"> Confermato</label>
       <button class="btn primary" type="submit">Aggiungi</button></div><p class="err" id="nperr" hidden></p></form>
     ${orgs}
+    ${vBackup()}
     <div class="panel"><div class="row spread"><h3>Il weekend</h3>${org?`<button class="btn sm" data-act="edit-settings">Modifica</button>`:''}</div>
       <dl class="kv" style="margin-top:10px"><dt>Data del venerdì</dt><dd>${st.dataVen?esc(dayLabel(0)):'<span class="muted">da definire</span>'}</dd>
       <dt>Arrivo</dt><dd>venerdì alle ${esc(st.arrivo)}</dd>
@@ -212,6 +213,7 @@ A['rm-person']=async t=>{
     UI.confirm='rm:'+id;render();return;
   }
   UI.confirm='';
+  await makeBackup('prima di rimuovere un partecipante',true);
   if(await write('delete','participants/'+id)){toast('Partecipante rimosso');if(id===S.meId)doLogout();}
   render();
 };

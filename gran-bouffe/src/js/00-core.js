@@ -96,7 +96,7 @@ function mergeSettings(d){
 }
 
 /* ============ stato ============ */
-const S={meId:null,participants:[],recipes:[],votes:{},spesa:{},settings:mergeSettings(),settingsExists:false,loaded:{},dbOk:null,readOnly:false,owner:false};
+const S={meId:null,participants:[],recipes:[],allRecipes:[],trash:[],backups:[],metaExists:false,pending:0,dirty:false,offline:false,lastOk:0,votes:{},spesa:{},settings:mergeSettings(),settingsExists:false,loaded:{},dbOk:null,readOnly:false,owner:false};
 const UI={tab:'proposte',dish:null,q:'',cat:'',reg:'',ver:'',mine:false,vcat:'antipasti',vmode:'mia',draft:{},sday:'',sshop:'',shide:false,confirm:'',sugg:false,login:{conf:true}};
 let db=null,sampleCap=null,dlCap=null,userCap=null;
 
@@ -132,14 +132,32 @@ function errMsg(e){
   if(c==='revoked')return 'Accesso alla pagina revocato.';
   return 'Salvataggio non riuscito'+(e&&e.message?': '+e.message:'.');
 }
+const BACKUP_EVERY=window.GB_BACKUP_EVERY||15*60*1000,BACKUP_KEEP=60;
+function saveHtml(){
+  if(S.offline)return '<span class="sv warn">Offline: le modifiche restano in coda</span>';
+  if(S.pending>0)return '<span class="sv">Salvataggio…</span>';
+  return '<span class="sv ok">✓ Tutto salvato'+(S.lastOk?' · '+new Date(S.lastOk).toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'}):'')+'</span>';
+}
+function paintSave(){['savestat','savestat2'].forEach(id=>{const e=document.getElementById(id);if(e)e.innerHTML=saveHtml();});}
+/* Scrittura con indicatore di stato: se il server non risponde entro 7 s la modifica resta in coda
+   (il database la completa appena torna la rete) e l'interfaccia non si blocca. */
 async function write(op,path,data){
   if(!db){toast('Database non disponibile in questa vista.','err');return false;}
   if(S.readOnly){toast('Sei in sola lettura: non puoi modificare i dati.','err');return false;}
+  const task=(async()=>{const ref=db.doc(path);if(op==='set')await ref.set(data);else if(op==='update')await ref.update(data);else await ref.delete();})();
+  S.pending++;S.dirty=true;paintSave();
+  const done=ok=>{S.pending=Math.max(0,S.pending-1);if(ok)S.lastOk=Date.now();paintSave();};
+  let timer;
   try{
-    const ref=db.doc(path);
-    if(op==='set')await ref.set(data);else if(op==='update')await ref.update(data);else if(op==='delete')await ref.delete();
-    return true;
-  }catch(e){console.error(path,e);toast(errMsg(e),'err');return false;}
+    const r=await Promise.race([task.then(()=>'ok'),new Promise(res=>{timer=setTimeout(()=>res('slow'),7000);})]);
+    clearTimeout(timer);
+    if(r==='slow'){
+      toast('Connessione lenta o assente: la modifica è in coda e si salva appena torna la rete. Non chiudere la pagina.');
+      task.then(()=>done(true),e=>{done(false);console.error(path,e);toast(errMsg(e),'err');});
+      return true;
+    }
+    done(true);return true;
+  }catch(e){clearTimeout(timer);done(false);console.error(path,e);toast(errMsg(e),'err');return false;}
 }
 function openModal(html,onMount){
   const m=$('#modal');

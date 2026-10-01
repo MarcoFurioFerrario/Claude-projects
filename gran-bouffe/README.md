@@ -14,31 +14,18 @@ Pubblicata come artifact di claude.ai: <https://claude.ai/artifact/WFrai8Hzx76Go
 6. **Spesa**: lista unica, somma gli ingredienti uguali tra piatti (anche con unità diverse), arrotonda per eccesso, calcola le confezioni, assegna chi compra, copia per WhatsApp o scarica CSV.
 7. **Programma**: finestre di tempo utili per pasto (arrivo, orari) e cronoprogramma. Un piatto che richiede più ore di anticipo di quelle disponibili non può stare in quel pasto, a meno che la parte lunga si prepari a casa.
 
-## Versione pubblica, aperta a chiunque (cartella `docs/`)
+## Versione pubblica, aperta a chiunque (cartella `docs/` nella radice del repo)
 
-L'artifact di claude.ai richiede un account e l'accesso in modifica: chi apre il link senza account non vede né scrive dati. Per un link che funziona per tutti c'è `docs/index.html`, la stessa app con i dati su Firestore (gratuito) e il nome ricordato con un cookie (un anno, solo il nome scelto).
+L'artifact di claude.ai richiede un account e l'accesso in modifica. Per un link che funziona per tutti c'è `../docs/index.html`, la stessa app con i dati su Firestore (gratuito) e il nome ricordato con un cookie (un anno, solo il nome scelto). La procedura passo passo per un non tecnico è in [`../GUIDA.md`](../GUIDA.md).
 
-Serve una configurazione una tantum:
+Riassunto tecnico: progetto Firebase + Firestore con le regole a tempo della guida; `firebaseConfig` in `docs/config.js`; GitHub Pages sul ramo principale, cartella `/docs` (serve repo pubblico, o un hosting statico collegato al repo privato).
 
-1. **Firebase**: <https://console.firebase.google.com> → *Aggiungi progetto* (senza Analytics) → *Build → Firestore Database → Crea database* (modalità produzione, regione europea).
-2. **Regole**: in *Firestore → Regole* incolla e pubblica (la data chiude da sola l'accesso dopo il weekend; cambiala):
+Robustezza dei dati:
 
-```
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if request.time < timestamp.date(2027, 2, 1);
-    }
-  }
-}
-```
-
-3. **Config**: *Impostazioni progetto → Le tue app → Web (</>)* → registra l'app e copia l'oggetto `firebaseConfig`. Incollalo in `docs/config.js` al posto di `null` (le chiavi web di Firebase sono pubbliche per progettazione; la protezione sono le regole).
-4. **Hosting statico** della cartella `docs/` (nessuna build). Con repo pubblico: *Settings → Pages → Deploy from a branch → cartella `/docs`*. Con repo privato su piano gratuito GitHub Pages non è disponibile: usa Cloudflare Pages, Netlify o Vercel collegando il repo, senza comando di build e con cartella di output `gran-bouffe/docs`.
-5. Alla prima apertura, sulla schermata di accesso premi *Carica i 15 confermati*.
-
-Limiti: l'identità è solo il nome scelto; chi ha il link può scrivere nel database (le regole a tempo limitano il periodo) e l'organizzatore è chi sceglie "Marco Furio". Nella versione pubblica non c'è "Genera bozza con Claude".
+- ogni scrittura è immediata, con indicatore "Salvataggio… / Tutto salvato"; dopo 7 s senza risposta resta in coda e si avvisa; persistenza offline di Firestore attiva;
+- le proposte eliminate vanno nel cestino (`eliminata: true`), l'eliminazione definitiva è dell'organizzatore;
+- copie di sicurezza automatiche ogni 15 minuti se ci sono state modifiche (`backups/<id>`, indice in `meta/backups`, ultime 60), prima delle azioni rischiose (suggerimento menu, svuotamento, rimozione persone, eliminazione proposte, ripristino);
+- l'organizzatore può salvare una copia, scaricarla come JSON, ripristinare da una copia o da file.
 
 ## Verifica dei link (la fa Claude)
 
@@ -71,9 +58,11 @@ Quando un piatto entra in menu si possono compilare le sue schede dalla fonte ve
 | `recipes` | `r_…` | `title`, `category`, `region`, `link`, `note`, `proposerId`, `ownerIds[]`, `teamIds[]`, `slot` (`ven-cena`, `sab-pranzo`, `sab-cena`, `dom-pranzo` o `""`), `verifica{}`, `serves`, `porzione`, `ingredients[{name,qty,unit,shop}]`, `steps[]`, `fasi[{label,ore}]`, `preparabileACasa`, `vini[{nome,bottiglie}]`, `consigli` |
 | `votes` | `<participantId>` | `rank{<categoria>: [recipeId…]}` (dal migliore) |
 | `spesa` | slug dell'ingrediente | `comprato`, `chi`, `pack{base,size}` |
+| `meta` | `backups` | indice delle copie: `items[{id,at,motivo,by,n}]` |
+| `backups` | `b…` | copia completa: `p`,`r`,`v`,`s`,`m` (JSON) |
 | `settings` | `main` | `fase`, `dataVen`, `arrivo`, `riservaOre`, `margine`, `orari{}`, `cap{ven,sab,dom}` |
 
-Seed iniziale: `seed/seed.json` (partecipanti confermati e impostazioni).
+Seed iniziale (artifact): `seed/seed.json`; nella versione pubblica il pulsante "Carica i 15 confermati" scrive lo stesso elenco (partecipanti confermati e impostazioni).
 
 ## Sviluppo
 

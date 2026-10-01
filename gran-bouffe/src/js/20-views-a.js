@@ -29,7 +29,7 @@ function vHeader(){
   return `<header class="wrap top">
     <div class="brand"><div class="mark">Gran Bouffe <i>${esc(st.tema||'Triveneto')}</i></div>
     <div class="sub">${esc(st.edizione||'')} edizione · dal film di Marco Ferreri, 1973</div></div>
-    <div class="who">${me()?`<span>Ciao, <b>${esc(me().name)}</b>${isOrg()?' · organizzatore':''}</span> <button class="link" data-act="logout">Cambia nome</button>`:''}</div>
+    <div class="who">${me()?`<span>Ciao, <b>${esc(me().name)}</b>${isOrg()?' · organizzatore':''}</span> <button class="link" data-act="logout">Cambia nome</button>`:''} <span id="savestat">${saveHtml()}</span></div>
   </header>
   <div class="wrap"><ol class="rail" aria-label="Fasi del progetto">${rail}</ol>
   <div class="stats"><span><b class="num">${nConf()}</b> confermati</span><span><b class="num">${S.recipes.length}</b> proposte</span>
@@ -103,7 +103,15 @@ function vProposte(){
       <label class="checkline"><input type="checkbox" id="fmine" data-chg="fmine" ${UI.mine?'checked':''}> Solo le mie</label>
     </div>
     <div class="filterchips">${chips}</div>
-    ${body}</section>`;
+    ${body}
+    ${vTrash()}</section>`;
+}
+function vTrash(){
+  if(!S.trash.length)return '';
+  return `<details class="panel" id="trash" ${UI.trashOpen?'open':''}><summary style="cursor:pointer;font-weight:600">Cestino (${S.trash.length})</summary>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px">${S.trash.map(r=>`<div class="row spread"><span>${esc(r.title)} <span class="small muted">· proposta da ${esc(pname(r.proposerId))}</span></span>
+      <span class="row">${canDelRecipe(r)?`<button class="btn sm" data-act="restore-recipe" data-id="${esc(r.id)}">Ripristina</button>`:''}
+      ${isOrg()?`<button class="btn sm danger" data-act="purge-recipe" data-id="${esc(r.id)}">${UI.confirm==='purge:'+r.id?'Sì, elimina per sempre':'Elimina per sempre'}</button>`:''}</span></div>`).join('')}</div></details>`;
 }
 
 A.tab=t=>{UI.tab=t.dataset.v;UI.dish=null;setHash(UI.tab);render();window.scrollTo(0,0);};
@@ -114,7 +122,16 @@ A['del-recipe']=async t=>{
   const id=t.dataset.id;
   if(UI.confirm!=='del:'+id){UI.confirm='del:'+id;render();return;}
   UI.confirm='';
-  if(await write('delete','recipes/'+id))toast('Proposta eliminata');
+  await makeBackup('prima di eliminare una proposta',true);
+  if(await write('update','recipes/'+id,{eliminata:true,eliminataDa:S.meId||'',eliminataIl:Date.now(),slot:''}))toast('Proposta spostata nel cestino: la trovi in fondo alla pagina.');
+  render();
+};
+A['restore-recipe']=async t=>{if(await write('update','recipes/'+t.dataset.id,{eliminata:false}))toast('Proposta ripristinata');};
+A['purge-recipe']=async t=>{
+  const id=t.dataset.id;
+  if(UI.confirm!=='purge:'+id){UI.confirm='purge:'+id;render();return;}
+  UI.confirm='';
+  if(await write('delete','recipes/'+id))toast('Eliminata per sempre');
   render();
 };
 A['open-dish']=t=>{UI.dish=t.dataset.id;UI.tab='menu';setHash('piatto-'+t.dataset.id);render();window.scrollTo(0,0);};

@@ -23,7 +23,7 @@ function build(){
   if(!me())return vLogin();
   const views={proposte:vProposte,voto:vVoto,menu:vMenu,spesa:vSpesa,programma:vProgramma,persone:vPersone};
   const view=UI.dish?vPiatto():(views[UI.tab]||vProposte)();
-  return vHeader()+vNav()+`<main class="wrap">${S.readOnly?`<div class="note bad" style="margin-top:16px"><b>Sola lettura.</b> Puoi guardare tutto ma non modificare: chiedi a Marco di darti accesso come collaboratore.</div>`:''}${view}</main>`;
+  return vHeader()+vNav()+`<main class="wrap">${S.offline?`<div class="note warn" style="margin-top:16px"><b>Sei offline.</b> Puoi continuare: le modifiche restano in coda e si salvano appena torna la connessione. Non chiudere la pagina.</div>`:''}${S.readOnly?`<div class="note bad" style="margin-top:16px"><b>Sola lettura.</b> Puoi guardare tutto ma non modificare: chiedi a Marco di darti accesso come collaboratore.</div>`:''}${view}</main>`;
 }
 function render(){
   const root=$('#app');if(!root)return;
@@ -94,7 +94,8 @@ window.addEventListener('hashchange',()=>{routeFromHash();render();});
 function subscribe(){
   const onErr=k=>e=>{console.error('snapshot',k,e);S.loaded[k]=true;if(e&&e.code==='permission-denied'){S.permDenied=true;S.dbOk=false;}schedule();};
   db.collection('participants').onSnapshot(s=>{S.participants=s.docs.map(d=>Object.assign({},d.data(),{id:d.id}));S.loaded.p=true;schedule();},onErr('p'));
-  db.collection('recipes').onSnapshot(s=>{S.recipes=s.docs.map(d=>Object.assign({},d.data(),{id:d.id}));S.loaded.r=true;schedule();},onErr('r'));
+  db.collection('recipes').onSnapshot(s=>{S.allRecipes=s.docs.map(d=>Object.assign({},d.data(),{id:d.id}));S.recipes=S.allRecipes.filter(r=>!r.eliminata);S.trash=S.allRecipes.filter(r=>r.eliminata);S.loaded.r=true;schedule();},onErr('r'));
+  db.doc('meta/backups').onSnapshot(d=>{S.metaExists=!!d.exists;S.backups=d.exists?(d.data().items||[]):[];schedule();},onErr('meta'));
   db.collection('votes').onSnapshot(s=>{const v={};s.docs.forEach(d=>{v[d.id]=d.data();});S.votes=v;S.loaded.v=true;schedule();},onErr('v'));
   db.collection('spesa').onSnapshot(s=>{const v={};s.docs.forEach(d=>{v[d.id]=d.data();});S.spesa=v;S.loaded.sp=true;schedule();},onErr('sp'));
   db.doc('settings/main').onSnapshot(d=>{S.settingsExists=!!d.exists;S.settings=mergeSettings(d.exists?d.data():null);S.loaded.s=true;schedule();},onErr('s'));
@@ -119,6 +120,7 @@ async function initArtifact(c){
 function fsAdapter(fs){
   return{
     doc:p=>{const r=fs.doc(p);return{
+      get:()=>r.get(),
       set:d=>r.set(d),
       update:async d=>{const s=await r.get();if(!s.exists)throw{code:'invalid_argument',message:'documento inesistente'};return r.set(d,{merge:true});},
       delete:()=>r.delete(),
@@ -131,15 +133,31 @@ function initStandalone(){
   const cfg=window.GB_FIREBASE;
   if(!cfg||!cfg.projectId){S.noConfig=true;S.dbOk=false;render();return;}
   if(!window.firebase||!window.firebase.firestore){S.dbOk=false;render();return;}
-  try{window.firebase.initializeApp(cfg);db=fsAdapter(window.firebase.firestore());}
-  catch(e){console.error(e);S.dbOk=false;render();return;}
+  try{
+    window.firebase.initializeApp(cfg);
+    const f=window.firebase.firestore();
+    try{f.enablePersistence({synchronizeTabs:true}).catch(()=>{});}catch(e){}
+    db=fsAdapter(f);
+  }catch(e){console.error(e);S.dbOk=false;render();return;}
   dlCap={save:async({filename,data})=>{
-    const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type:'text/csv;charset=utf-8'}));a.download=filename;
+    const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type:/\.json$/i.test(filename)?'application/json':'text/csv;charset=utf-8'}));a.download=filename;
     document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1500);return{status:'saved'};}};
   S.dbOk=true;
   subscribe();
 }
+window.addEventListener('offline',()=>{S.offline=true;paintSave();schedule();});
+window.addEventListener('online',()=>{S.offline=false;paintSave();schedule();});
+document.addEventListener('click',e=>{ // ricorda se i riquadri a tendina sono aperti, anche dopo un aggiornamento dei dati
+  const sm=e.target.closest&&e.target.closest('details#trash>summary,details#bk>summary');
+  if(sm){const d=sm.parentElement;if(d.id==='trash')UI.trashOpen=!d.open;else UI.bkOpen=!d.open;}
+},true);
+setInterval(()=>{ // copia di sicurezza periodica, solo se ci sono state modifiche
+  if(!db||!S.dirty||S.pending>0||S.offline)return;
+  const last=(S.backups[0]&&S.backups[0].at)||0;
+  if(Date.now()-last>=BACKUP_EVERY)makeBackup('automatico',true);
+},window.GB_TICK||60000);
 async function init(){
+  S.offline=typeof navigator!=='undefined'&&navigator.onLine===false;
   S.meId=store.get('gb.me')||null;
   routeFromHash();
   render();

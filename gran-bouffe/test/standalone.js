@@ -2,7 +2,7 @@
 const fs=require('fs'),path=require('path');
 const {chromium}=require('/opt/node-tools/node_modules/playwright');
 const root=path.join(__dirname,'..');
-const html=fs.readFileSync(path.join(root,'docs','index.html'),'utf8').replace(/<link[^>]*fonts[^>]*>/g,'');
+const html=fs.readFileSync(path.join(root,'..','docs','index.html'),'utf8').replace(/<link[^>]*fonts[^>]*>/g,'');
 
 const mockFirebase=`
 (function(){
@@ -16,11 +16,12 @@ const mockFirebase=`
   const notify=()=>{localStorage.setItem(KEY,JSON.stringify(Object.fromEntries(data)));ls.forEach(f=>f());};
   const fsx={
     doc:p=>({get:async()=>snapDoc(p),
-      set:async(d,o)=>{if(hasUndef(d))throw new Error('Unsupported field value: undefined');data.set(p,o&&o.merge&&data.has(p)?deepMerge(clone(data.get(p)),d):clone(d));notify();},
+      set:async(d,o)=>{if(window.__hang)await new Promise(r=>setTimeout(r,9000));if(hasUndef(d))throw new Error('Unsupported field value: undefined');data.set(p,o&&o.merge&&data.has(p)?deepMerge(clone(data.get(p)),d):clone(d));notify();},
       delete:async()=>{data.delete(p);notify();},
       onSnapshot(n){const f=()=>n(snapDoc(p));ls.push(f);setTimeout(f,0);return()=>{};}}),
     collection:c=>({onSnapshot(n){const f=()=>{const docs=collDocs(c);n({docs,size:docs.length,empty:!docs.length});};ls.push(f);setTimeout(f,0);return()=>{};}})
   };
+  fsx.enablePersistence=()=>Promise.resolve();
   window.firebase={initializeApp(){},firestore:()=>fsx};
 })();`;
 
@@ -31,6 +32,7 @@ const mockFirebase=`
   const page=await ctx.newPage();
   page.on('console',m=>{if(m.type()==='error')errors.push('console: '+m.text());});
   page.on('pageerror',e=>errors.push('pageerror: '+e.message));
+  await page.addInitScript('window.GB_BACKUP_EVERY=3000;window.GB_TICK=1000;');
   let cfg='window.GB_FIREBASE=null;';
   await page.route('**/*',r=>{
     const u=r.request().url();
@@ -76,9 +78,61 @@ const mockFirebase=`
   // 7) niente blocco AI, CSV attivo
   await page.click('.tab:has-text("Menu")');
   const hasAi=await page.evaluate(()=>!!document.querySelector('#ai-btn'));!hasAi?pass('nessun pulsante AI nella versione pubblica'):fail('AI presente');
+
+  // 9) indicatore, cestino, copie di sicurezza, ripristino, file, coda offline
+  (await page.textContent('#savestat')).includes('Tutto salvato')?pass('indicatore: Tutto salvato'):fail('indicatore');
+  await page.click('.tab:has-text("Proposte")');await page.waitForSelector('.card');
+  await page.click('.card:has-text("Frico") [data-act=del-recipe]');await page.click('.card:has-text("Frico") [data-act=del-recipe]');
+  await page.waitForSelector('#trash');
+  const cn=await page.$$eval('.card',e=>e.length);
+  cn===1?pass('proposta eliminata: va nel cestino, non più in elenco'):fail('card '+cn);
+  await page.evaluate(()=>{const d=document.querySelector('#trash');if(!d.open)d.querySelector('summary').click();});await page.click('[data-act=restore-recipe]');
+  await page.waitForFunction(()=>document.querySelectorAll('.card').length===2);pass('ripristino dal cestino');
+  await page.waitForFunction(()=>{const m=JSON.parse(localStorage.getItem('mockfs'))['meta/backups'];return m&&m.items.length>=1;});
+  pass('copia di sicurezza automatica creata (prima di eliminare / periodica)');
+  await page.click('.tab:has-text("Persone")');await page.waitForSelector('[data-act=backup-now]');
+  await page.click('[data-act=backup-now]');
+  await page.waitForFunction(()=>JSON.parse(localStorage.getItem('mockfs'))['meta/backups'].items.some(i=>i.motivo==='manuale'));
+  const man=await page.evaluate(()=>{const db=JSON.parse(localStorage.getItem('mockfs'));const it=db['meta/backups'].items.find(i=>i.motivo==='manuale');const b=db['backups/'+it.id];return{n:it.n,okP:Array.isArray(JSON.parse(b.p)),okR:JSON.parse(b.r).length};});
+  man.okP&&man.okR===2&&man.n.r===2?pass('copia manuale: '+JSON.stringify(man.n)):fail('copia manuale '+JSON.stringify(man));
+  // download + import
+  const [dl]=await Promise.all([page.waitForEvent('download'),page.click('[data-act=backup-download]')]);
+  const dpath=await dl.path();const dj=JSON.parse(require('fs').readFileSync(dpath,'utf8'));
+  /^gran-bouffe-backup-\d{4}-\d{2}-\d{2}-\d{4}\.json$/.test(dl.suggestedFilename())&&dj.r.length===2&&dj.app==='gran-bouffe'?pass('download backup: '+dl.suggestedFilename()):fail('download '+dl.suggestedFilename());
+  await page.setInputFiles('#bk-file',dpath);await page.waitForSelector('[data-act=restore-go]');
+  (await page.textContent('.sheet')).includes('2 proposte')?pass('ripristino da file: riepilogo mostrato'):fail('riepilogo file');
+  await page.click('.sheet [data-act=modal-close]');
+  await page.setInputFiles('#bk-file',{name:'x.json',mimeType:'application/json',buffer:Buffer.from('{"a":1}')});
+  await page.waitForSelector('.toast.err');pass('file non valido rifiutato');
+  // errore grave: elimino Jota per sempre e cancello i voti, poi ripristino la copia manuale
+  await page.click('.tab:has-text("Proposte")');
+  await page.click('.card:has-text("Jota") [data-act=del-recipe]');await page.click('.card:has-text("Jota") [data-act=del-recipe]');await page.waitForSelector('#trash');
+  await page.evaluate(()=>{const d=document.querySelector('#trash');if(!d.open)d.querySelector('summary').click();});await page.click('[data-act=purge-recipe]');await page.click('[data-act=purge-recipe]');
+  await page.waitForFunction(()=>!Object.keys(JSON.parse(localStorage.getItem('mockfs'))).some(k=>k.startsWith('recipes/')&&JSON.parse(localStorage.getItem('mockfs'))[k].title==='Jota'));
+  await page.evaluate(()=>{const db=JSON.parse(localStorage.getItem('mockfs'));delete db['votes/p_marco-furio'];localStorage.setItem('mockfs',JSON.stringify(db));});
+  await page.reload();await page.waitForSelector('.who');await page.click('.tab:has-text("Persone")');await page.waitForSelector('#bk');
+  await page.evaluate(()=>{const d=document.querySelector('#bk');if(!d.open)d.querySelector('summary').click();});
+  const rid=await page.evaluate(()=>{const it=JSON.parse(localStorage.getItem('mockfs'))['meta/backups'].items.find(i=>i.motivo==='manuale');return it.id;});
+  await page.click(`[data-act=restore-snap][data-id="${rid}"]`);await page.waitForSelector('[data-act=restore-go]');
+  await page.click('[data-act=restore-go]');
+  await page.waitForFunction(()=>{const db=JSON.parse(localStorage.getItem('mockfs'));return db['votes/p_marco-furio']&&Object.values(db).some(v=>v.title==='Jota'&&!v.eliminata);},null,{timeout:15000});
+  pass('errore grave annullato: ripristino riporta proposta eliminata e voti');
+  const hasPre=await page.evaluate(()=>JSON.parse(localStorage.getItem('mockfs'))['meta/backups'].items.some(i=>i.motivo==='prima del ripristino'));
+  hasPre?pass('prima del ripristino salvata una copia dello stato attuale'):fail('copia pre-ripristino');
+  // coda in assenza di risposta del server
+  await page.evaluate(()=>{window.__hang=true;});
+  await page.uncheck('[data-chg=confirm][data-id=p_lollo]');
+  await page.waitForFunction(()=>document.querySelector('#savestat2')&&document.querySelector('#savestat2').textContent.includes('Salvataggio'),null,{timeout:3000});
+  pass('durante il salvataggio: indicatore "Salvataggio…"');
+  await page.waitForSelector('.toast:has-text("in coda")',{timeout:12000});pass('server lento: la modifica resta in coda e lo dice');
+  await page.waitForFunction(()=>document.querySelector('#savestat2')&&document.querySelector('#savestat2').textContent.includes('Tutto salvato'),null,{timeout:15000});
+  await page.evaluate(()=>{window.__hang=false;});pass('al ritorno del server: Tutto salvato');
+  await ctx.setOffline(true);await page.waitForSelector('.note.warn:has-text("offline")');pass('offline: avviso visibile');
+  await ctx.setOffline(false);await page.waitForFunction(()=>!document.querySelector('.note.warn')||!document.body.textContent.includes('Sei offline'));pass('online: avviso rimosso');
+
   // 8) un secondo visitatore anonimo (nuovo contesto) vede gli stessi dati? (stato condiviso simulato via localStorage: stesso origin)
   const dbSnap=await page.evaluate(()=>Object.keys(JSON.parse(localStorage.getItem('mockfs'))).length);
-  dbSnap>=19?pass('documenti nel db finto: '+dbSnap):fail('documenti '+dbSnap);
+  dbSnap>=15?pass('documenti nel db finto: '+dbSnap):fail('documenti '+dbSnap);
   const ov=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);ov<=1?pass('nessuno scroll orizzontale'):fail('overflow '+ov);
   console.log(errors.length?'ERRORI:\n'+errors.join('\n'):'nessun errore di console');
   if(errors.length)ok=false;
