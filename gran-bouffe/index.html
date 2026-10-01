@@ -1,0 +1,1508 @@
+<title>Gran Bouffe Triveneto</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Young+Serif&display=swap">
+<style>
+/* Layout: testata-menu da osteria (marchio serif + rotaia delle fasi), barra di sezioni a scorrimento,
+   contenuto a griglia di schede su fondo calcare (Dolomiti). Accento radicchio di Treviso, evidenze polenta. */
+:root{
+  --bg:#ECEFED; --surface:#F7F9F8; --surface-2:#E1E7E4; --ink:#1A2124; --ink-2:#4B585D; --line:#C9D1CD;
+  --accent:#7A1D4C; --accent-ink:#FFFFFF; --accent-soft:#EBD6E0;
+  --polenta:#E2B13C; --polenta-ink:#352A06;
+  --ok:#25744F; --ok-soft:#D5EBDF; --warn:#8F5506; --warn-soft:#F4E3C4;
+  --bad:#B0361B; --bad-soft:#F6D9D1; --info:#25607F; --info-soft:#D3E5EE;
+  --chip-s:42%; --chip-l:88%; --chip-fg:26%;
+  --font-display:"Young Serif",Georgia,"Times New Roman",serif;
+  --font-ui:"Instrument Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --r:10px; --shadow:0 1px 2px rgba(20,30,30,.08),0 6px 18px rgba(20,30,30,.06);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#12171A; --surface:#1A2124; --surface-2:#232C30; --ink:#E6ECE9; --ink-2:#A0ADAA; --line:#2F3B3E;
+    --accent:#E27BA8; --accent-ink:#2B0D1B; --accent-soft:#3A1E2C;
+    --polenta:#E8BF55; --polenta-ink:#2B2204;
+    --ok:#5BC796; --ok-soft:#17332A; --warn:#E5A74F; --warn-soft:#3A2C13;
+    --bad:#F08A72; --bad-soft:#3D1D17; --info:#6DB7DA; --info-soft:#15303D;
+    --chip-s:30%; --chip-l:22%; --chip-fg:80%;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 18px rgba(0,0,0,.25);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#12171A; --surface:#1A2124; --surface-2:#232C30; --ink:#E6ECE9; --ink-2:#A0ADAA; --line:#2F3B3E;
+  --accent:#E27BA8; --accent-ink:#2B0D1B; --accent-soft:#3A1E2C;
+  --polenta:#E8BF55; --polenta-ink:#2B2204;
+  --ok:#5BC796; --ok-soft:#17332A; --warn:#E5A74F; --warn-soft:#3A2C13;
+  --bad:#F08A72; --bad-soft:#3D1D17; --info:#6DB7DA; --info-soft:#15303D;
+  --chip-s:30%; --chip-l:22%; --chip-fg:80%;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 18px rgba(0,0,0,.25);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--font-ui);padding-inline:16px;padding-block:0 96px;margin:0}
+.wrap{max-width:1120px;margin-inline:auto}
+h1,h2,h3,h4{font-family:var(--font-display);font-weight:400;margin:0;line-height:1.15;text-wrap:balance}
+h2{font-size:26px}
+h3{font-size:19px}
+h4{font-size:15px;font-family:var(--font-ui);font-weight:700}
+p{margin:0}
+a{color:var(--accent)}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+.muted{color:var(--ink-2)}
+.small{font-size:13px}
+.num{font-variant-numeric:tabular-nums}
+.boot{padding:48px 0;text-align:center;color:var(--ink-2)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* testata */
+.top{padding-block:18px 10px;display:flex;gap:16px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap}
+.brand .mark{font-family:var(--font-display);font-size:34px;line-height:1;letter-spacing:-.01em}
+.brand .mark i{font-style:normal;color:var(--accent)}
+.brand .sub{margin-top:6px;font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2)}
+.who{display:flex;gap:10px;align-items:center;font-size:14px}
+.who b{font-weight:600}
+.link{background:none;border:0;padding:0;color:var(--accent);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+
+/* rotaia delle fasi */
+.rail{list-style:none;margin:6px 0 0;padding:0;display:flex;gap:0;border:1px solid var(--line);border-radius:999px;background:var(--surface);overflow:hidden}
+.rail li{flex:1;text-align:center;position:relative;font-size:13px;font-weight:600}
+.rail li+li{border-left:1px solid var(--line)}
+.rail li>*{display:block;width:100%;padding:8px 4px;background:none;border:0;color:var(--ink-2);white-space:nowrap;font-size:12.5px}
+@media (min-width:560px){.rail li>*{padding:8px 6px;font-size:13px}}
+.rail button{cursor:pointer}
+.rail button:hover{background:var(--surface-2)}
+.rail li.done>*{color:var(--ok)}
+.rail li.done>*::before{content:"✓ ";font-weight:700}
+.rail li.now{background:var(--polenta)}
+.rail li.now>*{color:var(--polenta-ink)}
+.stats{display:flex;flex-wrap:wrap;gap:6px 20px;margin-top:12px;font-size:13px;color:var(--ink-2)}
+.stats b{color:var(--ink);font-weight:700}
+
+/* navigazione */
+.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);margin-inline:-16px;padding-inline:16px;border-bottom:1px solid var(--line);margin-top:12px}
+.tabs .in{max-width:1120px;margin-inline:auto;display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
+.tabs .in::-webkit-scrollbar{display:none}
+.tab{background:none;border:0;border-bottom:3px solid transparent;padding:12px 12px 9px;font-weight:600;color:var(--ink-2);cursor:pointer;white-space:nowrap}
+.tab:hover{color:var(--ink)}
+.tab[aria-current="page"]{color:var(--accent);border-bottom-color:var(--accent)}
+.tab .n{margin-left:6px;font-size:12px;font-weight:600;background:var(--surface-2);color:var(--ink-2);border-radius:999px;padding:1px 7px}
+.view{padding-block:22px 12px;display:flex;flex-direction:column;gap:18px;min-width:0}
+.vhead{display:flex;gap:12px;justify-content:space-between;align-items:flex-end;flex-wrap:wrap}
+.lede{color:var(--ink-2);max-width:68ch;margin-top:6px}
+
+/* pulsanti */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;padding:8px 16px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-weight:600;cursor:pointer;text-decoration:none;color:var(--ink)}
+.btn:hover{background:var(--surface-2)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{filter:brightness(1.1)}
+.btn.sm{min-height:32px;padding:4px 12px;font-size:13px}
+.btn.danger{color:var(--bad);border-color:var(--bad)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btn.ico{min-width:32px;padding:4px 8px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.spread{justify-content:space-between}
+
+/* chip e badge */
+.chip{display:inline-block;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:600;letter-spacing:.01em;background:hsl(var(--h,0) var(--chip-s) var(--chip-l));color:hsl(var(--h,0) 55% var(--chip-fg));white-space:nowrap}
+.chip.plain{background:var(--surface-2);color:var(--ink-2)}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:6px;font-size:12px;font-weight:600;white-space:nowrap}
+.badge.muted{background:var(--surface-2);color:var(--ink-2)}
+.badge.ok{background:var(--ok-soft);color:var(--ok)}
+.badge.warn{background:var(--warn-soft);color:var(--warn)}
+.badge.bad{background:var(--bad-soft);color:var(--bad)}
+.badge.info{background:var(--info-soft);color:var(--info)}
+.filterchips{display:flex;gap:6px;flex-wrap:wrap}
+.fchip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 12px;font-size:13px;font-weight:600;cursor:pointer;color:var(--ink-2)}
+.fchip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+
+/* campi */
+.field{display:flex;flex-direction:column;gap:5px;min-width:0}
+.field>label,.lbl{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2)}
+input[type=text],input[type=url],input[type=number],input[type=date],input[type=time],input[type=search],select,textarea{width:100%;min-width:0;padding:9px 11px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink)}
+textarea{min-height:92px;resize:vertical}
+input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent)}
+.hint{font-size:12.5px;color:var(--ink-2)}
+.err{font-size:13px;color:var(--bad);font-weight:600}
+.filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:10px;align-items:end}
+@media (min-width:760px){.filters .field.wide{grid-column:span 2}}
+.checkline{display:flex;gap:8px;align-items:center;font-size:14px}
+
+/* schede */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,330px),1fr));gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;display:flex;flex-direction:column;gap:9px;min-width:0}
+.card h3{overflow-wrap:anywhere}
+.card.sel{border-color:var(--accent);box-shadow:var(--shadow)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;min-width:0}
+.note{padding:10px 14px;border-radius:8px;background:var(--info-soft);color:var(--ink);border:1px solid var(--line);font-size:14px}
+.note.warn{background:var(--warn-soft)}
+.note.bad{background:var(--bad-soft)}
+.note.ok{background:var(--ok-soft)}
+.empty{padding:34px 18px;text-align:center;border:1.5px dashed var(--line);border-radius:var(--r);color:var(--ink-2);display:flex;flex-direction:column;gap:10px;align-items:center}
+.empty h3{color:var(--ink)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:14px}
+.kv dt{color:var(--ink-2)}
+.kv dd{margin:0;min-width:0;overflow-wrap:anywhere}
+.clamp{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.src{display:flex;flex-direction:column;gap:3px;font-size:13px;padding:8px 10px;border-radius:8px;background:var(--surface-2)}
+.src a{overflow-wrap:anywhere}
+
+/* votazioni */
+.rank{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.rk{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:10px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:10px 12px}
+.rk .pos{font-family:var(--font-display);font-size:22px;color:var(--accent);text-align:center}
+.rk .t{font-weight:600;overflow-wrap:anywhere}
+.rk.fresh{border-color:var(--polenta);border-style:dashed}
+.bar{height:8px;border-radius:99px;background:var(--surface-2);overflow:hidden;min-width:60px}
+.bar>i{display:block;height:100%;background:var(--accent);border-radius:99px}
+.res{display:grid;grid-template-columns:34px minmax(0,1fr) minmax(90px,160px) auto;gap:10px;align-items:center;padding:10px 12px;border-bottom:1px solid var(--line)}
+.res:last-child{border-bottom:0}
+.res.top3 .pos{color:var(--accent)}
+.res .pos{font-family:var(--font-display);font-size:20px;text-align:center;color:var(--ink-2)}
+.res.cut{background:var(--accent-soft)}
+
+/* menu */
+.days{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:14px;align-items:start}
+.day{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;min-width:0}
+.day>header{padding:12px 14px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:baseline;gap:8px;background:var(--surface-2)}
+.day.over>header{background:var(--bad-soft)}
+.slot{padding:10px 14px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:8px}
+.slot:last-child{border-bottom:0}
+.slot h4{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
+.dish{display:flex;gap:10px;justify-content:space-between;align-items:flex-start;padding:8px 0;border-top:1px dashed var(--line)}
+.dish:first-of-type{border-top:0}
+.dish .nm{font-weight:600;background:none;border:0;padding:0;text-align:left;cursor:pointer;color:var(--ink);overflow-wrap:anywhere}
+.dish .nm:hover{color:var(--accent)}
+.dish>div{min-width:0;flex:1}
+.dish select{flex:0 0 150px;width:150px;padding:5px 8px;font-size:13px}
+.capbar{height:6px;border-radius:99px;background:var(--surface);overflow:hidden;margin-top:6px}
+.capbar>i{display:block;height:100%;background:var(--polenta)}
+.over .capbar>i{background:var(--bad)}
+.cand{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:10px;align-items:center;padding:9px 12px;border-bottom:1px solid var(--line)}
+.cand:last-child{border-bottom:0}
+.mix{display:flex;gap:4px;flex-wrap:wrap}
+
+/* scheda piatto */
+.hero{display:flex;flex-direction:column;gap:10px}
+.hero h2{font-size:34px}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:16px;align-items:start}
+.ing{width:100%;border-collapse:collapse;font-size:14.5px}
+.ing td{padding:7px 4px;border-bottom:1px solid var(--line);vertical-align:top}
+.ing td:last-child{text-align:right;font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
+.steps{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:8px}
+.people{display:flex;gap:6px;flex-wrap:wrap}
+.pill{display:inline-flex;gap:6px;align-items:center;padding:3px 11px;border-radius:999px;background:var(--surface-2);font-size:13.5px;font-weight:500}
+.pill.own{background:var(--accent);color:var(--accent-ink)}
+.phase{display:grid;grid-template-columns:128px minmax(0,1fr);gap:10px;padding:8px 0;border-bottom:1px dashed var(--line)}
+.phase:last-child{border-bottom:0}
+.phase .h{font-weight:700;font-variant-numeric:tabular-nums;color:var(--accent)}
+
+/* spesa */
+.shop{display:flex;flex-direction:column;gap:0;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.shop>h3{padding:12px 14px;background:var(--surface-2);display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:18px}
+.ln{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:6px 12px;padding:11px 14px;border-top:1px solid var(--line);align-items:start}
+.ln .nm{font-weight:600;overflow-wrap:anywhere}
+.ln .use{font-size:12.5px;color:var(--ink-2);margin-top:2px;overflow-wrap:anywhere}
+.ln .q{text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+.ln .q small{display:block;font-weight:500;color:var(--ink-2);font-size:12px}
+.ln .ext{grid-column:2 / -1;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.ln .ext select{width:auto;padding:4px 8px;font-size:13px;max-width:180px}
+@media (min-width:760px){.ln{grid-template-columns:28px minmax(0,1fr) 150px 300px;align-items:center}.ln .ext{grid-column:auto;justify-content:flex-end}.ln .q{text-align:right}}
+.ln.done .nm,.ln.done .q{text-decoration:line-through;color:var(--ink-2)}
+.ln.done{background:color-mix(in srgb,var(--ok-soft) 45%,transparent)}
+.totals{display:flex;gap:10px 22px;flex-wrap:wrap;align-items:baseline}
+.totals .big{font-family:var(--font-display);font-size:30px;line-height:1}
+
+/* programma */
+.tl{position:relative;display:flex;flex-direction:column;gap:0;padding-left:0}
+.tlday{margin-top:8px;font-family:var(--font-display);font-size:20px;padding:6px 0;border-bottom:2px solid var(--ink)}
+.ti{display:grid;grid-template-columns:62px 14px minmax(0,1fr);gap:8px;padding:9px 0;align-items:start;border-bottom:1px dashed var(--line)}
+.ti .tm{font-weight:700;font-variant-numeric:tabular-nums}
+.ti .dot{width:10px;height:10px;border-radius:50%;background:var(--accent);margin-top:6px}
+.ti.meal .dot{background:var(--polenta);outline:2px solid var(--ink);width:12px;height:12px;margin-top:5px}
+.ti.meal .what{font-weight:700}
+.ti.pre .dot{background:var(--ink-2)}
+
+/* persone */
+.people-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,250px),1fr));gap:8px}
+.person{display:flex;gap:10px;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:9px 12px;min-width:0}
+.person .nm{font-weight:600;overflow-wrap:anywhere}
+.person.off{opacity:.65}
+.switch{display:inline-flex;align-items:center;gap:6px;font-size:13px;cursor:pointer}
+.formgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:12px}
+
+/* login */
+.login{max-width:640px;margin:7vh auto 0;display:flex;flex-direction:column;gap:20px}
+.login h1{font-size:44px}
+.names{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
+.names .btn{justify-content:flex-start;font-weight:600}
+.film{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2)}
+
+/* modale */
+#modal{position:fixed;inset:0;z-index:50;display:flex;justify-content:center;align-items:flex-end;padding-top:env(safe-area-inset-top,0px)}
+#modal[hidden]{display:none}
+#modal .scrim{position:absolute;inset:0;background:rgba(10,14,16,.55)}
+#modal .sheet{position:relative;background:var(--bg);width:min(760px,100%);max-height:94vh;overflow-y:auto;border-radius:16px 16px 0 0;padding:20px 18px calc(24px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:16px;box-shadow:var(--shadow)}
+@media (min-width:800px){#modal{align-items:center}#modal .sheet{border-radius:16px;max-height:90vh}}
+.sheet>header{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.sheet .foot{position:sticky;bottom:calc(-24px - env(safe-area-inset-bottom,0px));background:var(--bg);padding-block:12px;border-top:1px solid var(--line);display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+body.modal-open{overflow:hidden}
+.erow{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,.8fr) minmax(0,1fr) minmax(0,1fr) 34px;gap:6px;align-items:center}
+.erow.v{grid-template-columns:minmax(0,3fr) minmax(0,1fr) 34px}
+.erow.f{grid-template-columns:minmax(0,3fr) minmax(0,1fr) 34px}
+.erow.h{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2)}
+@media (max-width:620px){
+  .erow{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 34px}
+  .erow>:nth-child(1){grid-column:1 / -1}
+  .erow.h{display:none}
+  .erow.v,.erow.f{grid-template-columns:minmax(0,1fr) 90px 34px}
+  .erow.v>:nth-child(1),.erow.f>:nth-child(1){grid-column:auto}
+  .rk{grid-template-columns:30px minmax(0,1fr)}
+  .rk .mv{grid-column:1 / -1;justify-content:flex-end}
+  .res{grid-template-columns:30px minmax(0,1fr) auto}
+  .res .bar{display:none}
+  .cand{grid-template-columns:minmax(0,1fr)}
+  .hero h2{font-size:28px}
+  .brand .mark{font-size:30px}
+}
+.pickrow{display:flex;gap:6px;flex-wrap:wrap}
+.pick{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 12px;font-weight:600;font-size:13.5px;cursor:pointer}
+.pick[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.idea{border:1px dashed var(--line);background:none;border-radius:999px;padding:3px 10px;font-size:13px;cursor:pointer;color:var(--ink-2)}
+.idea:hover{border-color:var(--accent);color:var(--accent)}
+
+#toast{position:fixed;left:0;right:0;bottom:calc(16px + env(safe-area-inset-bottom,0px));display:flex;justify-content:center;z-index:80;pointer-events:none;padding-inline:16px}
+.toast{background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-weight:600;box-shadow:var(--shadow);max-width:560px}
+.toast.err{background:var(--bad);color:#fff}
+@media (prefers-reduced-motion:no-preference){
+  .card,.day,.btn{transition:background .15s,border-color .15s,box-shadow .15s}
+}
+.grp{display:flex;gap:8px;align-items:baseline;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid var(--ink)}
+
+</style>
+<div id="app"><p class="boot">Carico Gran Bouffe…</p></div>
+<div id="modal" hidden></div>
+<div id="toast" aria-live="polite"></div>
+<script>
+(function(){
+'use strict';
+/* ============ utilità ============ */
+const $=(s,r)=>(r||document).querySelector(s);
+const $$=(s,r)=>Array.from((r||document).querySelectorAll(s));
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=p=>p+'_'+Math.random().toString(36).slice(2,8)+Date.now().toString(36).slice(-4);
+const stripAcc=s=>String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'');
+const norm=s=>stripAcc(s).toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+const slug=s=>norm(s).replace(/ /g,'-').slice(0,90)||'x';
+const num=v=>{if(typeof v==='number')return isFinite(v)?v:0;const n=parseFloat(String(v==null?'':v).replace(',','.'));return isFinite(n)?n:0;};
+const fmtN=(n,d)=>Number(n).toLocaleString('it-IT',{maximumFractionDigits:d==null?2:d});
+const cap1=s=>{s=String(s||'').trim();return s?s[0].toUpperCase()+s.slice(1):s;};
+const byTitle=(a,b)=>String(a.title).localeCompare(String(b.title),'it');
+const store={get(k){try{return localStorage.getItem(k);}catch(e){return null;}},set(k,v){try{localStorage.setItem(k,v);}catch(e){}}};
+const hm=s=>{const m=/^(\d{1,2}):(\d{2})$/.exec(String(s||''));return m?(+m[1]+(+m[2])/60):0;};
+const fmtT=h=>{h=((h%24)+24)%24;let H=Math.floor(h+1e-9),M=Math.round((h-H)*60);if(M>=60){H=(H+1)%24;M=0;}return String(H).padStart(2,'0')+':'+String(M).padStart(2,'0');};
+const isUrl=s=>{try{const u=new URL(String(s).trim());return u.protocol==='http:'||u.protocol==='https:';}catch(e){return false;}};
+const domain=s=>{try{return new URL(s).hostname.replace(/^www\./,'');}catch(e){return '';}};
+
+/* ============ costanti del dominio ============ */
+const CATS=[
+  {key:'antipasti',label:'Antipasti e snack',h:42},
+  {key:'primi',label:'Primi',h:18},
+  {key:'zuppe',label:'Zuppe e minestre',h:165},
+  {key:'secondi',label:'Secondi',h:345},
+  {key:'griglia',label:'Griglia',h:215},
+  {key:'contorni',label:'Contorni',h:100},
+  {key:'dolci',label:'Dolci',h:290}
+];
+const catOf=k=>CATS.find(c=>c.key===k)||{key:k,label:k||'—',h:0};
+const catIdx=k=>{const i=CATS.findIndex(c=>c.key===k);return i<0?99:i;};
+const REGIONI=['Veneto','Friuli-Venezia Giulia','Trentino-Alto Adige'];
+const SHOPS=[
+  {key:'carne',label:'Carne, pesce e salumi',short:'Carne e pesce'},
+  {key:'latticini',label:'Formaggi e latticini',short:'Latticini'},
+  {key:'ortolano',label:'Verdura e frutta',short:'Ortolano'},
+  {key:'dispensa',label:'Supermercato e dispensa',short:'Supermercato'},
+  {key:'cantina',label:'Vini e bevande',short:'Vini'},
+  {key:'altro',label:'Altro (farmacia, ferramenta…)',short:'Altro'}
+];
+const shopOf=k=>SHOPS.find(s=>s.key===k)||SHOPS[3];
+const UNITS=['g','kg','ml','l','pz','spicchi','mazzi','foglie','rametti','cucchiai','cucchiaini','bustine','barattoli','confezioni','fette','bicchieri','bottiglie','teste','coste','pizzichi','q.b.'];
+const PORZ={assaggio:{f:.5,label:'Assaggio (mezza porzione)'},normale:{f:1,label:'Normale'},abbondante:{f:1.5,label:'Abbondante'}};
+const DAYS=[{key:'ven',label:'Venerdì'},{key:'sab',label:'Sabato'},{key:'dom',label:'Domenica'}];
+const SLOTS=[
+  {key:'ven-cena',day:'ven',dayIdx:0,label:'Venerdì sera'},
+  {key:'sab-pranzo',day:'sab',dayIdx:1,label:'Sabato pranzo'},
+  {key:'sab-cena',day:'sab',dayIdx:1,label:'Sabato cena'},
+  {key:'dom-pranzo',day:'dom',dayIdx:2,label:'Domenica pranzo'}
+];
+const WEEKDAYS=['Venerdì','Sabato','Domenica','Lunedì','Martedì','Mercoledì','Giovedì'];
+const FASI=[['proposte','Proposte'],['voto','Voto'],['menu','Menu'],['cucina','Cucina']];
+const VSTATI={
+  da_verificare:{label:'Link da verificare',cls:'muted'},
+  verificato:{label:'Link verificato',cls:'ok'},
+  migliorato:{label:'Fonte autorevole aggiunta',cls:'info'},
+  da_sostituire:{label:'Link da sostituire',cls:'warn'},
+  non_valido:{label:'Link non valido',cls:'bad'}
+};
+const IDEE=[
+  {t:'Risi e bisi',c:'primi',r:'Veneto'},{t:'Bigoli in salsa',c:'primi',r:'Veneto'},{t:'Risotto al radicchio di Treviso',c:'primi',r:'Veneto'},
+  {t:'Sarde in saor',c:'antipasti',r:'Veneto'},{t:'Baccalà mantecato',c:'antipasti',r:'Veneto'},{t:'Pasta e fasioi',c:'zuppe',r:'Veneto'},
+  {t:'Sopa coada',c:'zuppe',r:'Veneto'},{t:'Baccalà alla vicentina',c:'secondi',r:'Veneto'},{t:'Fegato alla veneziana',c:'secondi',r:'Veneto'},
+  {t:'Bollito misto con pearà',c:'secondi',r:'Veneto'},{t:'Luganega alla brace',c:'griglia',r:'Veneto'},{t:'Radicchio alla griglia',c:'contorni',r:'Veneto'},
+  {t:'Tiramisù',c:'dolci',r:'Veneto'},{t:'Frico',c:'antipasti',r:'Friuli-Venezia Giulia'},{t:'Prosciutto di San Daniele e formaggi',c:'antipasti',r:'Friuli-Venezia Giulia'},
+  {t:'Jota',c:'zuppe',r:'Friuli-Venezia Giulia'},{t:'Cjarsons',c:'primi',r:'Friuli-Venezia Giulia'},{t:'Gnocchi di susine',c:'primi',r:'Friuli-Venezia Giulia'},
+  {t:'Gulasch alla triestina',c:'secondi',r:'Friuli-Venezia Giulia'},{t:'Brovada e muset',c:'secondi',r:'Friuli-Venezia Giulia'},
+  {t:'Ćevapčići alla griglia',c:'griglia',r:'Friuli-Venezia Giulia'},{t:'Gubana',c:'dolci',r:'Friuli-Venezia Giulia'},
+  {t:'Canederli in brodo',c:'zuppe',r:'Trentino-Alto Adige'},{t:'Zuppa d’orzo',c:'zuppe',r:'Trentino-Alto Adige'},
+  {t:'Strangolapreti',c:'primi',r:'Trentino-Alto Adige'},{t:'Schlutzkrapfen',c:'primi',r:'Trentino-Alto Adige'},
+  {t:'Tortel di patate',c:'antipasti',r:'Trentino-Alto Adige'},{t:'Carne salada e fagioli',c:'secondi',r:'Trentino-Alto Adige'},
+  {t:'Polenta di Storo con formaggi',c:'contorni',r:'Trentino-Alto Adige'},{t:'Strudel di mele',c:'dolci',r:'Trentino-Alto Adige'},
+  {t:'Kaiserschmarrn',c:'dolci',r:'Trentino-Alto Adige'}
+];
+
+const DEF={fase:'proposte',edizione:'XI',tema:'Triveneto',dataVen:'',arrivo:'16:00',riservaOre:1,margine:0,
+  orari:{'ven-cena':'20:30','sab-pranzo':'13:30','sab-cena':'20:30','dom-pranzo':'13:30'},cap:{ven:5,sab:12,dom:5}};
+function mergeSettings(d){
+  const o=JSON.parse(JSON.stringify(DEF));if(!d)return o;
+  for(const k of Object.keys(d)){if(k==='orari'||k==='cap')Object.assign(o[k],d[k]||{});else o[k]=d[k];}
+  return o;
+}
+
+/* ============ stato ============ */
+const S={meId:null,participants:[],recipes:[],votes:{},spesa:{},settings:mergeSettings(),settingsExists:false,loaded:{},dbOk:null,readOnly:false,owner:false};
+const UI={tab:'proposte',dish:null,q:'',cat:'',reg:'',ver:'',mine:false,vcat:'antipasti',vmode:'mia',draft:{},sday:'',sshop:'',shide:false,confirm:'',sugg:false,login:{conf:true}};
+let db=null,sampleCap=null,dlCap=null,userCap=null;
+
+const P=id=>S.participants.find(p=>p.id===id);
+const pname=id=>(P(id)||{}).name||'ex partecipante';
+const R=id=>S.recipes.find(r=>r.id===id);
+const me=()=>P(S.meId);
+const nConf=()=>S.participants.filter(p=>p.confirmed).length;
+const isOrg=()=>!!(S.owner||(me()&&me().organizer));
+const canPropose=()=>S.settings.fase==='proposte'||isOrg();
+const canVote=()=>S.settings.fase==='voto';
+const canEditRecipe=r=>isOrg()||(!!S.meId&&(r.proposerId===S.meId||(r.ownerIds||[]).includes(S.meId)||(r.teamIds||[]).includes(S.meId)));
+const canDelRecipe=r=>isOrg()||r.proposerId===S.meId;
+const vstato=r=>((r.verifica||{}).stato)||'da_verificare';
+
+/* ============ helper di interfaccia ============ */
+const chipCat=k=>{const c=catOf(k);return `<span class="chip" style="--h:${c.h}">${esc(c.label)}</span>`;};
+const badge=(t,cls)=>`<span class="badge ${cls||''}">${esc(t)}</span>`;
+const A={},CH={},IN={};
+let toastT;
+function toast(msg,kind){
+  const t=$('#toast');if(!t)return;
+  t.innerHTML=`<div class="toast ${kind||''}" role="status">${esc(msg)}</div>`;
+  clearTimeout(toastT);toastT=setTimeout(()=>{t.innerHTML='';},kind==='err'?6500:2600);
+}
+function errMsg(e){
+  const c=e&&e.code;
+  if(c==='invalid_argument')return 'Salvataggio rifiutato: probabilmente non hai i permessi di modifica. Chiedi a Marco di darti accesso come collaboratore.';
+  if(c==='quota_exceeded')return 'Spazio del database esaurito.';
+  if(c==='resource_exhausted')return 'Troppe operazioni ravvicinate: riprova tra qualche secondo.';
+  if(c==='revoked')return 'Accesso alla pagina revocato.';
+  return 'Salvataggio non riuscito'+(e&&e.message?': '+e.message:'.');
+}
+async function write(op,path,data){
+  if(!db){toast('Database non disponibile in questa vista.','err');return false;}
+  if(S.readOnly){toast('Sei in sola lettura: non puoi modificare i dati.','err');return false;}
+  try{
+    const ref=db.doc(path);
+    if(op==='set')await ref.set(data);else if(op==='update')await ref.update(data);else if(op==='delete')await ref.delete();
+    return true;
+  }catch(e){console.error(path,e);toast(errMsg(e),'err');return false;}
+}
+function openModal(html,onMount){
+  const m=$('#modal');
+  m.innerHTML=`<div class="scrim"></div><div class="sheet" role="dialog" aria-modal="true">${html}</div>`;
+  m.hidden=false;document.body.classList.add('modal-open');
+  if(onMount)onMount($('.sheet',m));
+}
+function closeModal(){const m=$('#modal');m.hidden=true;m.innerHTML='';document.body.classList.remove('modal-open');}
+function copyText(text,okMsg){
+  const done=()=>toast(okMsg||'Copiato negli appunti');
+  const fallback=()=>openModal(`<header><h3>Copia il testo</h3><button class="btn sm" data-act="modal-close">Chiudi</button></header>
+    <textarea id="cp" rows="14" readonly>${esc(text)}</textarea><p class="hint">Seleziona tutto e copia.</p>`,s=>{const ta=$('#cp',s);ta.focus();ta.select();});
+  try{
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(done,fallback);}else fallback();
+  }catch(e){fallback();}
+}
+A['modal-close']=()=>closeModal();
+
+/* ============ logica: tempi, votazioni, selezione, spesa ============ */
+const slotDef=k=>SLOTS.find(s=>s.key===k);
+const slotDay=k=>(slotDef(k)||{}).day||'';
+const slotLabel=k=>(slotDef(k)||{}).label||'';
+const totalCap=()=>{const c=S.settings.cap;return num(c.ven)+num(c.sab)+num(c.dom);};
+const slotted=()=>S.recipes.filter(r=>r.slot&&slotDef(r.slot));
+
+/* --- tempi e fattibilità --- */
+const lead=r=>Math.max(0,...(r.fasi||[]).map(f=>num(f.ore)));
+const slotAbs=k=>slotDef(k).dayIdx*24+hm(S.settings.orari[k]);
+const slotOffset=k=>slotAbs(k)-hm(S.settings.arrivo)-num(S.settings.riservaOre);
+const feasible=(r,k)=>!!r.preparabileACasa||lead(r)<=slotOffset(k)+1e-9;
+const earliest=r=>SLOTS.find(s=>feasible(r,s.key))||null;
+function dayLabel(idx){
+  let name=WEEKDAYS[((idx%7)+7)%7];
+  const d=S.settings.dataVen;
+  if(d&&/^\d{4}-\d{2}-\d{2}$/.test(d)){
+    const [y,m,dd]=d.split('-').map(Number);
+    const dt=new Date(y,m-1,dd+idx);
+    name=dt.toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long'});
+    name=name[0].toUpperCase()+name.slice(1);
+  }
+  return name;
+}
+function leadText(h){
+  if(h<=0)return '';
+  if(h>=48&&h%24===0)return (h/24)+' giorni';
+  if(h>=24)return fmtN(h,1)+' ore ('+fmtN(h/24,1)+' giorni)';
+  return fmtN(h,1)+' ore';
+}
+
+/* --- quantità e spesa --- */
+const UMAP={g:'g',gr:'g',grammi:'g',grammo:'g',kg:'kg',kilo:'kg',chili:'kg',chilo:'kg',ml:'ml',millilitri:'ml',cl:'cl',dl:'dl',l:'l',lt:'l',litro:'l',litri:'l',
+  pz:'pz',pezzo:'pz',pezzi:'pz',n:'pz',nr:'pz',unita:'pz',spicchio:'spicchi',spicchi:'spicchi',mazzo:'mazzi',mazzi:'mazzi',mazzetto:'mazzi',mazzetti:'mazzi',
+  foglia:'foglie',foglie:'foglie',rametto:'rametti',rametti:'rametti',cucchiaio:'cucchiai',cucchiai:'cucchiai',cucchiaino:'cucchiaini',cucchiaini:'cucchiaini',
+  bustina:'bustine',bustine:'bustine',barattolo:'barattoli',barattoli:'barattoli',confezione:'confezioni',confezioni:'confezioni',fetta:'fette',fette:'fette',
+  bicchiere:'bicchieri',bicchieri:'bicchieri',bottiglia:'bottiglie',bottiglie:'bottiglie',testa:'teste',teste:'teste',costa:'coste',coste:'coste',
+  pizzico:'pizzichi',pizzichi:'pizzichi',qb:'qb',quantobasta:'qb'};
+const canonU=u=>{const k=norm(u).replace(/ /g,'');return UMAP[k]||k;};
+function normUnit(u){
+  const k=norm(u).replace(/ /g,'');
+  if(k==='')return{base:'pz',mult:1};
+  const b=UMAP[k]||k;
+  if(b==='kg')return{base:'g',mult:1000};
+  if(b==='cl')return{base:'ml',mult:10};
+  if(b==='dl')return{base:'ml',mult:100};
+  if(b==='l')return{base:'ml',mult:1000};
+  return{base:b,mult:1};
+}
+function fmtQty(base,v){
+  if(base==='g')return v>=1000?fmtN(v/1000)+' kg':fmtN(v)+' g';
+  if(base==='ml')return v>=1000?fmtN(v/1000)+' l':fmtN(v)+' ml';
+  return fmtN(v)+' '+base;
+}
+/* arrotondamento "da spesa": per eccesso */
+function roundUp(base,v){
+  if(base==='g'||base==='ml'){
+    if(v<50)return Math.ceil(v-1e-9);
+    if(v<200)return Math.ceil(v/5-1e-9)*5;
+    if(v<1000)return Math.ceil(v/10-1e-9)*10;
+    return Math.ceil(v/50-1e-9)*50;
+  }
+  return Math.max(1,Math.ceil(v-1e-9));
+}
+/* arrotondamento "da ricetta": al più vicino */
+function niceQty(base,v){
+  if(base==='g'||base==='ml'){
+    if(v<10)return Math.round(v*2)/2;
+    if(v<100)return Math.round(v/5)*5;
+    if(v<1000)return Math.round(v/10)*10;
+    return Math.round(v/50)*50;
+  }
+  if(v<3)return Math.max(.5,Math.round(v*2)/2);
+  return Math.round(v);
+}
+function scaleF(r){
+  const sv=Math.max(1,num(r.serves)||4);
+  return nConf()*(PORZ[r.porzione]?PORZ[r.porzione].f:1)*(1+num(S.settings.margine)/100)/sv;
+}
+function allIngs(r){
+  const a=(r.ingredients||[]).map(i=>({name:i.name,qty:i.qty,unit:i.unit,shop:i.shop||'dispensa'}));
+  for(const v of (r.vini||[]))a.push({name:v.nome,qty:v.bottiglie,unit:'bottiglie',shop:'cantina',vino:true});
+  return a;
+}
+function consolidate(day){
+  const lines=new Map();
+  for(const r of slotted()){
+    if(day&&slotDay(r.slot)!==day)continue;
+    const f=scaleF(r);
+    for(const ing of allIngs(r)){
+      const nm=norm(ing.name);if(!nm)continue;
+      let L=lines.get(nm);
+      if(!L){L={key:nm,id:nm.replace(/ /g,'-').slice(0,90),name:cap1(ing.name),shop:ing.shop,tot:{},qb:false,uses:[]};lines.set(nm,L);}
+      if(L.shop==='altro'&&ing.shop!=='altro')L.shop=ing.shop;
+      const q=num(ing.qty),u=normUnit(ing.unit);
+      if(u.base==='qb'||!q){L.qb=true;L.uses.push({r,txt:'q.b.'});continue;}
+      const v=q*u.mult*f;
+      L.tot[u.base]=(L.tot[u.base]||0)+v;
+      L.uses.push({r,base:u.base,v});
+    }
+  }
+  const out=[...lines.values()];
+  for(const L of out){
+    L.parts=Object.keys(L.tot).map(b=>({base:b,raw:L.tot[b],up:roundUp(b,L.tot[b])}));
+    L.text=L.parts.map(p=>fmtQty(p.base,p.up)).join(' + ')+(L.qb?(L.parts.length?' + q.b.':'q.b.'):'');
+    const sp=S.spesa[L.id]||{};L.sp=sp;
+    if(sp.pack&&sp.pack.size>0){
+      const part=L.parts.find(p=>p.base===sp.pack.base);
+      if(part)L.packs=Math.ceil(part.raw/sp.pack.size-1e-9);
+    }
+  }
+  out.sort((a,b)=>a.name.localeCompare(b.name,'it'));
+  return out;
+}
+function usesText(L){
+  return L.uses.map(u=>{
+    const t=esc(u.r.title);
+    return u.txt?`${t} (q.b.)`:`${t} (${esc(fmtQty(u.base,niceQty(u.base,u.v)))})`;
+  }).join(' · ');
+}
+function groceryText(day){
+  const ls=consolidate(day);
+  const head=`LISTA SPESA GRAN BOUFFE ${S.settings.tema||''} — per ${nConf()} persone${day?' — '+DAYS.find(d=>d.key===day).label:''}`;
+  const out=[head,''];
+  for(const sh of SHOPS){
+    const g=ls.filter(l=>l.shop===sh.key);if(!g.length)continue;
+    out.push(sh.label.toUpperCase());
+    for(const l of g){
+      let t='- '+l.name+': '+l.text;
+      if(l.packs)t+=` (${l.packs} conf. da ${fmtQty(l.sp.pack.base,l.sp.pack.size)})`;
+      if(l.sp.chi&&P(l.sp.chi))t+=` [${P(l.sp.chi).name}]`;
+      out.push(t);
+    }
+    out.push('');
+  }
+  return out.join('\n').trim();
+}
+
+/* --- votazioni --- */
+const catRecipes=cat=>S.recipes.filter(r=>r.category===cat);
+const myRank=cat=>{const v=S.votes[S.meId];return v&&v.rank&&Array.isArray(v.rank[cat])?v.rank[cat]:null;};
+function rankedDraft(cat){
+  const all=catRecipes(cat);
+  if(UI.draft[cat]){
+    const ids=UI.draft[cat].filter(id=>R(id)&&R(id).category===cat);
+    const missing=all.filter(r=>!ids.includes(r.id)).sort(byTitle).map(r=>r.id);
+    return{ids:[...ids,...missing],dirty:true,fresh:[...missing],saved:!!myRank(cat)};
+  }
+  const saved=(myRank(cat)||[]).filter(id=>R(id)&&R(id).category===cat);
+  const missing=all.filter(r=>!saved.includes(r.id)).sort(byTitle).map(r=>r.id);
+  return{ids:[...saved,...missing],dirty:false,fresh:saved.length?missing:[],saved:!!myRank(cat)};
+}
+function voteStats(){
+  const by={};CATS.forEach(c=>by[c.key]=new Map());
+  for(const [pid,v] of Object.entries(S.votes)){
+    if(!P(pid))continue;
+    const rk=v.rank||{};
+    for(const c of CATS){
+      const list=(rk[c.key]||[]).filter(id=>R(id)&&R(id).category===c.key);
+      const n=list.length;if(!n)continue;
+      list.forEach((id,i)=>{
+        const o=by[c.key].get(id)||{sumPos:0,sumNorm:0,n:0};
+        o.sumPos+=i+1;o.sumNorm+=n>1?i/(n-1):0;o.n++;by[c.key].set(id,o);
+      });
+    }
+  }
+  const res={};
+  for(const c of CATS){
+    res[c.key]=catRecipes(c.key).map(r=>{
+      const o=by[c.key].get(r.id);
+      return{r,n:o?o.n:0,avg:o?o.sumPos/o.n:null,score:o?Math.round(100*(1-o.sumNorm/o.n)):null};
+    }).sort((a,b)=>{
+      if((a.score==null)!==(b.score==null))return a.score==null?1:-1;
+      if(a.score!==b.score)return (b.score||0)-(a.score||0);
+      if(a.n!==b.n)return b.n-a.n;
+      return byTitle(a.r,b.r);
+    });
+  }
+  return res;
+}
+const voters=()=>S.participants.filter(p=>S.votes[p.id]&&Object.values(S.votes[p.id].rank||{}).some(l=>Array.isArray(l)&&l.length));
+
+/* --- selezione automatica dai voti --- */
+function quotas(total){
+  const w={antipasti:4,primi:5,zuppe:2,secondi:4,griglia:2,contorni:2,dolci:3};
+  const sw=Object.values(w).reduce((a,b)=>a+b,0);
+  const q={},rem=[];let used=0;
+  for(const k in w){const x=w[k]*total/sw;q[k]=Math.floor(x);used+=q[k];rem.push([k,x-q[k]]);}
+  rem.sort((a,b)=>b[1]-a[1]);
+  for(let i=0;used<total;i++,used++)q[rem[i%rem.length][0]]++;
+  return q;
+}
+function suggest(){
+  const st=voteStats(),total=totalCap(),q=quotas(total);
+  const chosen=[],left=[];
+  for(const c of CATS){
+    const list=st[c.key],k=q[c.key]||0;
+    list.slice(0,k).forEach(x=>chosen.push(x));
+    list.slice(k).forEach(x=>left.push(x));
+  }
+  left.sort((a,b)=>((b.score==null?-1:b.score)-(a.score==null?-1:a.score))||byTitle(a.r,b.r));
+  while(chosen.length<total&&left.length)chosen.push(left.shift());
+  const caps={ven:num(S.settings.cap.ven),sab:num(S.settings.cap.sab),dom:num(S.settings.cap.dom)};
+  const cnt={ven:0,sab:0,dom:0},catCnt={ven:{},sab:{},dom:{}},slotCnt={};
+  const out={};
+  const arr=[...chosen].sort((a,b)=>lead(b.r)-lead(a.r)||(b.score||0)-(a.score||0));
+  for(const x of arr){
+    const r=x.r;
+    let best=null,bs=-1e9;
+    for(const d of DAYS){
+      if(cnt[d.key]>=caps[d.key])continue;
+      if(!SLOTS.some(s=>s.day===d.key&&feasible(r,s.key)))continue;
+      const sc=(caps[d.key]-cnt[d.key])/Math.max(1,caps[d.key])-0.25*(catCnt[d.key][r.category]||0);
+      if(sc>bs){bs=sc;best=d.key;}
+    }
+    if(!best){
+      const open=DAYS.filter(d=>cnt[d.key]<caps[d.key]);
+      best=(open[open.length-1]||DAYS[2]).key;
+    }
+    const opts=SLOTS.filter(s=>s.day===best);
+    const feas=opts.filter(s=>feasible(r,s.key));
+    const pool=feas.length?feas:opts;
+    pool.sort((a,b)=>(slotCnt[a.key]||0)-(slotCnt[b.key]||0));
+    out[r.id]=pool[0].key;
+    cnt[best]++;catCnt[best][r.category]=(catCnt[best][r.category]||0)+1;slotCnt[pool[0].key]=(slotCnt[pool[0].key]||0)+1;
+  }
+  return out;
+}
+
+/* --- cronoprogramma --- */
+function timeline(){
+  const items=[];
+  const arrive=hm(S.settings.arrivo);
+  items.push({t:arrive,kind:'meal',what:'Arrivo e sistemazione',who:''});
+  for(const s of SLOTS){
+    const rs=slotted().filter(r=>r.slot===s.key);
+    if(!rs.length)continue;
+    items.push({t:slotAbs(s.key),kind:'meal',what:s.label+' — a tavola ('+rs.length+' piatt'+(rs.length===1?'o':'i')+')'});
+  }
+  for(const r of slotted()){
+    const sa=slotAbs(r.slot);
+    for(const f of (r.fasi||[])){
+      const t=sa-num(f.ore);
+      items.push({t,kind:t<arrive?'pre':'fase',what:f.label,r,ore:num(f.ore)});
+    }
+  }
+  items.sort((a,b)=>a.t-b.t||(a.kind==='meal'?1:-1));
+  return items;
+}
+
+/* ============ viste: accesso, testata, proposte ============ */
+const safeHref=u=>isUrl(u)?String(u).trim():'#';
+const sortedPeople=()=>[...S.participants].sort((a,b)=>((a.ord==null?1e9:a.ord)-(b.ord==null?1e9:b.ord))||a.name.localeCompare(b.name,'it'));
+
+function vLogin(){
+  const ps=sortedPeople();
+  return `<div class="wrap"><div class="login">
+    <div><p class="film">dal film di Marco Ferreri · 1973</p><h1>Gran Bouffe <span style="color:var(--accent)">Triveneto</span></h1></div>
+    <p class="lede">Scegli il tuo nome per entrare: da qui proponi i piatti, voti, ti iscrivi alle squadre di cucina e vedi la lista della spesa.</p>
+    ${ps.length?`<div class="names">${ps.map(p=>`<button class="btn" data-act="login" data-id="${esc(p.id)}">${esc(p.name)}</button>`).join('')}</div>`
+      :`<div class="note">L’elenco partecipanti è vuoto. Aggiungi il tuo nome: il primo che entra diventa organizzatore.</div>`}
+    <form data-sub="addself" class="panel" style="display:flex;flex-direction:column;gap:10px">
+      <h4>Non ci sei? Aggiungi un partecipante</h4>
+      <div class="row"><input type="text" id="ln" placeholder="Nome (come lo chiamano gli amici)" autocomplete="off" style="flex:1;min-width:180px">
+      <button class="btn primary" type="submit">Aggiungi ed entra</button></div>
+      <label class="checkline"><input type="checkbox" id="lc" ${UI.login.conf?'checked':''}> Confermo la mia presenza al weekend</label>
+      <p class="err" id="lerr" hidden></p>
+    </form></div></div>`;
+}
+
+function vHeader(){
+  const st=S.settings,f=st.fase,idx=FASI.findIndex(x=>x[0]===f);
+  const rail=FASI.map((s,i)=>{
+    const cls=i<idx?'done':i===idx?'now':'';
+    return `<li class="${cls}">${isOrg()?`<button data-act="fase" data-v="${s[0]}" ${i===idx?'aria-current="step"':''}>${s[1]}</button>`:`<span ${i===idx?'aria-current="step"':''}>${s[1]}</span>`}</li>`;
+  }).join('');
+  const sel=slotted().length,tot=totalCap(),nv=voters().length;
+  return `<header class="wrap top">
+    <div class="brand"><div class="mark">Gran Bouffe <i>${esc(st.tema||'Triveneto')}</i></div>
+    <div class="sub">${esc(st.edizione||'')} edizione · dal film di Marco Ferreri, 1973</div></div>
+    <div class="who">${me()?`<span>Ciao, <b>${esc(me().name)}</b>${isOrg()?' · organizzatore':''}</span> <button class="link" data-act="logout">Cambia nome</button>`:''}</div>
+  </header>
+  <div class="wrap"><ol class="rail" aria-label="Fasi del progetto">${rail}</ol>
+  <div class="stats"><span><b class="num">${nConf()}</b> confermati</span><span><b class="num">${S.recipes.length}</b> proposte</span>
+  <span><b class="num">${nv}</b> hanno votato</span><span><b class="num">${sel}</b>/${tot} piatti in menu</span></div></div>`;
+}
+
+function vNav(){
+  const tabs=[['proposte','Proposte',S.recipes.length],['voto','Votazioni'],['menu','Menu',slotted().length+'/'+totalCap()],['spesa','Spesa'],['programma','Programma'],['persone','Persone',nConf()]];
+  return `<nav class="tabs" aria-label="Sezioni"><div class="in">${tabs.map(t=>
+    `<button class="tab" data-act="tab" data-v="${t[0]}" ${(UI.tab===t[0]&&!UI.dish)||(UI.dish&&t[0]==='menu')?'aria-current="page"':''}>${t[1]}${t[2]!==undefined?`<span class="n">${t[2]}</span>`:''}</button>`).join('')}</div></nav>`;
+}
+
+/* --- proposte --- */
+function filterRecipes(){
+  const q=norm(UI.q);
+  return S.recipes.filter(r=>(!UI.cat||r.category===UI.cat)&&(!UI.reg||r.region===UI.reg)&&(!UI.ver||vstato(r)===UI.ver)
+    &&(!UI.mine||r.proposerId===S.meId||(r.ownerIds||[]).includes(S.meId))
+    &&(!q||norm(r.title+' '+(r.note||'')+' '+pname(r.proposerId)).includes(q)))
+    .sort((a,b)=>catIdx(a.category)-catIdx(b.category)||byTitle(a,b));
+}
+function srcBlock(r){
+  const v=r.verifica||{};
+  const auth=v.linkAutorevole&&isUrl(v.linkAutorevole);
+  return `<div class="src"><span><span class="lbl">Link del proponente</span><br><a href="${esc(safeHref(r.link))}" target="_blank" rel="noopener noreferrer">${esc(domain(r.link)||r.link)} ↗</a></span>
+    ${auth?`<span><span class="lbl">Fonte di riferimento</span><br><a href="${esc(safeHref(v.linkAutorevole))}" target="_blank" rel="noopener noreferrer">${esc(v.fonte||domain(v.linkAutorevole))} ↗</a></span>`:''}
+    ${v.nota?`<span class="hint">${esc(v.nota)}</span>`:''}</div>`;
+}
+function cardRecipe(r){
+  const st=VSTATI[vstato(r)]||VSTATI.da_verificare;
+  const owners=(r.ownerIds||[]).map(pname).join(', ')||'—';
+  const confirmDel=UI.confirm==='del:'+r.id;
+  return `<article class="card ${r.slot?'sel':''}">
+    <div class="row spread"><div class="row" style="gap:6px">${chipCat(r.category)}${r.region?`<span class="chip plain">${esc(r.region)}</span>`:''}</div>${badge(st.label,st.cls)}</div>
+    <h3>${esc(r.title)}</h3>
+    <dl class="kv"><dt>Proposta da</dt><dd>${esc(pname(r.proposerId))}</dd><dt>Responsabili</dt><dd>${esc(owners)}</dd></dl>
+    ${r.note?`<p class="small muted clamp">${esc(r.note)}</p>`:''}
+    ${srcBlock(r)}
+    ${r.slot?`<div>${badge('In menu: '+slotLabel(r.slot),'ok')}</div>`:''}
+    <div class="row">
+      ${r.slot?`<button class="btn sm primary" data-act="open-dish" data-id="${esc(r.id)}">Scheda piatto</button>`:''}
+      ${canEditRecipe(r)?`<button class="btn sm" data-act="edit-recipe" data-id="${esc(r.id)}">Modifica</button>`:''}
+      ${canDelRecipe(r)?(confirmDel
+        ?`<span class="small">Eliminare?</span><button class="btn sm danger" data-act="del-recipe" data-id="${esc(r.id)}">Sì, elimina</button><button class="btn sm" data-act="del-cancel">No</button>`
+        :`<button class="btn sm" data-act="del-recipe" data-id="${esc(r.id)}">Elimina</button>`):''}
+    </div></article>`;
+}
+function vProposte(){
+  const list=filterRecipes();
+  const pend=S.recipes.filter(r=>vstato(r)==='da_verificare').length;
+  const chips=[['','Tutte']].concat(CATS.map(c=>[c.key,c.label])).map(c=>`<button class="fchip" aria-pressed="${UI.cat===c[0]}" data-act="fcat" data-v="${c[0]}">${esc(c[1])}</button>`).join('');
+  let body='';
+  if(!S.recipes.length){
+    body=`<div class="empty"><h3>Nessuna proposta, per ora</h3><p>Scegli un piatto del Triveneto, indica chi lo cucinerà e incolla il link della ricetta.</p>
+      ${canPropose()?`<button class="btn primary" data-act="new-recipe">+ Proponi il primo piatto</button>`:''}</div>`;
+  }else if(!list.length){
+    body=`<div class="empty"><h3>Nessun risultato</h3><p>Cambia o azzera i filtri.</p><button class="btn" data-act="fclear">Azzera filtri</button></div>`;
+  }else{
+    const groups=CATS.map(c=>[c,list.filter(r=>r.category===c.key)]).filter(g=>g[1].length);
+    body=groups.map(([c,rs])=>`<div><h3 class="grp">${esc(c.label)} <span class="muted small num">${rs.length}</span></h3><div class="cards">${rs.map(cardRecipe).join('')}</div></div>`).join('');
+  }
+  return `<section class="view">
+    <div class="vhead"><div><h2>Proposte</h2>
+      <p class="lede">Ogni proposta ha un proponente, almeno un responsabile della produzione, una categoria e il link a una ricetta. Il link viene controllato e affiancato da una fonte di riferimento autorevole. <b class="num">${S.recipes.length}</b> proposte finora, obiettivo 40–50.</p></div>
+      <button class="btn primary" data-act="new-recipe" ${canPropose()?'':'disabled'}>+ Proponi un piatto</button></div>
+    ${!canPropose()?`<div class="note">Le proposte sono chiuse perché sono aperte le votazioni. L’organizzatore può riaprirle dalla barra delle fasi.</div>`:''}
+    ${isOrg()&&pend?`<div class="note warn"><b>${pend} ${pend===1?'link da verificare':'link da verificare'}.</b> Chiedi a Claude di controllarli: verifica che il link funzioni e corrisponda al piatto, poi aggiunge una fonte autorevole (Accademia Italiana della Cucina, La Cucina Italiana, Cucchiaio d’Argento, Artusi, enti del territorio). Lo stato compare su ogni scheda.</div>`:''}
+    <div class="filters">
+      <div class="field wide"><label for="q">Cerca</label><input type="search" id="q" data-in="q" value="${esc(UI.q)}" placeholder="Piatto, proponente…"></div>
+      <div class="field"><label for="freg">Regione</label><select id="freg" data-chg="freg"><option value="">Tutte</option>${REGIONI.map(r=>`<option ${UI.reg===r?'selected':''}>${esc(r)}</option>`).join('')}</select></div>
+      <div class="field"><label for="fver">Link</label><select id="fver" data-chg="fver"><option value="">Tutti</option>${Object.keys(VSTATI).map(k=>`<option value="${k}" ${UI.ver===k?'selected':''}>${esc(VSTATI[k].label)}</option>`).join('')}</select></div>
+      <label class="checkline"><input type="checkbox" id="fmine" data-chg="fmine" ${UI.mine?'checked':''}> Solo le mie</label>
+    </div>
+    <div class="filterchips">${chips}</div>
+    ${body}</section>`;
+}
+
+A.tab=t=>{UI.tab=t.dataset.v;UI.dish=null;setHash(UI.tab);render();window.scrollTo(0,0);};
+A.fcat=t=>{UI.cat=t.dataset.v;render();};
+A.fclear=()=>{UI.q='';UI.cat='';UI.reg='';UI.ver='';UI.mine=false;render();};
+A['del-cancel']=()=>{UI.confirm='';render();};
+A['del-recipe']=async t=>{
+  const id=t.dataset.id;
+  if(UI.confirm!=='del:'+id){UI.confirm='del:'+id;render();return;}
+  UI.confirm='';
+  if(await write('delete','recipes/'+id))toast('Proposta eliminata');
+  render();
+};
+A['open-dish']=t=>{UI.dish=t.dataset.id;UI.tab='menu';setHash('piatto-'+t.dataset.id);render();window.scrollTo(0,0);};
+A.fase=async t=>{
+  const v=t.dataset.v;if(S.settings.fase===v)return;
+  if(await saveSettings({fase:v}))toast('Fase impostata: '+(FASI.find(f=>f[0]===v)||[])[1]);
+};
+IN.q=t=>{UI.q=t.value;render();};
+CH.freg=t=>{UI.reg=t.value;render();};
+CH.fver=t=>{UI.ver=t.value;render();};
+CH.fmine=t=>{UI.mine=t.checked;render();};
+
+/* ============ viste: votazioni e menu ============ */
+function vVoto(){
+  const cat=UI.vcat;
+  const tabs=CATS.map(x=>{
+    const done=!!myRank(x.key);
+    return `<button class="fchip" aria-pressed="${x.key===cat}" data-act="vcat" data-v="${x.key}">${done?'✓ ':''}${esc(x.label)} <span class="num">${catRecipes(x.key).length}</span></button>`;
+  }).join('');
+  const mine=UI.vmode==='mia';
+  const doneN=CATS.filter(c=>catRecipes(c.key).length&&myRank(c.key)).length,needN=CATS.filter(c=>catRecipes(c.key).length).length;
+  return `<section class="view">
+    <div class="vhead"><div><h2>Votazioni</h2>
+      <p class="lede">Per ogni categoria ordina le proposte dalla migliore (1) alla peggiore: vince chi ha il piazzamento medio più alto. Come nell’edizione scorsa, ma con il conteggio automatico.</p></div>
+      <div class="filterchips"><button class="fchip" aria-pressed="${mine}" data-act="vmode" data-v="mia">La mia classifica</button><button class="fchip" aria-pressed="${!mine}" data-act="vmode" data-v="ris">Risultati</button></div></div>
+    ${S.settings.fase==='proposte'?`<div class="note">Le votazioni non sono ancora aperte: puoi già guardare le proposte. L’organizzatore le apre dalla barra delle fasi.</div>`:''}
+    ${S.settings.fase==='menu'||S.settings.fase==='cucina'?`<div class="note">Le votazioni sono chiuse. Restano visibili i risultati.</div>`:''}
+    <div class="filterchips">${tabs}</div>
+    ${mine?`<p class="small muted">Hai ordinato <b class="num">${doneN}</b> categorie su <b class="num">${needN}</b>.</p>`+vRank(cat):vRes(cat)}
+  </section>`;
+}
+function vRank(cat){
+  const d=rankedDraft(cat),open=canVote();
+  if(!d.ids.length)return `<div class="empty"><h3>Nessuna proposta in “${esc(catOf(cat).label)}”</h3><p>Quando ne arriveranno potrai ordinarle qui.</p></div>`;
+  const rows=d.ids.map((id,i)=>{
+    const r=R(id);const fresh=d.fresh.includes(id)&&d.saved;
+    return `<li class="rk ${fresh?'fresh':''}"><div class="pos num">${i+1}</div>
+      <div><div class="t">${esc(r.title)} ${fresh?badge('Nuova','warn'):''}</div>
+      <div class="small muted">${r.region?esc(r.region)+' · ':''}proposta da ${esc(pname(r.proposerId))} · <a href="${esc(safeHref(r.link))}" target="_blank" rel="noopener noreferrer">ricetta ↗</a></div></div>
+      <div class="row mv" style="gap:6px"><button class="btn sm ico" data-act="mv" data-id="${esc(id)}" data-d="-1" aria-label="Sposta in su" ${(!open||i===0)?'disabled':''}>▲</button>
+      <button class="btn sm ico" data-act="mv" data-id="${esc(id)}" data-d="1" aria-label="Sposta in giù" ${(!open||i===d.ids.length-1)?'disabled':''}>▼</button></div></li>`;
+  }).join('');
+  let status;
+  if(d.dirty)status=`${badge('Modifiche non salvate','warn')}`;
+  else if(d.saved&&!d.fresh.length)status=badge('Classifica salvata','ok');
+  else if(d.saved)status=badge('Ci sono proposte nuove da ordinare','warn');
+  else status=badge('Non hai ancora votato questa categoria','muted');
+  return `<ol class="rank">${rows}</ol>
+    <div class="row spread" style="position:sticky;bottom:12px;background:var(--bg);padding:10px 0;border-top:1px solid var(--line)">${status}
+    <button class="btn primary" data-act="save-rank" ${(!open||(!d.dirty&&d.saved&&!d.fresh.length))?'disabled':''}>${d.saved&&!d.dirty&&!d.fresh.length?'Salvata':(d.dirty||d.saved?'Salva classifica':'Conferma questo ordine')}</button></div>`;
+}
+function vRes(cat){
+  const st=voteStats()[cat],q=quotas(totalCap())[cat]||0;
+  const done=voters().length,conf=S.participants.filter(p=>p.confirmed);
+  const missing=conf.filter(p=>!voters().some(v=>v.id===p.id)).map(p=>p.name);
+  if(!st.length)return `<div class="empty"><h3>Nessuna proposta in questa categoria</h3></div>`;
+  const rows=st.map((x,i)=>{
+    const inQ=x.score!=null&&i<q;
+    return `<div class="res ${i<3&&x.score!=null?'top3':''} ${inQ?'cut':''}"><div class="pos num">${i+1}</div>
+      <div><div style="font-weight:600;overflow-wrap:anywhere">${esc(x.r.title)}</div><div class="small muted">${x.r.region?esc(x.r.region)+' · ':''}${esc(pname(x.r.proposerId))}${x.r.slot?' · '+badge('In menu','ok'):''}</div></div>
+      <div class="bar" title="Punteggio"><i style="width:${x.score==null?0:x.score}%"></i></div>
+      <div class="small num" style="text-align:right">${x.score==null?'<span class="muted">nessun voto</span>':`<b>${x.score}</b>/100<br><span class="muted">pos. media ${fmtN(x.avg,1)} · ${x.n} vot${x.n===1?'o':'i'}</span>`}</div></div>`;
+  }).join('');
+  return `<div class="note">Hanno votato <b class="num">${done}</b> su <b class="num">${S.participants.length}</b>.${missing.length?` Mancano i confermati: ${esc(missing.join(', '))}.`:''}
+    Le righe evidenziate rientrano nella quota suggerita per “${esc(catOf(cat).label)}” (<b class="num">${q}</b> su ${totalCap()} piatti).</div>
+    <div class="panel" style="padding:0;overflow:hidden">${rows}</div>
+    <p class="hint">Punteggio 100 = sempre primo; 0 = sempre ultimo. Conta solo chi ha ordinato la categoria.</p>`;
+}
+A.vcat=t=>{UI.vcat=t.dataset.v;render();};
+A.vmode=t=>{UI.vmode=t.dataset.v;render();};
+A.mv=t=>{
+  const cat=UI.vcat,ids=rankedDraft(cat).ids.slice(),i=ids.indexOf(t.dataset.id),j=i+num(t.dataset.d);
+  if(i<0||j<0||j>=ids.length)return;
+  [ids[i],ids[j]]=[ids[j],ids[i]];UI.draft[cat]=ids;render();
+};
+A['save-rank']=async()=>{
+  const cat=UI.vcat,ids=rankedDraft(cat).ids;
+  if(!S.meId)return;
+  const ex=S.votes[S.meId];
+  const ok=ex?await write('update','votes/'+S.meId,{rank:{[cat]:ids},updatedAt:Date.now()}):await write('set','votes/'+S.meId,{rank:{[cat]:ids},updatedAt:Date.now()});
+  if(ok){delete UI.draft[cat];toast('Classifica salvata: '+catOf(cat).label);}
+  render();
+};
+
+/* --- menu --- */
+function dishWarn(r,slotKey){
+  const out=[];
+  if(!feasible(r,slotKey)){
+    const e=earliest(r);
+    out.push(badge(`Servono ${leadText(lead(r))} di anticipo`,'bad')+' '+(e?`<span class="small">Primo pasto possibile: <b>${esc(e.label)}</b></span>`:`<span class="small">Non c’è un pasto utile: va preparato a casa.</span>`));
+  }
+  if(!(r.ingredients||[]).length)out.push(badge('Mancano gli ingredienti','warn'));
+  return out.length?`<div class="row" style="gap:6px;margin-top:4px">${out.join('')}</div>`:'';
+}
+function dishRow(r,slotKey){
+  const org=isOrg();
+  return `<div class="dish"><div><button class="nm" data-act="open-dish" data-id="${esc(r.id)}">${esc(r.title)}</button>
+    <div class="small muted">${chipCat(r.category)} ${esc((r.ownerIds||[]).map(pname).join(', '))}</div>${dishWarn(r,slotKey)}</div>
+    ${org?`<select aria-label="Sposta ${esc(r.title)}" data-chg="setslot" data-id="${esc(r.id)}"><option value="">Togli dal menu</option>${SLOTS.map(s=>`<option value="${s.key}" ${s.key===slotKey?'selected':''}>${s.label}</option>`).join('')}</select>`:''}</div>`;
+}
+function vMenu(){
+  const org=isOrg(),capv=S.settings.cap,sl=slotted();
+  const days=DAYS.map(d=>{
+    const rs=sl.filter(r=>slotDay(r.slot)===d.key),cap=num(capv[d.key]),over=rs.length>cap;
+    const mix={};rs.forEach(r=>mix[r.category]=(mix[r.category]||0)+1);
+    const slots=SLOTS.filter(s=>s.day===d.key).map(s=>{
+      const list=rs.filter(r=>r.slot===s.key).sort((a,b)=>catIdx(a.category)-catIdx(b.category)||byTitle(a,b));
+      return `<div class="slot"><h4>${s.label}</h4>${list.map(r=>dishRow(r,s.key)).join('')||'<p class="small muted">Nessun piatto assegnato.</p>'}</div>`;
+    }).join('');
+    return `<section class="day ${over?'over':''}"><header><h3>${d.label}</h3><span class="num"><b>${rs.length}</b> / ${cap}${over?' · troppi':''}</span></header>
+      <div class="slot"><div class="capbar"><i style="width:${cap?Math.min(100,rs.length/cap*100):0}%"></i></div>
+      <div class="mix">${CATS.filter(c=>mix[c.key]).map(c=>`<span class="chip" style="--h:${c.h}">${esc(c.label)} ${mix[c.key]}</span>`).join('')||'<span class="small muted">Nessun piatto</span>'}</div></div>
+      ${slots}</section>`;
+  }).join('');
+  const st=voteStats(),cand=CATS.map(c=>[c,st[c.key].filter(x=>!x.r.slot)]).filter(g=>g[1].length);
+  const candHtml=cand.length?cand.map(([c,xs])=>`<div><h3 class="grp">${esc(c.label)} <span class="muted small num">${xs.length}</span></h3>
+    <div class="panel" style="padding:0;overflow:hidden">${xs.map(x=>`<div class="cand"><div><div style="font-weight:600;overflow-wrap:anywhere">${esc(x.r.title)}</div>
+      <div class="small muted">${x.r.region?esc(x.r.region)+' · ':''}proposta da ${esc(pname(x.r.proposerId))}</div></div>
+      <div class="small num muted" style="text-align:right">${x.score==null?'nessun voto':`punteggio <b style="color:var(--ink)">${x.score}</b> · ${x.n} vot${x.n===1?'o':'i'}`}</div>
+      ${org?`<select aria-label="Assegna ${esc(x.r.title)}" data-chg="setslot" data-id="${esc(x.r.id)}"><option value="">Non in menu</option>${SLOTS.map(s=>`<option value="${s.key}">${s.label}</option>`).join('')}</select>`:'<span></span>'}</div>`).join('')}</div></div>`).join('')
+    :`<div class="empty"><p>Nessun altro candidato.</p></div>`;
+  const noIng=sl.filter(r=>!(r.ingredients||[]).length).length;
+  return `<section class="view">
+    <div class="vhead"><div><h2>Menu</h2>
+      <p class="lede">Selezione finale: ${num(capv.ven)} piatti per venerdì sera, ${num(capv.sab)} per sabato, ${num(capv.dom)} per domenica. Tocca un piatto per aprire la sua scheda con squadra, ingredienti e tempi.</p></div>
+      ${org?`<div class="row">${UI.sugg
+        ?`<span class="small">Sostituisce la selezione attuale.</span><button class="btn primary sm" data-act="suggest-go">Applica suggerimento</button><button class="btn sm" data-act="suggest-cancel">Annulla</button>`
+        :`<button class="btn" data-act="suggest">Suggerisci dai voti</button><button class="btn" data-act="clear-menu" ${sl.length?'':'disabled'}>Svuota</button>`}</div>`:''}</div>
+    ${!org?`<div class="note">Solo gli organizzatori assegnano i piatti ai pasti. Qui puoi vedere il menu e aprire le schede.</div>`:''}
+    ${noIng?`<div class="note warn"><b>${noIng}</b> piatt${noIng===1?'o':'i'} del menu senza ingredienti: la lista della spesa è incompleta finché i responsabili non compilano le schede.</div>`:''}
+    <div class="days">${days}</div>
+    <h3>Candidati</h3>${candHtml}</section>`;
+}
+A.suggest=()=>{
+  if(!S.recipes.length){toast('Nessuna proposta da selezionare.','err');return;}
+  if(!Object.keys(S.votes).length){toast('Nessun voto ancora: non c’è nulla da suggerire.','err');return;}
+  UI.sugg=true;render();
+};
+A['suggest-cancel']=()=>{UI.sugg=false;render();};
+A['suggest-go']=async()=>{
+  UI.sugg=false;
+  const plan=suggest();let ok=true;
+  for(const r of S.recipes){
+    const want=plan[r.id]||'';
+    if((r.slot||'')!==want){ok=await write('update','recipes/'+r.id,{slot:want})&&ok;}
+  }
+  if(ok)toast('Menu suggerito applicato. Controlla gli avvisi sui tempi.');
+  render();
+};
+A['clear-menu']=async()=>{
+  for(const r of slotted())await write('update','recipes/'+r.id,{slot:''});
+  toast('Selezione svuotata');
+};
+CH.setslot=async t=>{
+  const id=t.dataset.id,v=t.value;
+  if(await write('update','recipes/'+id,{slot:v})){const r=R(id);if(v&&r&&!feasible(r,v))toast('Attenzione: i tempi di preparazione non stanno in questo pasto.','err');}
+};
+
+/* ============ viste: scheda piatto, spesa, programma, persone ============ */
+function absLabel(t){
+  const idx=Math.floor(t/24+1e-9);
+  return `${dayLabel(idx)} ${fmtT(t-idx*24)}`;
+}
+function vPiatto(){
+  const r=R(UI.dish);
+  const back=`<button class="btn sm" data-act="tab" data-v="menu">← Torna al menu</button>`;
+  if(!r)return `<section class="view">${back}<div class="empty"><h3>Piatto non trovato</h3><p>Potrebbe essere stato eliminato.</p></div></section>`;
+  const f=scaleF(r),n=nConf(),por=PORZ[r.porzione]||PORZ.normale;
+  const owners=(r.ownerIds||[]),team=(r.teamIds||[]).filter(id=>!owners.includes(id));
+  const mine=S.meId&&(owners.includes(S.meId)||team.includes(S.meId));
+  const ings=(r.ingredients||[]).map(i=>{
+    const u=normUnit(i.unit),q=num(i.qty);
+    const txt=(u.base==='qb'||!q)?'q.b.':fmtQty(u.base,niceQty(u.base,q*u.mult*f));
+    return `<tr><td>${esc(cap1(i.name))}${i.note?` <span class="small muted">${esc(i.note)}</span>`:''}</td><td>${esc(txt)}</td></tr>`;
+  }).join('');
+  const vini=(r.vini||[]).map(v=>`<li><b>${esc(v.nome)}</b> <span class="muted small">· ${fmtN(roundUp('bottiglie',num(v.bottiglie)*f))} bottigli${roundUp('bottiglie',num(v.bottiglie)*f)===1?'a':'e'} per ${n} persone</span></li>`).join('');
+  const fasi=[...(r.fasi||[])].sort((a,b)=>num(b.ore)-num(a.ore));
+  const ld=lead(r),e=earliest(r);
+  let verdict='';
+  if(r.slot){
+    verdict=feasible(r,r.slot)
+      ?`<div class="note ok">I tempi stanno nel pasto scelto (${esc(slotLabel(r.slot))}).${r.preparabileACasa?' Il piatto si prepara a casa prima di partire.':''}</div>`
+      :`<div class="note bad"><b>Non sta nei tempi di ${esc(slotLabel(r.slot))}.</b> Servono ${esc(leadText(ld))} di anticipo, più di quanto resta dall’arrivo.${e?` Il primo pasto possibile è ${esc(e.label)}.`:''} Se la parte lunga si fa a casa prima di partire, spunta “si prepara a casa” nella scheda.
+        ${isOrg()&&e?`<div style="margin-top:8px"><button class="btn sm" data-act="move-slot" data-id="${esc(r.id)}" data-v="${e.key}">Sposta a ${esc(e.label)}</button></div>`:''}</div>`;
+  }else if(ld>0){
+    verdict=`<div class="note">${r.preparabileACasa?'Pensato per essere preparato a casa e portato.':`Servono ${esc(leadText(ld))} di anticipo: ${e?`il primo pasto possibile è <b>${esc(e.label)}</b>.`:'non c’è un pasto utile dopo l’arrivo, va preparato a casa.'}`}</div>`;
+  }
+  const hasFasi=fasi.length?fasi.map(x=>{
+    const when=r.slot?absLabel(slotAbs(r.slot)-num(x.ore)):'−'+leadText(num(x.ore));
+    return `<div class="phase"><div class="h">${esc(when)}</div><div>${esc(x.label)}${r.slot?` <span class="small muted">(−${esc(leadText(num(x.ore))||'0')})</span>`:''}</div></div>`;
+  }).join(''):`<p class="muted small">Nessuna fase inserita. Aggiungi i passaggi che richiedono anticipo (ammollo, riposo, marinatura) per avere il cronoprogramma.</p>`;
+  const empty=!(r.ingredients||[]).length&&!(r.steps||[]).length;
+  return `<section class="view">
+    <div>${back}</div>
+    <div class="hero"><div class="row" style="gap:6px">${chipCat(r.category)}${r.region?`<span class="chip plain">${esc(r.region)}</span>`:''}${r.slot?badge(slotLabel(r.slot),'ok'):badge('Non ancora in menu','muted')}</div>
+      <h2>${esc(r.title)}</h2>
+      <div class="row"><span class="muted">Proposto da <b style="color:var(--ink)">${esc(pname(r.proposerId))}</b></span>
+      ${canEditRecipe(r)?`<button class="btn sm primary" data-act="edit-dish" data-id="${esc(r.id)}">Compila / modifica scheda</button><button class="btn sm" data-act="edit-recipe" data-id="${esc(r.id)}">Dati della proposta</button>`:''}</div></div>
+    ${verdict}
+    <div class="cols">
+      <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+        <div class="panel"><h3>Squadra di preparazione</h3>
+          <div class="people" style="margin-top:10px">${owners.map(id=>`<span class="pill own" title="Responsabile della produzione">${esc(pname(id))}</span>`).join('')}${team.map(id=>`<span class="pill">${esc(pname(id))}</span>`).join('')}</div>
+          <p class="hint" style="margin-top:8px">In rosa i responsabili della produzione, in grigio chi li aiuta.</p>
+          ${S.meId&&!owners.includes(S.meId)?`<div style="margin-top:10px"><button class="btn sm" data-act="join" data-id="${esc(r.id)}">${mine?'Esci dalla squadra':'Mi unisco alla squadra'}</button></div>`:''}</div>
+        <div class="panel"><h3>Ricetta di riferimento</h3><div style="margin-top:10px">${srcBlock(r)}</div>
+          <div style="margin-top:8px">${badge((VSTATI[vstato(r)]||VSTATI.da_verificare).label,(VSTATI[vstato(r)]||VSTATI.da_verificare).cls)}</div></div>
+        <div class="panel"><h3>Vini in abbinamento</h3>${vini?`<ul class="steps" style="margin-top:10px;padding-left:18px">${vini}</ul>`:`<p class="muted small" style="margin-top:8px">Nessun vino indicato.</p>`}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+        <div class="panel"><div class="row spread"><h3>Ingredienti</h3><span class="small muted">per <b class="num">${n}</b> persone · porzione ${esc(por.label.toLowerCase())}</span></div>
+          ${ings?`<table class="ing" style="margin-top:8px"><tbody>${ings}</tbody></table><p class="hint" style="margin-top:8px">Ricetta base per ${fmtN(num(r.serves)||4,0)} persone, scalata sui confermati. Le quantità si aggiornano da sole se cambia il numero dei partecipanti.</p>`
+            :`<div class="empty" style="margin-top:10px"><p>Ingredienti non ancora inseriti.</p>${canEditRecipe(r)?`<button class="btn primary sm" data-act="edit-dish" data-id="${esc(r.id)}">Compila la scheda</button>`:'<p class="small">Li inseriscono i responsabili del piatto.</p>'}</div>`}</div>
+        <div class="panel"><h3>Procedimento</h3>${(r.steps||[]).length?`<ol class="steps" style="margin-top:10px">${r.steps.map(s=>`<li>${esc(s)}</li>`).join('')}</ol>`:`<p class="muted small" style="margin-top:8px">${empty?'Il procedimento sarà inserito insieme agli ingredienti.':'Nessun passaggio inserito.'}</p>`}
+          <p class="hint" style="margin-top:8px">Per dosi e dettagli fa fede la ricetta di riferimento.</p></div>
+        <div class="panel"><h3>Tempi e consigli</h3><div style="margin-top:8px">${hasFasi}</div>
+          ${r.consigli?`<p style="margin-top:10px">${esc(r.consigli)}</p>`:''}</div>
+      </div></div></section>`;
+}
+A['move-slot']=async t=>{if(await write('update','recipes/'+t.dataset.id,{slot:t.dataset.v}))toast('Piatto spostato');};
+A.join=async t=>{
+  const r=R(t.dataset.id);if(!r||!S.meId)return;
+  const set=new Set(r.teamIds||[]);
+  if(set.has(S.meId))set.delete(S.meId);else set.add(S.meId);
+  if(await write('update','recipes/'+r.id,{teamIds:[...set]}))toast(set.has(S.meId)?'Sei nella squadra di '+r.title:'Sei uscito dalla squadra');
+};
+
+/* --- spesa --- */
+async function upSpesa(id,patch){
+  const ex=S.spesa[id];
+  return ex?write('update','spesa/'+id,patch):write('set','spesa/'+id,patch);
+}
+function vSpesa(){
+  const sl=slotted();
+  if(!sl.length)return `<section class="view"><div class="vhead"><div><h2>Spesa</h2></div></div>
+    <div class="empty"><h3>Il menu non è ancora definito</h3><p>Quando i piatti sono assegnati ai pasti, qui compare la lista unica della spesa, già sommata e calcolata sul numero di confermati.</p>
+    <button class="btn" data-act="tab" data-v="menu">Vai al menu</button></div></section>`;
+  const all=consolidate(UI.sday),n=nConf();
+  const noIng=sl.filter(r=>!(r.ingredients||[]).length);
+  const boughtN=all.filter(l=>l.sp.comprato).length;
+  let ls=all;
+  if(UI.sshop)ls=ls.filter(l=>l.shop===UI.sshop);
+  if(UI.shide)ls=ls.filter(l=>!l.sp.comprato);
+  const people=[...S.participants].sort((a,b)=>(b.confirmed?1:0)-(a.confirmed?1:0)||a.name.localeCompare(b.name,'it'));
+  const groups=SHOPS.map(s=>[s,ls.filter(l=>l.shop===s.key)]).filter(g=>g[1].length).map(([s,g])=>`<section class="shop"><h3>${esc(s.label)} <span class="small muted num">${g.filter(l=>l.sp.comprato).length}/${g.length}</span></h3>
+    ${g.map(L=>`<div class="ln ${L.sp.comprato?'done':''}">
+      <input type="checkbox" id="b-${esc(L.id)}" data-chg="bought" data-id="${esc(L.id)}" ${L.sp.comprato?'checked':''} aria-label="Comprato: ${esc(L.name)}">
+      <div><label for="b-${esc(L.id)}" class="nm">${esc(L.name)}</label><div class="use">${usesText(L)}</div></div>
+      <div class="q">${esc(L.text)}${L.packs?`<small>${L.packs} conf. da ${esc(fmtQty(L.sp.pack.base,L.sp.pack.size))}</small>`:''}</div>
+      <div class="ext"><select data-chg="who" data-id="${esc(L.id)}" aria-label="Chi compra ${esc(L.name)}"><option value="">Chi compra?</option>${people.map(p=>`<option value="${esc(p.id)}" ${L.sp.chi===p.id?'selected':''}>${esc(p.name)}</option>`).join('')}</select>
+      ${L.parts.length?`<button class="btn sm" data-act="pack" data-id="${esc(L.id)}">${L.sp.pack?'Cambia formato':'Formato confezione'}</button>`:''}</div></div>`).join('')}</section>`).join('');
+  return `<section class="view">
+    <div class="vhead"><div><h2>Spesa</h2><p class="lede">Lista unica: le quantità dei singoli piatti sono sommate e scalate sul numero di confermati. Le dosi sono arrotondate per eccesso, così si compra una volta sola.</p></div>
+      <div class="row"><button class="btn" data-act="copy-spesa">Copia per WhatsApp</button>${dlCap?`<button class="btn" data-act="csv-spesa">Scarica CSV</button>`:''}</div></div>
+    <div class="panel totals"><div><div class="big num">${n}</div><div class="small muted">persone confermate</div></div>
+      <div><div class="big num">${sl.length}</div><div class="small muted">piatti in menu</div></div>
+      <div><div class="big num">${all.length}</div><div class="small muted">voci da comprare</div></div>
+      <div><div class="big num">${boughtN}/${all.length}</div><div class="small muted">già comprate</div></div></div>
+    ${noIng.length?`<div class="note warn"><b>Lista incompleta:</b> mancano gli ingredienti di ${noIng.length} piatt${noIng.length===1?'o':'i'} (${esc(noIng.slice(0,5).map(r=>r.title).join(', '))}${noIng.length>5?'…':''}). I responsabili li inseriscono dalla scheda del piatto.</div>`:''}
+    ${n===0?`<div class="note bad">Non ci sono partecipanti confermati: le quantità risultano zero. Conferma le persone nella sezione Persone.</div>`:''}
+    <div class="filters" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
+      <div class="field"><label for="sday">Giorno</label><select id="sday" data-chg="sday"><option value="">Tutto il weekend</option>${DAYS.map(d=>`<option value="${d.key}" ${UI.sday===d.key?'selected':''}>${d.label}</option>`).join('')}</select></div>
+      <div class="field"><label for="sshop">Negozio</label><select id="sshop" data-chg="sshop"><option value="">Tutti</option>${SHOPS.map(s=>`<option value="${s.key}" ${UI.sshop===s.key?'selected':''}>${esc(s.label)}</option>`).join('')}</select></div>
+      <label class="checkline"><input type="checkbox" id="shide" data-chg="shide" ${UI.shide?'checked':''}> Nascondi già comprati</label></div>
+    ${groups||`<div class="empty"><p>${all.length?'Hai comprato tutto, con questi filtri.':'Nessuna voce: i piatti in menu non hanno ancora ingredienti.'}</p></div>`}
+  </section>`;
+}
+CH.sday=t=>{UI.sday=t.value;render();};
+CH.sshop=t=>{UI.sshop=t.value;render();};
+CH.shide=t=>{UI.shide=t.checked;render();};
+CH.bought=async t=>{await upSpesa(t.dataset.id,{comprato:t.checked,quando:Date.now()});};
+CH.who=async t=>{await upSpesa(t.dataset.id,{chi:t.value});};
+A['copy-spesa']=()=>copyText(groceryText(UI.sday),'Lista copiata: incollala su WhatsApp');
+A['csv-spesa']=async()=>{
+  const ls=consolidate(UI.sday),q=v=>'"'+String(v).replace(/"/g,'""')+'"';
+  const rows=[['Negozio','Prodotto','Quantità','Confezioni','Chi compra','Comprato','Usato in']];
+  for(const s of SHOPS)for(const l of ls.filter(x=>x.shop===s.key))
+    rows.push([s.label,l.name,l.text,l.packs?`${l.packs} da ${fmtQty(l.sp.pack.base,l.sp.pack.size)}`:'',P(l.sp.chi)?P(l.sp.chi).name:'',l.sp.comprato?'sì':'no',l.uses.map(u=>u.r.title).join(' · ')]);
+  const csv='﻿'+rows.map(r=>r.map(q).join(';')).join('\r\n');
+  try{await dlCap.save({filename:'lista-spesa-gran-bouffe.csv',data:csv});}catch(e){if(!e||e.code!=='declined')toast('Download non disponibile in questa vista.','err');}
+};
+A.pack=t=>{
+  const id=t.dataset.id,L=consolidate('').find(x=>x.id===id);if(!L)return;
+  const cur=(S.spesa[id]||{}).pack||{};
+  const bases=L.parts.map(p=>p.base);
+  openModal(`<header><div><h3>Formato confezione</h3><p class="hint">${esc(L.name)}: servono ${esc(L.text)}.</p></div><button class="btn sm" data-act="modal-close">Chiudi</button></header>
+    <div class="formgrid"><div class="field"><label for="pk-size">Quanto contiene una confezione</label><input type="number" id="pk-size" min="0" step="any" value="${cur.size||''}" placeholder="es. 500"></div>
+    <div class="field"><label for="pk-base">Unità</label><select id="pk-base">${bases.map(b=>`<option value="${esc(b)}" ${cur.base===b?'selected':''}>${b==='g'?'grammi (g)':b==='ml'?'millilitri (ml)':esc(b)}</option>`).join('')}</select></div></div>
+    <p class="hint">Indica il formato in grammi o millilitri: la lista calcolerà quante confezioni comprare.</p>
+    <div class="foot">${cur.size?`<button class="btn danger" data-act="pack-clear" data-id="${esc(id)}">Rimuovi formato</button>`:''}<button class="btn primary" data-act="pack-save" data-id="${esc(id)}">Salva</button></div>`);
+};
+A['pack-save']=async t=>{
+  const size=num($('#pk-size').value),base=$('#pk-base').value;
+  if(size<=0){toast('Inserisci un formato maggiore di zero.','err');return;}
+  if(await upSpesa(t.dataset.id,{pack:{base,size}})){closeModal();}
+};
+A['pack-clear']=async t=>{if(await upSpesa(t.dataset.id,{pack:{base:'',size:0}}))closeModal();};
+
+/* --- programma --- */
+function vProgramma(){
+  const sl=slotted();
+  if(!sl.length)return `<section class="view"><div class="vhead"><div><h2>Programma</h2></div></div>
+    <div class="empty"><h3>Nessun piatto in menu</h3><p>Il cronoprogramma si costruisce dalle fasi inserite nelle schede dei piatti selezionati.</p><button class="btn" data-act="tab" data-v="menu">Vai al menu</button></div></section>`;
+  const bad=sl.filter(r=>!feasible(r,r.slot)),nofasi=sl.filter(r=>!(r.fasi||[]).length),home=sl.filter(r=>r.preparabileACasa);
+  const longs=sl.filter(r=>lead(r)>=12&&feasible(r,r.slot));
+  const win=SLOTS.map(s=>`<tr><td>${esc(s.label)}</td><td class="num" style="text-align:right"><b>${fmtN(Math.max(0,slotOffset(s.key)),1)} h</b> utili dall’arrivo</td></tr>`).join('');
+  const items=timeline();
+  let curDay=null,tl='';
+  for(const it of items){
+    const di=Math.floor(it.t/24+1e-9);
+    if(di!==curDay){curDay=di;tl+=`<div class="tlday">${esc(dayLabel(di))}</div>`;}
+    const who=it.r?(it.r.ownerIds||[]).map(pname).join(', '):'';
+    tl+=`<div class="ti ${it.kind}"><div class="tm">${fmtT(it.t-di*24)}</div><div class="dot"></div><div class="what">${it.kind==='meal'?esc(it.what):`${esc(it.what)} — <button class="link" data-act="open-dish" data-id="${esc(it.r.id)}">${esc(it.r.title)}</button> ${it.kind==='pre'?badge('prima della partenza','warn'):''}<div class="small muted">${esc(who)}</div>`}</div></div>`;
+  }
+  const tips=[];
+  bad.forEach(r=>{const e=earliest(r);tips.push(`<li><b>${esc(r.title)}</b> è su ${esc(slotLabel(r.slot))} ma richiede ${esc(leadText(lead(r)))} di anticipo. ${e?`Primo pasto possibile: ${esc(e.label)}. ${isOrg()?`<button class="btn sm" data-act="move-slot" data-id="${esc(r.id)}" data-v="${e.key}">Sposta</button>`:''}`:'Preparalo a casa e portalo già pronto.'}</li>`);});
+  longs.forEach(r=>tips.push(`<li><b>${esc(r.title)}</b>: ${esc(leadText(lead(r)))} di anticipo. Va avviato presto: controlla il cronoprogramma qui sotto.</li>`));
+  if(nofasi.length)tips.push(`<li>Senza fasi né tempi: ${esc(nofasi.map(r=>r.title).join(', '))}. Aggiungili nelle schede per completare il programma.</li>`);
+  if(home.length)tips.push(`<li>Da preparare a casa e portare: ${esc(home.map(r=>r.title).join(', '))}.</li>`);
+  return `<section class="view">
+    <div class="vhead"><div><h2>Programma</h2><p class="lede">Un piatto con lunghe attese (un brodo che riposa 24 ore, un ammollo, una marinatura) non può stare in un pasto troppo vicino all’arrivo. Qui sotto i tempi utili e, per ogni fase, quando va avviata.</p></div>
+      ${isOrg()?`<button class="btn" data-act="edit-settings">Orari e arrivo</button>`:''}</div>
+    <div class="cols"><div class="panel"><h3>Tempo utile per pasto</h3><table class="ing" style="margin-top:8px"><tbody>${win}</tbody></table>
+      <p class="hint" style="margin-top:8px">Arrivo ${esc(S.settings.arrivo)}, meno ${fmtN(num(S.settings.riservaOre),1)} h per scaricare la spesa e sistemarsi.</p></div>
+    <div class="panel"><h3>Consigli</h3>${tips.length?`<ul class="steps" style="margin-top:10px;padding-left:18px">${tips.join('')}</ul>`:`<p class="muted" style="margin-top:8px">Tutto sta nei tempi.</p>`}</div></div>
+    <div class="panel"><h3>Cronoprogramma</h3><div class="tl" style="margin-top:8px">${tl}</div></div></section>`;
+}
+
+/* --- persone --- */
+function vPersone(){
+  const org=isOrg(),st=S.settings,ps=sortedPeople();
+  const people=ps.map(p=>{
+    const own=S.recipes.filter(r=>r.proposerId===p.id||(r.ownerIds||[]).includes(p.id)).length;
+    const cr=UI.confirm==='rm:'+p.id;
+    return `<div class="person ${p.confirmed?'':'off'}"><div style="min-width:0"><div class="nm">${esc(p.name)}</div>
+      <div class="small muted">${p.organizer?'organizzatore · ':''}${S.votes[p.id]?'ha votato':'non ha votato'}${own?' · '+own+' piatt'+(own===1?'o':'i'):''}</div></div>
+      <div class="row" style="gap:8px;flex-wrap:nowrap"><label class="switch"><input type="checkbox" data-chg="confirm" data-id="${esc(p.id)}" ${p.confirmed?'checked':''} ${S.readOnly?'disabled':''}> Presente</label>
+      ${org?(cr?`<button class="btn sm danger" data-act="rm-person" data-id="${esc(p.id)}">Conferma</button><button class="btn sm" data-act="del-cancel">No</button>`
+        :`<button class="btn sm ico" data-act="rm-person" data-id="${esc(p.id)}" aria-label="Rimuovi ${esc(p.name)}">✕</button>`):''}</div></div>`;
+  }).join('');
+  const orgs=org?`<div class="panel"><h3>Organizzatori</h3><p class="hint" style="margin:6px 0 10px">Gli organizzatori cambiano fase, assegnano i piatti ai pasti e modificano orari e arrivo.</p>
+    <div class="people">${ps.map(p=>`<label class="pill" style="cursor:pointer"><input type="checkbox" data-chg="orgflag" data-id="${esc(p.id)}" ${p.organizer?'checked':''}> ${esc(p.name)}</label>`).join('')}</div></div>`:'';
+  return `<section class="view">
+    <div class="vhead"><div><h2>Persone</h2><p class="lede">La lista della spesa si calcola sui <b>confermati</b>. Spunta chi c’è e aggiungi chi manca.</p></div></div>
+    <div class="panel totals"><div><div class="big num">${nConf()}</div><div class="small muted">confermati</div></div><div><div class="big num">${S.participants.length-nConf()}</div><div class="small muted">da confermare</div></div></div>
+    <div class="people-list">${people||'<div class="empty"><p>Nessun partecipante.</p></div>'}</div>
+    <form data-sub="addperson" class="panel" style="display:flex;flex-direction:column;gap:10px"><h4>Aggiungi un partecipante</h4>
+      <div class="row"><input type="text" id="np" placeholder="Nome" autocomplete="off" style="flex:1;min-width:160px"><label class="checkline"><input type="checkbox" id="npc"> Confermato</label>
+      <button class="btn primary" type="submit">Aggiungi</button></div><p class="err" id="nperr" hidden></p></form>
+    ${orgs}
+    <div class="panel"><div class="row spread"><h3>Il weekend</h3>${org?`<button class="btn sm" data-act="edit-settings">Modifica</button>`:''}</div>
+      <dl class="kv" style="margin-top:10px"><dt>Data del venerdì</dt><dd>${st.dataVen?esc(dayLabel(0)):'<span class="muted">da definire</span>'}</dd>
+      <dt>Arrivo</dt><dd>venerdì alle ${esc(st.arrivo)}</dd>
+      ${SLOTS.map(s=>`<dt>${esc(s.label)}</dt><dd>${esc(st.orari[s.key])}</dd>`).join('')}
+      <dt>Piatti</dt><dd>${num(st.cap.ven)} venerdì · ${num(st.cap.sab)} sabato · ${num(st.cap.dom)} domenica</dd>
+      <dt>Margine spesa</dt><dd>${fmtN(num(st.margine),0)}%</dd></dl></div>
+  </section>`;
+}
+CH.confirm=async t=>{await write('update','participants/'+t.dataset.id,{confirmed:t.checked});};
+CH.orgflag=async t=>{
+  const orgCount=S.participants.filter(p=>p.organizer).length;
+  if(!t.checked&&orgCount<=1&&!S.owner){toast('Serve almeno un organizzatore.','err');render();return;}
+  await write('update','participants/'+t.dataset.id,{organizer:t.checked});
+};
+A['rm-person']=async t=>{
+  const id=t.dataset.id;
+  if(UI.confirm!=='rm:'+id){
+    const used=S.recipes.filter(r=>r.proposerId===id||(r.ownerIds||[]).includes(id)).length;
+    if(used){toast(`${pname(id)} è proponente o responsabile di ${used} piatti: riassegnali prima di rimuoverlo.`,'err');return;}
+    UI.confirm='rm:'+id;render();return;
+  }
+  UI.confirm='';
+  if(await write('delete','participants/'+id)){toast('Partecipante rimosso');if(id===S.meId)doLogout();}
+  render();
+};
+
+/* ============ editor (finestre modali con bozza locale) ============ */
+let DR=null;
+const setPath=(o,path,v)=>{const ks=path.split('.');let c=o;for(let i=0;i<ks.length-1;i++){if(c[ks[i]]==null||typeof c[ks[i]]!=='object')c[ks[i]]={};c=c[ks[i]];}c[ks[ks.length-1]]=v;};
+
+IN.dr=t=>{
+  if(!DR)return;
+  const f=t.dataset.f;
+  setPath(DR,f,t.type==='checkbox'?t.checked:t.value);
+  if(f==='category'||f==='title')renderIdeas();
+};
+CH.dr=t=>{
+  if(!DR)return;
+  setPath(DR,t.dataset.f,t.type==='checkbox'?t.checked:t.value);
+  if(t.dataset.f==='category')renderIdeas();
+};
+IN.row=t=>{if(DR)DR[t.dataset.l][+t.dataset.i][t.dataset.k]=t.value;};
+CH.row=IN.row;
+
+/* ---------- proposta ---------- */
+function ownersHtml(){
+  return sortedPeople().map(p=>`<button type="button" class="pick" aria-pressed="${DR.ownerIds.includes(p.id)}" data-act="dr-owner" data-id="${esc(p.id)}">${esc(p.name)}</button>`).join('');
+}
+function renderOwners(){const e=$('#ed-owners');if(e)e.innerHTML=ownersHtml();}
+function renderIdeas(){
+  const e=$('#ed-ideas');if(!e||DR.id)return;
+  const q=norm(DR.title);
+  const list=IDEE.filter(i=>(!DR.category||i.c===DR.category)&&!S.recipes.some(r=>norm(r.title)===norm(i.t))&&(!q||norm(i.t).includes(q))).slice(0,8);
+  const dup=q.length>2?S.recipes.filter(r=>r.id!==DR.id&&(norm(r.title).includes(q)||q.includes(norm(r.title)))):[];
+  e.innerHTML=(dup.length?`<p class="err">Esiste già una proposta simile: ${esc(dup.map(r=>r.title).join(', '))}.</p>`:'')
+    +(list.length?`<span class="hint">Idee dal Triveneto:</span> ${list.map(i=>`<button type="button" class="idea" data-act="dr-idea" data-t="${esc(i.t)}" data-c="${i.c}" data-r="${esc(i.r)}">${esc(i.t)}</button>`).join(' ')}`:'');
+}
+A['dr-owner']=t=>{
+  const id=t.dataset.id,i=DR.ownerIds.indexOf(id);
+  if(i<0)DR.ownerIds.push(id);else DR.ownerIds.splice(i,1);
+  renderOwners();
+};
+A['dr-idea']=t=>{
+  DR.title=t.dataset.t;DR.category=t.dataset.c;DR.region=t.dataset.r;
+  $('#ed-title').value=DR.title;$('#ed-cat').value=DR.category;$('#ed-reg').value=DR.region;
+  renderIdeas();$('#ed-link').focus();
+};
+function openRecipeEditor(id){
+  const r=id?R(id):null;
+  if(!S.meId){toast('Scegli prima il tuo nome.','err');return;}
+  DR={id:id||null,title:r?r.title:'',category:r?r.category:(UI.cat||'primi'),region:r?r.region||'':'',link:r?r.link:'',note:r?r.note||'':'',
+    ownerIds:r?[...(r.ownerIds||[])]:[S.meId],ver:Object.assign({stato:'da_verificare',linkAutorevole:'',fonte:'',nota:''},r&&r.verifica||{})};
+  const org=isOrg();
+  openModal(`<header><div><h3>${id?'Modifica proposta':'Proponi un piatto'}</h3><p class="hint">${id?'Proposto da '+esc(pname(r.proposerId)):'Proponente: '+esc(me().name)}</p></div><button class="btn sm" data-act="modal-close">Annulla</button></header>
+    <div class="field"><label for="ed-title">Nome del piatto *</label><input type="text" id="ed-title" data-in="dr" data-f="title" value="${esc(DR.title)}" placeholder="es. Risi e bisi" autocomplete="off"></div>
+    <div id="ed-ideas" class="row" style="gap:6px"></div>
+    <div class="formgrid"><div class="field"><label for="ed-cat">Categoria *</label><select id="ed-cat" data-chg="dr" data-f="category">${CATS.map(c=>`<option value="${c.key}" ${DR.category===c.key?'selected':''}>${esc(c.label)}</option>`).join('')}</select></div>
+    <div class="field"><label for="ed-reg">Regione</label><select id="ed-reg" data-chg="dr" data-f="region"><option value="">Non specificata</option>${REGIONI.map(x=>`<option ${DR.region===x?'selected':''}>${esc(x)}</option>`).join('')}</select></div></div>
+    <div class="field"><label for="ed-link">Link alla ricetta *</label><input type="url" id="ed-link" data-in="dr" data-f="link" value="${esc(DR.link)}" placeholder="https://…" inputmode="url" autocomplete="off">
+      <span class="hint">Meglio una fonte autorevole. Il link viene controllato e affiancato da una fonte di riferimento.</span></div>
+    <div class="field"><span class="lbl">Chi lo cucina (almeno uno) *</span><div class="pickrow" id="ed-owners">${ownersHtml()}</div></div>
+    <div class="field"><label for="ed-note">Note (facoltative)</label><textarea id="ed-note" data-in="dr" data-f="note" placeholder="Perché lo proponi, varianti, difficoltà…">${esc(DR.note)}</textarea></div>
+    ${org&&id?`<div class="panel" style="display:flex;flex-direction:column;gap:10px"><h4>Verifica del link (organizzatore)</h4>
+      <div class="formgrid"><div class="field"><label for="ed-vs">Stato</label><select id="ed-vs" data-chg="dr" data-f="ver.stato">${Object.keys(VSTATI).map(k=>`<option value="${k}" ${DR.ver.stato===k?'selected':''}>${esc(VSTATI[k].label)}</option>`).join('')}</select></div>
+      <div class="field"><label for="ed-vf">Nome della fonte</label><input type="text" id="ed-vf" data-in="dr" data-f="ver.fonte" value="${esc(DR.ver.fonte||'')}" placeholder="es. La Cucina Italiana"></div></div>
+      <div class="field"><label for="ed-va">Link alla fonte autorevole</label><input type="url" id="ed-va" data-in="dr" data-f="ver.linkAutorevole" value="${esc(DR.ver.linkAutorevole||'')}" placeholder="https://…"></div>
+      <div class="field"><label for="ed-vn">Nota</label><input type="text" id="ed-vn" data-in="dr" data-f="ver.nota" value="${esc(DR.ver.nota||'')}"></div></div>`:''}
+    <p class="err" id="ed-err" hidden></p>
+    <div class="foot"><button class="btn" data-act="modal-close">Annulla</button><button class="btn primary" data-act="save-recipe">${id?'Salva modifiche':'Aggiungi la proposta'}</button></div>`,
+    ()=>{renderIdeas();});
+}
+A['new-recipe']=()=>{if(!canPropose()){toast('Le proposte sono chiuse.','err');return;}openRecipeEditor(null);};
+A['edit-recipe']=t=>openRecipeEditor(t.dataset.id);
+A['save-recipe']=async()=>{
+  const err=m=>{const e=$('#ed-err');e.textContent=m;e.hidden=false;e.scrollIntoView({block:'nearest'});};
+  const title=DR.title.trim(),link=DR.link.trim();
+  if(!title)return err('Scrivi il nome del piatto.');
+  if(!DR.category)return err('Scegli la categoria.');
+  if(!link)return err('Aggiungi il link alla ricetta.');
+  if(!isUrl(link))return err('Il link deve cominciare con http:// o https://.');
+  if(!DR.ownerIds.length)return err('Indica almeno una persona che cucinerà il piatto.');
+  let ok;
+  if(DR.id){
+    const r=R(DR.id);
+    const patch={title,category:DR.category,region:DR.region,link,note:DR.note.trim(),ownerIds:DR.ownerIds};
+    if(link!==r.link)patch.verifica={stato:'da_verificare'};
+    else if(isOrg())patch.verifica={stato:DR.ver.stato,fonte:DR.ver.fonte||'',linkAutorevole:DR.ver.linkAutorevole||'',nota:DR.ver.nota||''};
+    if(isOrg()&&DR.ver.linkAutorevole&&!isUrl(DR.ver.linkAutorevole))return err('Il link alla fonte autorevole non è valido.');
+    ok=await write('update','recipes/'+DR.id,patch);
+  }else{
+    ok=await write('set','recipes/'+uid('r'),{title,category:DR.category,region:DR.region,link,note:DR.note.trim(),proposerId:S.meId,ownerIds:DR.ownerIds,teamIds:[],
+      createdAt:Date.now(),verifica:{stato:'da_verificare'},slot:'',serves:4,porzione:'normale',ingredients:[],steps:[],fasi:[],preparabileACasa:false,vini:[],consigli:''});
+  }
+  if(ok){closeModal();toast(DR.id?'Proposta aggiornata':'Proposta aggiunta');DR=null;}
+};
+
+/* ---------- scheda piatto ---------- */
+const rowIng=(g,i)=>`<div class="erow"><input type="text" list="dl-ing" data-in="row" data-l="ing" data-i="${i}" data-k="name" value="${esc(g.name)}" placeholder="Ingrediente" aria-label="Ingrediente">
+  <input type="text" inputmode="decimal" data-in="row" data-l="ing" data-i="${i}" data-k="qty" value="${esc(g.qty===''||g.qty==null?'':g.qty)}" placeholder="Quantità" aria-label="Quantità">
+  <select data-chg="row" data-l="ing" data-i="${i}" data-k="unit" aria-label="Unità">${UNITS.map(u=>`<option ${canonU(g.unit)===canonU(u)?'selected':''}>${esc(u)}</option>`).join('')}</select>
+  <select data-chg="row" data-l="ing" data-i="${i}" data-k="shop" aria-label="Dove si compra">${SHOPS.filter(s=>s.key!=='cantina').map(s=>`<option value="${s.key}" ${g.shop===s.key?'selected':''}>${esc(s.short)}</option>`).join('')}</select>
+  <button type="button" class="btn sm ico danger" data-act="row-del" data-l="ing" data-i="${i}" aria-label="Rimuovi">✕</button></div>`;
+const rowVino=(g,i)=>`<div class="erow v"><input type="text" data-in="row" data-l="vini" data-i="${i}" data-k="nome" value="${esc(g.nome)}" placeholder="Vino (es. Soave Classico)" aria-label="Vino">
+  <input type="text" inputmode="decimal" data-in="row" data-l="vini" data-i="${i}" data-k="bottiglie" value="${esc(g.bottiglie===''||g.bottiglie==null?'':g.bottiglie)}" placeholder="Bott." aria-label="Bottiglie">
+  <button type="button" class="btn sm ico danger" data-act="row-del" data-l="vini" data-i="${i}" aria-label="Rimuovi">✕</button></div>`;
+const rowFase=(g,i)=>`<div class="erow f"><input type="text" data-in="row" data-l="fasi" data-i="${i}" data-k="label" value="${esc(g.label)}" placeholder="Es. Mettere a bagno il baccalà" aria-label="Fase">
+  <input type="text" inputmode="decimal" data-in="row" data-l="fasi" data-i="${i}" data-k="ore" value="${esc(g.ore===''||g.ore==null?'':g.ore)}" placeholder="Ore prima" aria-label="Ore di anticipo">
+  <button type="button" class="btn sm ico danger" data-act="row-del" data-l="fasi" data-i="${i}" aria-label="Rimuovi">✕</button></div>`;
+const ROWS={ing:rowIng,vini:rowVino,fasi:rowFase};
+function renderRows(l){const e=$('#rows-'+l);if(e)e.innerHTML=DR[l].map((g,i)=>ROWS[l](g,i)).join('')||`<p class="hint">Nessuna riga.</p>`;}
+function renderTeam(){const e=$('#ed-team');if(e)e.innerHTML=sortedPeople().filter(p=>!DR.ownerIds.includes(p.id)).map(p=>`<button type="button" class="pick" aria-pressed="${DR.teamIds.includes(p.id)}" data-act="dr-team" data-id="${esc(p.id)}">${esc(p.name)}</button>`).join('');}
+A['dr-team']=t=>{const id=t.dataset.id,i=DR.teamIds.indexOf(id);if(i<0)DR.teamIds.push(id);else DR.teamIds.splice(i,1);renderTeam();};
+A['row-add']=t=>{
+  const l=t.dataset.l;
+  DR[l].push(l==='ing'?{name:'',qty:'',unit:'g',shop:'dispensa'}:l==='vini'?{nome:'',bottiglie:1}:{label:'',ore:''});
+  renderRows(l);
+  const last=$$('#rows-'+l+' input[type=text]');const el=last[last.length-2];if(el)el.focus();
+};
+A['row-del']=t=>{DR[t.dataset.l].splice(+t.dataset.i,1);renderRows(t.dataset.l);};
+function openDishEditor(id){
+  const r=R(id);if(!r)return;
+  DR={id,serves:num(r.serves)||4,porzione:r.porzione||'normale',casa:!!r.preparabileACasa,
+    ing:(r.ingredients||[]).map(i=>({name:i.name,qty:i.qty==null?'':i.qty,unit:i.unit||'g',shop:i.shop||'dispensa'})),
+    vini:(r.vini||[]).map(v=>({nome:v.nome,bottiglie:v.bottiglie})),
+    fasi:(r.fasi||[]).map(f=>({label:f.label,ore:f.ore})),
+    stepsText:(r.steps||[]).join('\n'),consigli:r.consigli||'',teamIds:[...(r.teamIds||[])],ownerIds:[...(r.ownerIds||[])]};
+  const names=[...new Set(S.recipes.flatMap(x=>(x.ingredients||[]).map(i=>cap1(i.name))))].sort((a,b)=>a.localeCompare(b,'it'));
+  openModal(`<header><div><h3>Scheda: ${esc(r.title)}</h3><p class="hint">Le quantità sono per il numero di persone indicato qui sotto. La spesa le scala sui confermati.</p></div><button class="btn sm" data-act="modal-close">Annulla</button></header>
+    ${sampleCap?`<div class="panel" style="display:flex;flex-direction:column;gap:8px"><div class="row spread"><div><h4>Bozza con Claude</h4><p class="hint">Propone ingredienti, procedimento, tempi e vini. Claude non apre il link: scrive dalla ricetta tradizionale, quindi controlla sempre le dosi sulla fonte.</p></div>
+      <button class="btn" data-act="ai-draft" id="ai-btn">Genera bozza</button></div><p class="small" id="ai-msg" hidden></p></div>`:''}
+    <div class="formgrid"><div class="field"><label for="d-serves">La ricetta è per (persone)</label><input type="number" id="d-serves" min="1" step="1" data-in="dr" data-f="serves" value="${DR.serves}"></div>
+    <div class="field"><label for="d-porz">Dimensione porzione</label><select id="d-porz" data-chg="dr" data-f="porzione">${Object.keys(PORZ).map(k=>`<option value="${k}" ${DR.porzione===k?'selected':''}>${esc(PORZ[k].label)}</option>`).join('')}</select></div></div>
+    <p class="hint" style="margin-top:-8px">Con molti piatti nello stesso pasto conviene la porzione “assaggio”.</p>
+    <div class="field"><span class="lbl">Ingredienti</span><datalist id="dl-ing">${names.map(n=>`<option value="${esc(n)}">`).join('')}</datalist>
+      <div class="erow h"><span>Ingrediente</span><span>Quantità</span><span>Unità</span><span>Dove</span><span></span></div>
+      <div id="rows-ing" style="display:flex;flex-direction:column;gap:6px"></div><div><button type="button" class="btn sm" data-act="row-add" data-l="ing">+ Ingrediente</button></div></div>
+    <div class="field"><label for="d-steps">Procedimento (un passaggio per riga)</label><textarea id="d-steps" rows="7" data-in="dr" data-f="stepsText" placeholder="Scrivi i passaggi con parole tue; i dettagli restano nella ricetta di riferimento.">${esc(DR.stepsText)}</textarea></div>
+    <div class="field"><span class="lbl">Tempi: cosa va avviato in anticipo</span><p class="hint">Indica le ore prima del servizio. Es. brodo che riposa 24 ore → 24; cottura di 3 ore → 3.</p>
+      <div id="rows-fasi" style="display:flex;flex-direction:column;gap:6px"></div><div><button type="button" class="btn sm" data-act="row-add" data-l="fasi">+ Fase</button></div></div>
+    <label class="checkline"><input type="checkbox" id="d-casa" data-in="dr" data-f="casa" ${DR.casa?'checked':''}> La parte lunga si prepara a casa prima di partire (e si porta già pronta)</label>
+    <div class="field"><span class="lbl">Vini in abbinamento (bottiglie per le persone indicate sopra)</span>
+      <div id="rows-vini" style="display:flex;flex-direction:column;gap:6px"></div><div><button type="button" class="btn sm" data-act="row-add" data-l="vini">+ Vino</button></div></div>
+    <div class="field"><label for="d-cons">Consigli</label><textarea id="d-cons" rows="3" data-in="dr" data-f="consigli">${esc(DR.consigli)}</textarea></div>
+    <div class="field"><span class="lbl">Squadra di preparazione (oltre ai responsabili)</span><div class="pickrow" id="ed-team"></div></div>
+    <p class="err" id="ed-err" hidden></p>
+    <div class="foot"><button class="btn" data-act="modal-close">Annulla</button><button class="btn primary" data-act="save-dish">Salva scheda</button></div>`,
+    ()=>{renderRows('ing');renderRows('fasi');renderRows('vini');renderTeam();});
+}
+A['edit-dish']=t=>openDishEditor(t.dataset.id);
+A['save-dish']=async()=>{
+  const err=m=>{const e=$('#ed-err');e.textContent=m;e.hidden=false;e.scrollIntoView({block:'nearest'});};
+  const serves=Math.max(1,Math.round(num(DR.serves)));
+  if(!num(DR.serves))return err('Indica per quante persone è la ricetta.');
+  const ingredients=[];
+  for(const g of DR.ing){
+    const name=String(g.name||'').trim();if(!name)continue;
+    const u=normUnit(g.unit),q=num(g.qty);
+    if(u.base!=='qb'&&!q)return err(`Manca la quantità di “${name}” (oppure scegli q.b.).`);
+    ingredients.push({name,qty:u.base==='qb'?null:q,unit:u.base==='qb'?'q.b.':g.unit,shop:g.shop||'dispensa'});
+  }
+  const vini=DR.vini.filter(v=>String(v.nome||'').trim()).map(v=>({nome:String(v.nome).trim(),bottiglie:Math.max(0,num(v.bottiglie))}));
+  const fasi=DR.fasi.filter(f=>String(f.label||'').trim()).map(f=>({label:String(f.label).trim(),ore:Math.max(0,num(f.ore))}));
+  const steps=String(DR.stepsText||'').split('\n').map(s=>s.trim()).filter(Boolean);
+  const ok=await write('update','recipes/'+DR.id,{serves,porzione:DR.porzione,preparabileACasa:!!DR.casa,ingredients,vini,fasi,steps,consigli:String(DR.consigli||'').trim(),teamIds:DR.teamIds,updatedAt:Date.now()});
+  if(ok){closeModal();toast('Scheda salvata');DR=null;}
+};
+A['ai-draft']=async()=>{
+  const r=R(DR.id),btn=$('#ai-btn'),msg=$('#ai-msg');
+  if(!sampleCap||!r)return;
+  btn.disabled=true;msg.hidden=false;msg.textContent='Claude sta scrivendo la bozza…';
+  const prompt=`Sei un cuoco esperto di cucina regionale italiana. Prepara la scheda tecnica del piatto "${r.title}" (${r.region||'Triveneto'}, categoria: ${catOf(r.category).label}).
+Link scelto dal gruppo (non puoi aprirlo: usa la ricetta tradizionale che conosci e, se hai dubbi sulle dosi, scrivilo nei consigli): ${r.link}
+Le quantità sono per 4 persone, per un weekend tra amici con molti piatti in sequenza.
+Rispondi SOLO con un oggetto JSON di questa forma:
+{"ingredienti":[{"nome":"Riso Vialone Nano","qta":320,"unita":"g","negozio":"dispensa"}],"procedimento":["passaggio sintetico"],"fasi":[{"descrizione":"Mettere a bagno i fagioli","oreAnticipo":12}],"preparabileACasa":false,"vini":[{"nome":"Soave Classico","bottiglie":1}],"consigli":"testo breve"}
+Regole:
+- "unita" è una tra: g, kg, ml, l, pz, spicchi, mazzi, foglie, rametti, cucchiai, cucchiaini, bustine, barattoli, confezioni, fette, bicchieri, bottiglie, teste, coste, pizzichi, q.b. (per sale, olio, pepe usa q.b. e qta 0).
+- "negozio" è uno tra: carne (carne, pesce, salumi), latticini (formaggi, latte, burro, uova), ortolano (verdura, frutta, erbe), dispensa (supermercato), altro. Mai vini negli ingredienti.
+- "fasi": i passaggi da avviare prima del servizio, con "oreAnticipo" = ore prima di servire (un brodo che riposa 24 ore = 24; la cottura principale va inclusa). Massimo 6 fasi.
+- "preparabileACasa": true solo se si può fare per intero prima di partire e portare già pronto.
+- "vini": 1 o 2 vini del Triveneto in abbinamento, con le bottiglie per 4 persone.
+- "procedimento": massimo 8 passaggi brevi scritti con parole tue. Ingredienti: massimo 25.
+- Tutto in italiano.`;
+  try{
+    const d=await sampleCap.json(prompt,{modelTier:'default'});
+    const shops=SHOPS.map(s=>s.key).filter(k=>k!=='cantina');
+    DR.ing=(Array.isArray(d.ingredienti)?d.ingredienti:[]).slice(0,30).map(i=>({name:String(i.nome||'').trim(),qty:num(i.qta)||'',unit:UNITS.includes(i.unita)?i.unita:(normUnit(i.unita).base==='qb'?'q.b.':'g'),shop:shops.includes(i.negozio)?i.negozio:'dispensa'})).filter(i=>i.name);
+    DR.stepsText=(Array.isArray(d.procedimento)?d.procedimento:[]).slice(0,10).map(s=>String(s).trim()).filter(Boolean).join('\n');
+    DR.fasi=(Array.isArray(d.fasi)?d.fasi:[]).slice(0,8).map(f=>({label:String(f.descrizione||'').trim(),ore:num(f.oreAnticipo)})).filter(f=>f.label);
+    DR.vini=(Array.isArray(d.vini)?d.vini:[]).slice(0,3).map(v=>({nome:String(v.nome||'').trim(),bottiglie:num(v.bottiglie)||1})).filter(v=>v.nome);
+    DR.casa=!!d.preparabileACasa;DR.consigli=String(d.consigli||'').trim();DR.serves=4;
+    $('#d-serves').value=4;$('#d-steps').value=DR.stepsText;$('#d-casa').checked=DR.casa;$('#d-cons').value=DR.consigli;
+    renderRows('ing');renderRows('fasi');renderRows('vini');
+    msg.textContent='Bozza pronta: controlla ingredienti e dosi con la ricetta di riferimento, poi salva.';
+  }catch(e){
+    const m={not_granted:'Hai negato l’uso di Claude per questa pagina.',rate_limited:'Troppe richieste: riprova tra poco.',invalid_json:'La risposta non era leggibile: riprova.',upstream_error:'Servizio momentaneamente non disponibile: riprova.'};
+    msg.textContent=m[e&&e.code]||'Non sono riuscito a generare la bozza.';
+  }finally{btn.disabled=false;}
+};
+
+/* ---------- impostazioni del weekend ---------- */
+function openSettingsEditor(){
+  const st=S.settings;
+  DR={dataVen:st.dataVen||'',arrivo:st.arrivo,riservaOre:st.riservaOre,margine:st.margine,orari:Object.assign({},st.orari),cap:Object.assign({},st.cap)};
+  openModal(`<header><div><h3>Il weekend</h3><p class="hint">Date e orari servono a calcolare i tempi utili per ogni piatto.</p></div><button class="btn sm" data-act="modal-close">Annulla</button></header>
+    <div class="formgrid"><div class="field"><label for="s-data">Data del venerdì</label><input type="date" id="s-data" data-in="dr" data-f="dataVen" value="${esc(DR.dataVen)}"></div>
+    <div class="field"><label for="s-arr">Arrivo del venerdì</label><input type="time" id="s-arr" data-in="dr" data-f="arrivo" value="${esc(DR.arrivo)}"></div>
+    <div class="field"><label for="s-ris">Ore per spesa e sistemazione</label><input type="number" id="s-ris" min="0" step="0.5" data-in="dr" data-f="riservaOre" value="${esc(DR.riservaOre)}"></div></div>
+    <div class="formgrid">${SLOTS.map(s=>`<div class="field"><label for="s-${s.key}">${esc(s.label)} (ora)</label><input type="time" id="s-${s.key}" data-in="dr" data-f="orari.${s.key}" value="${esc(DR.orari[s.key])}"></div>`).join('')}</div>
+    <div class="formgrid">${DAYS.map(d=>`<div class="field"><label for="s-cap-${d.key}">Piatti ${esc(d.label.toLowerCase())}</label><input type="number" id="s-cap-${d.key}" min="0" step="1" data-in="dr" data-f="cap.${d.key}" value="${esc(DR.cap[d.key])}"></div>`).join('')}
+    <div class="field"><label for="s-mar">Margine sulla spesa (%)</label><input type="number" id="s-mar" min="0" step="5" data-in="dr" data-f="margine" value="${esc(DR.margine)}"></div></div>
+    <p class="err" id="ed-err" hidden></p>
+    <div class="foot"><button class="btn" data-act="modal-close">Annulla</button><button class="btn primary" data-act="save-settings">Salva</button></div>`);
+}
+A['edit-settings']=()=>openSettingsEditor();
+async function saveSettings(patch){
+  const merged=mergeSettings(Object.assign({},S.settings,patch,patch.orari?{orari:Object.assign({},S.settings.orari,patch.orari)}:{},patch.cap?{cap:Object.assign({},S.settings.cap,patch.cap)}:{}));
+  return S.settingsExists?write('update','settings/main',patch):write('set','settings/main',merged);
+}
+A['save-settings']=async()=>{
+  const err=m=>{const e=$('#ed-err');e.textContent=m;e.hidden=false;};
+  if(!/^\d{1,2}:\d{2}$/.test(DR.arrivo))return err('Inserisci l’ora di arrivo.');
+  for(const s of SLOTS)if(!/^\d{1,2}:\d{2}$/.test(DR.orari[s.key]))return err('Inserisci tutti gli orari dei pasti.');
+  const patch={dataVen:DR.dataVen||'',arrivo:DR.arrivo,riservaOre:Math.max(0,num(DR.riservaOre)),margine:Math.max(0,num(DR.margine)),orari:DR.orari,cap:{ven:Math.max(0,Math.round(num(DR.cap.ven))),sab:Math.max(0,Math.round(num(DR.cap.sab))),dom:Math.max(0,Math.round(num(DR.cap.dom)))}};
+  if(await saveSettings(patch)){closeModal();toast('Impostazioni salvate');DR=null;}
+};
+
+/* ============ avvio, sottoscrizioni, eventi ============ */
+const SUB={};
+function setHash(h){try{history.replaceState(null,'','#'+h);}catch(e){try{location.hash=h;}catch(e2){}}}
+function routeFromHash(){
+  let h='';try{h=location.hash.slice(1);}catch(e){}
+  if(h.startsWith('piatto-')){UI.dish=h.slice(7);UI.tab='menu';}
+  else if(['proposte','voto','menu','spesa','programma','persone'].includes(h)){UI.tab=h;UI.dish=null;}
+}
+function doLogout(){S.meId=null;store.set('gb.me','');render();}
+
+function noDb(){
+  return `<div class="wrap"><div class="login"><div><p class="film">dal film di Marco Ferreri · 1973</p><h1>Gran Bouffe <span style="color:var(--accent)">Triveneto</span></h1></div>
+    <div class="note bad"><b>Non riesco a collegarmi ai dati condivisi.</b> Apri la pagina da claude.ai con il tuo account e controlla di avere accesso alla pagina come collaboratore. Se il problema continua, avvisa Marco.</div></div></div>`;
+}
+function build(){
+  if(S.dbOk===false)return noDb();
+  if(!S.loaded.p||!S.loaded.r||!S.loaded.s)return `<p class="boot">Carico i dati del weekend…</p>`;
+  if(!me())return vLogin();
+  const views={proposte:vProposte,voto:vVoto,menu:vMenu,spesa:vSpesa,programma:vProgramma,persone:vPersone};
+  const view=UI.dish?vPiatto():(views[UI.tab]||vProposte)();
+  return vHeader()+vNav()+`<main class="wrap">${S.readOnly?`<div class="note bad" style="margin-top:16px"><b>Sola lettura.</b> Puoi guardare tutto ma non modificare: chiedi a Marco di darti accesso come collaboratore.</div>`:''}${view}</main>`;
+}
+function render(){
+  const root=$('#app');if(!root)return;
+  const ae=document.activeElement;
+  const fid=ae&&ae.id&&root.contains(ae)?ae.id:null;
+  const sel=fid&&ae.selectionStart!=null?[ae.selectionStart,ae.selectionEnd]:null;
+  let html;
+  try{html=build();}catch(e){console.error(e);html=`<div class="wrap"><div class="note bad" style="margin-top:24px">Errore di visualizzazione: ${esc(e.message)}</div></div>`;}
+  root.innerHTML=html;
+  if(fid){const n=document.getElementById(fid);if(n){n.focus();try{if(sel)n.setSelectionRange(sel[0],sel[1]);}catch(e){}}}
+}
+let raf=0;
+function schedule(){if(raf)return;raf=requestAnimationFrame(()=>{raf=0;render();});}
+
+/* --- accesso e partecipanti --- */
+A.login=t=>{S.meId=t.dataset.id;store.set('gb.me',S.meId);UI.tab='proposte';UI.dish=null;routeFromHash();render();window.scrollTo(0,0);};
+A.logout=()=>doLogout();
+async function addParticipant(name,confirmed){
+  name=name.trim().replace(/\s+/g,' ');
+  if(!name)return{err:'Scrivi un nome.'};
+  if(S.participants.some(p=>norm(p.name)===norm(name)))return{err:'Esiste già un partecipante con questo nome: sceglilo dall’elenco.'};
+  const first=!S.participants.length;
+  const id='p_'+slug(name)+(S.participants.some(p=>p.id==='p_'+slug(name))?'-'+Math.random().toString(36).slice(2,5):'');
+  const ord=S.participants.reduce((m,p)=>Math.max(m,p.ord==null?0:p.ord),0)+1;
+  const ok=await write('set','participants/'+id,{name,confirmed:!!confirmed,organizer:first,ord,createdAt:Date.now()});
+  return ok?{id}:{err:'Non sono riuscito a salvare il nome.'};
+}
+SUB.addself=async()=>{
+  const r=await addParticipant($('#ln').value,$('#lc').checked);
+  UI.login.conf=$('#lc').checked;
+  if(r.err){const e=$('#lerr');e.textContent=r.err;e.hidden=false;return;}
+  S.meId=r.id;store.set('gb.me',r.id);UI.tab='proposte';render();
+};
+SUB.addperson=async()=>{
+  const r=await addParticipant($('#np').value,$('#npc').checked);
+  if(r.err){const e=$('#nperr');e.textContent=r.err;e.hidden=false;return;}
+  toast('Partecipante aggiunto');
+};
+
+/* --- eventi (delegati) --- */
+document.addEventListener('click',e=>{
+  const t=e.target.closest('[data-act]');if(!t||t.disabled)return;
+  const f=A[t.dataset.act];if(f)f(t,e);
+});
+document.addEventListener('change',e=>{
+  const t=e.target.closest('[data-chg]');if(!t)return;
+  const f=CH[t.dataset.chg];if(f)f(t,e);
+});
+document.addEventListener('input',e=>{
+  const t=e.target.closest('[data-in]');if(!t)return;
+  const f=IN[t.dataset.in];if(f)f(t,e);
+});
+document.addEventListener('submit',e=>{
+  const f=e.target.closest('[data-sub]');if(!f)return;
+  e.preventDefault();const h=SUB[f.dataset.sub];if(h)h(f,e);
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#modal').hidden&&!(e.target&&e.target.closest&&e.target.closest('input,textarea,select')))closeModal();});
+window.addEventListener('hashchange',()=>{routeFromHash();render();});
+
+/* --- avvio --- */
+function subscribe(){
+  const onErr=k=>e=>{console.error('snapshot',k,e);S.loaded[k]=true;schedule();};
+  db.collection('participants').onSnapshot(s=>{S.participants=s.docs.map(d=>Object.assign({},d.data(),{id:d.id}));S.loaded.p=true;schedule();},onErr('p'));
+  db.collection('recipes').onSnapshot(s=>{S.recipes=s.docs.map(d=>Object.assign({},d.data(),{id:d.id}));S.loaded.r=true;schedule();},onErr('r'));
+  db.collection('votes').onSnapshot(s=>{const v={};s.docs.forEach(d=>{v[d.id]=d.data();});S.votes=v;S.loaded.v=true;schedule();},onErr('v'));
+  db.collection('spesa').onSnapshot(s=>{const v={};s.docs.forEach(d=>{v[d.id]=d.data();});S.spesa=v;S.loaded.sp=true;schedule();},onErr('sp'));
+  db.doc('settings/main').onSnapshot(d=>{S.settingsExists=!!d.exists;S.settings=mergeSettings(d.exists?d.data():null);S.loaded.s=true;schedule();},onErr('s'));
+}
+async function init(){
+  S.meId=store.get('gb.me')||null;
+  routeFromHash();
+  render();
+  const c=window.claude;
+  if(!c||typeof c.use!=='function'){S.dbOk=false;render();return;}
+  const ask=n=>Promise.resolve().then(()=>c.use(n)).catch(()=>null);
+  c.use&&ask('sample').then(v=>{sampleCap=v;});
+  ask('downloads').then(v=>{dlCap=v;schedule();});
+  ask('user').then(async v=>{
+    userCap=v;if(!v)return;
+    try{S.owner=!!(await v.isOwner());}catch(e){}
+    try{if((await v.can('data.write'))===false)S.readOnly=true;}catch(e){}
+    schedule();
+  });
+  db=await ask('db');
+  if(!db){S.dbOk=false;render();return;}
+  S.dbOk=true;
+  subscribe();
+}
+init();
+
+})();
+</script>

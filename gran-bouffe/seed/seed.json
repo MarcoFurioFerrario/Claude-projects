@@ -1,0 +1,209 @@
+{
+ "writes": [
+  {
+   "op": "set",
+   "collection": "participants",
+   "doc_id": "p_marco-furio",
+   "data": {
+    "name": "Marco Furio",
+    "confirmed": true,
+    "organizer": true,
+    "ord": 1,
+    "createdAt": 1790869316342
+   }
+  },
+  {
+   "op": "set",
+   "collection": "participants",
+   "doc_id": "p_marco-terracina",
+   "data": {
+    "name": "Marco Terracina",
+    "confirmed": true,
+    "organizer": false,
+    "ord": 2,
+    "createdAt": 1790869316342
+   }
+  },
+  {
+   "op": "set",
+   "collection": "participants",
+   "doc_id": "p_teo",
+   "data": {
+    "name": "Teo",
+    "confirmed": true,
+    "organizer": false,
+    "ord": 3,
+    "createdAt": 1790869316342
+   }
+  },
+  {
+   "op": "set",
+   "collection": "participants",
+   "doc_id": "p_tia",
+   "data": {
+    "name": "Tia",
+    "confirmed": true,
+    "organizer": false,
+    "ord": 4,
+    "createdAt": 1790869316342
+   }
+  },
+  {
+   "op": "set",
+   "collection": "participants",
+   "doc_id": "p_melo",
+   "data": {
+    "name": "Melo",
+    "confirmed": true,
+    "organizer": false,
+    "ord": 5,
+    "createdAt": 1790869316342
+   }
+  },
+  {
+   "op": "set",
+   "collection": "participants",
+   "doc_id": "p_jaki",
+   "data": {
+    "name": "Jaki",
+    "confirmed": true,
+    "organizer": false,
+    "ord": 6,
+    "createdAt": 1790869316342
+   }
+  },
+  {
+   "op": "set",
+   "collection": "participants",
+   "doc_id": "p_mazzetti",
+   "data": {
+    "name": "Mazzetti",
+    "confirmed": true,
+    "organizer": false,
+    "ord": 7,
+    "createdAt": 1790869316342
+   }
+  },
+  {
+   "op": "set",
+   "collection": "participants",
+   "doc_id": "p_fantoni",
+   "data": {
+    "name": "Fantoni",
+    "confirmed": true,
+    "organizer": false,
+    "ord": 8,
+    "createdAt": 1790869316342
+   }
+  },
+  {
+   "op": "set",
+   "collection": "participants",
+   "doc_id": "p_murro",
+   "data": {
+    "name": "Murro",
+    "confirmed": true,
+    "organizer": false,
+    "ord": 9,
+    "createdAt": 1790869316342
+   }
+  },
+  {
+   "op": "set",
+   "collection": "participants",
+   "doc_id": "p_fede",
+   "data": {
+    "name": "Fede",
+    "confirmed": true,
+    "organizer": false,
+    "ord": 10,
+    "createdAt": 1790869316342
+   }
+  },
+  {
+   "op": "set",
+   "collection": "participants",
+   "doc_id": "p_umbe",
+   "data": {
+    "name": "Umbe",
+    "confirmed": true,
+    "organizer": false,
+    "ord": 11,
+    "createdAt": 1790869316342
+   }
+  },
+  {
+   "op": "set",
+   "collection": "participants",
+   "doc_id": "p_jack",
+   "data": {
+    "name": "Jack",
+    "confirmed": true,
+    "organizer": false,
+    "ord": 12,
+    "createdAt": 1790869316342
+   }
+  },
+  {
+   "op": "set",
+   "collection": "participants",
+   "doc_id": "p_gesu-pippia",
+   "data": {
+    "name": "Gesù Pippia",
+    "confirmed": true,
+    "organizer": false,
+    "ord": 13,
+    "createdAt": 1790869316342
+   }
+  },
+  {
+   "op": "set",
+   "collection": "participants",
+   "doc_id": "p_turi",
+   "data": {
+    "name": "Turi",
+    "confirmed": true,
+    "organizer": false,
+    "ord": 14,
+    "createdAt": 1790869316342
+   }
+  },
+  {
+   "op": "set",
+   "collection": "participants",
+   "doc_id": "p_lollo",
+   "data": {
+    "name": "Lollo",
+    "confirmed": true,
+    "organizer": false,
+    "ord": 15,
+    "createdAt": 1790869316342
+   }
+  },
+  {
+   "op": "set",
+   "collection": "settings",
+   "doc_id": "main",
+   "data": {
+    "fase": "proposte",
+    "edizione": "XI",
+    "tema": "Triveneto",
+    "dataVen": "",
+    "arrivo": "16:00",
+    "riservaOre": 1,
+    "margine": 0,
+    "orari": {
+     "ven-cena": "20:30",
+     "sab-pranzo": "13:30",
+     "sab-cena": "20:30",
+     "dom-pranzo": "13:30"
+    },
+    "cap": {
+     "ven": 5,
+     "sab": 12,
+     "dom": 5
+    }
+   }
+  }
+ ]
+}
