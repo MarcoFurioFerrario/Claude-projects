@@ -7,12 +7,13 @@ Pubblicata come artifact di claude.ai: <https://claude.ai/artifact/WFrai8Hzx76Go
 ## Come si usa
 
 1. **Persone**: accesso con il nome (nessuna password). I 15 confermati sono precaricati; si possono aggiungere altri e spuntare chi è presente.
-2. **Proposte** (fase *Proposte*): ogni proposta richiede proponente (chi è loggato), almeno un responsabile della produzione, categoria e link alla ricetta.
-3. **Votazioni** (fase *Voto*): ognuno ordina le proposte di ogni categoria dalla migliore alla peggiore. Il punteggio è il piazzamento medio normalizzato (100 = sempre primo).
-4. **Menu** (fase *Menu*): gli organizzatori assegnano i piatti ai pasti (5 venerdì sera, 12 sabato, 5 domenica; modificabile). "Suggerisci dai voti" propone una selezione bilanciata per categoria e tempi.
-5. **Scheda piatto**: proponente, responsabili, squadra (ci si può unire), ingredienti scalati sui confermati, procedimento, vini, tempi. "Genera bozza con Claude" compila una bozza da controllare.
-6. **Spesa**: lista unica, somma gli ingredienti uguali tra piatti (anche con unità diverse), arrotonda per eccesso, calcola le confezioni, assegna chi compra, copia per WhatsApp o scarica CSV.
-7. **Programma**: finestre di tempo utili per pasto (arrivo, orari) e cronoprogramma. Un piatto che richiede più ore di anticipo di quelle disponibili non può stare in quel pasto, a meno che la parte lunga si prepari a casa.
+2. **Suggerimenti**: catalogo di 44 piatti del Triveneto (due rassegne del gruppo), con fonte e livello di affidabilità (A/B/C), vino in abbinamento (con tipo), ingredienti, note di esecuzione e tempi. Ogni piatto ha un segnalino *Da proporre / Già proposta / Approvata (in menu)*, calcolato in tempo reale dalle proposte; "Proponi questo piatto" apre il modulo già compilato (link, regione, vino, tempi). Filtri per testo (piatto, ingrediente, vino), regione, tipo di vino, stato, livello; un riquadro mostra l'equilibrio tra regioni, portate e vini. I piatti della stessa *famiglia* (per esempio i dolci a spirale gubana, presnitz e putizza) vengono segnalati come simili, anche nel Menu, per evitare ripetizioni.
+3. **Proposte** (fase *Proposte*): ogni proposta richiede proponente (chi è loggato), almeno un responsabile della produzione, categoria e link alla ricetta.
+4. **Votazioni** (fase *Voto*): ognuno ordina le proposte di ogni categoria dalla migliore alla peggiore. Il punteggio è il piazzamento medio normalizzato (100 = sempre primo).
+5. **Menu** (fase *Menu*): gli organizzatori assegnano i piatti ai pasti (5 venerdì sera, 12 sabato, 5 domenica; modificabile). "Suggerisci dai voti" propone una selezione bilanciata per categoria e tempi. Sotto i giorni c'è la *carta dei vini* con i vini in abbinamento dei piatti scelti e il pulsante per copiare la carta del banchetto.
+6. **Scheda piatto**: proponente, responsabili, squadra (ci si può unire), ingredienti scalati sui confermati, procedimento, vini, tempi. "Genera bozza con Claude" compila una bozza da controllare.
+7. **Spesa**: lista unica, somma gli ingredienti uguali tra piatti (anche con unità diverse), arrotonda per eccesso, calcola le confezioni, assegna chi compra, copia per WhatsApp o scarica CSV.
+8. **Programma**: finestre di tempo utili per pasto (arrivo, orari) e cronoprogramma. Un piatto che richiede più ore di anticipo di quelle disponibili non può stare in quel pasto, a meno che la parte lunga si prepari a casa.
 
 ## Versione pubblica, aperta a chiunque (cartella `docs/` nella radice del repo)
 
@@ -55,7 +56,7 @@ Quando un piatto entra in menu si possono compilare le sue schede dalla fonte ve
 | Collezione | Documento | Contenuto |
 |---|---|---|
 | `participants` | `p_<nome>` | `name`, `confirmed`, `organizer`, `ord` |
-| `recipes` | `r_…` | `title`, `category`, `region`, `link`, `note`, `proposerId`, `ownerIds[]`, `teamIds[]`, `slot` (`ven-cena`, `sab-pranzo`, `sab-cena`, `dom-pranzo` o `""`), `verifica{}`, `serves`, `porzione`, `ingredients[{name,qty,unit,shop}]`, `steps[]`, `fasi[{label,ore}]`, `preparabileACasa`, `vini[{nome,bottiglie}]`, `consigli` |
+| `recipes` | `r_…` | `sugId` (piatto del catalogo da cui nasce), `title`, `category`, `region`, `link`, `note`, `proposerId`, `ownerIds[]`, `teamIds[]`, `slot` (`ven-cena`, `sab-pranzo`, `sab-cena`, `dom-pranzo` o `""`), `verifica{}`, `serves`, `porzione`, `ingredients[{name,qty,unit,shop}]`, `steps[]`, `fasi[{label,ore}]`, `preparabileACasa`, `vini[{nome,bottiglie}]`, `consigli` |
 | `votes` | `<participantId>` | `rank{<categoria>: [recipeId…]}` (dal migliore) |
 | `spesa` | slug dell'ingrediente | `comprato`, `chi`, `pack{base,size}` |
 | `meta` | `backups` | indice delle copie: `items[{id,at,motivo,by,n}]` |
@@ -69,6 +70,7 @@ Seed iniziale (artifact): `seed/seed.json`; nella versione pubblica il pulsante 
 ```
 node build.js          # assembla src/ in index.html (artifact) e docs/index.html (versione pubblica)
 node test/flow.js      # artifact: prova end-to-end in Chromium con un db finto in memoria
+node test/sugg.js      # sezione Suggerimenti: segnalini, filtri, proposta precompilata, carta dei vini
 node test/standalone.js # versione pubblica: Firestore finto, cookie, merge dei voti
 ```
 
@@ -77,3 +79,7 @@ node test/standalone.js # versione pubblica: Firestore finto, cookie, merge dei 
 ## Accesso
 
 Il db condiviso accetta scritture da chi ha livello Contributor o superiore sull'artifact. Gli amici devono poter aprire la pagina con un account claude.ai e avere accesso in modifica dal menu Condividi. L'identità è solo il nome scelto all'ingresso: va bene tra amici, non è un'autenticazione.
+
+## Catalogo dei suggerimenti
+
+I dati sono in `src/js/05-sugg-data.js` (`SUG`). Ogni piatto ha `lv` (livello della fonte, vuoto = da assegnare), `weak` (link generico o non coerente) e `src` (fonti). Dopo aver verificato i link aggiorna questi campi e lancia `node build.js`. Il campo `k` contiene le chiavi con cui una proposta fatta a mano viene riconosciuta come quel piatto; `f` è la famiglia usata per segnalare piatti simili. I vini con `vs:'sug'` sono abbinamenti suggeriti, non presenti nei documenti. Un vino con 0 bottiglie in una scheda è solo un abbinamento: non entra nella lista della spesa.

@@ -4,7 +4,7 @@ function setHash(h){try{history.replaceState(null,'','#'+h);}catch(e){try{locati
 function routeFromHash(){
   let h='';try{h=location.hash.slice(1);}catch(e){}
   if(h.startsWith('piatto-')){UI.dish=h.slice(7);UI.tab='menu';}
-  else if(['proposte','voto','menu','spesa','programma','persone'].includes(h)){UI.tab=h;UI.dish=null;}
+  else if(['proposte','suggerimenti','voto','menu','spesa','programma','persone'].includes(h)){UI.tab=h;UI.dish=null;}
 }
 function doLogout(){S.meId=null;store.set('gb.me','');render();}
 
@@ -21,7 +21,7 @@ function build(){
   if(S.dbOk===false)return noDb();
   if(!S.loaded.p||!S.loaded.r||!S.loaded.s)return `<p class="boot">Carico i dati del weekend…</p>`;
   if(!me())return vLogin();
-  const views={proposte:vProposte,voto:vVoto,menu:vMenu,spesa:vSpesa,programma:vProgramma,persone:vPersone};
+  const views={proposte:vProposte,suggerimenti:vSugg,voto:vVoto,menu:vMenu,spesa:vSpesa,programma:vProgramma,persone:vPersone};
   const view=UI.dish?vPiatto():(views[UI.tab]||vProposte)();
   return vHeader()+vNav()+`<main class="wrap">${S.offline?`<div class="note warn" style="margin-top:16px"><b>Sei offline.</b> Puoi continuare: le modifiche restano in coda e si salvano appena torna la connessione. Non chiudere la pagina.</div>`:''}${S.readOnly?`<div class="note bad" style="margin-top:16px"><b>Sola lettura.</b> Puoi guardare tutto ma non modificare: chiedi a Marco di darti accesso come collaboratore.</div>`:''}${view}</main>`;
 }
@@ -148,8 +148,8 @@ function initStandalone(){
 window.addEventListener('offline',()=>{S.offline=true;paintSave();schedule();});
 window.addEventListener('online',()=>{S.offline=false;paintSave();schedule();});
 document.addEventListener('click',e=>{ // ricorda se i riquadri a tendina sono aperti, anche dopo un aggiornamento dei dati
-  const sm=e.target.closest&&e.target.closest('details#trash>summary,details#bk>summary');
-  if(sm){const d=sm.parentElement;if(d.id==='trash')UI.trashOpen=!d.open;else UI.bkOpen=!d.open;}
+  const sm=e.target.closest&&e.target.closest('details[id]>summary');
+  if(sm){const d=sm.parentElement;UI.open=UI.open||{};UI.open[d.id]=!d.open;}
 },true);
 setInterval(()=>{ // copia di sicurezza periodica, solo se ci sono state modifiche
   if(!db||!S.dirty||S.pending>0||S.offline)return;

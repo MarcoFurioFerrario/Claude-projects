@@ -37,7 +37,7 @@ function vHeader(){
 }
 
 function vNav(){
-  const tabs=[['proposte','Proposte',S.recipes.length],['voto','Votazioni'],['menu','Menu',slotted().length+'/'+totalCap()],['spesa','Spesa'],['programma','Programma'],['persone','Persone',nConf()]];
+  const tabs=[['proposte','Proposte',S.recipes.length],['suggerimenti','Suggerimenti',SUG.filter(s=>sugState(s)==='libera').length],['voto','Votazioni'],['menu','Menu',slotted().length+'/'+totalCap()],['spesa','Spesa'],['programma','Programma'],['persone','Persone',nConf()]];
   return `<nav class="tabs" aria-label="Sezioni"><div class="in">${tabs.map(t=>
     `<button class="tab" data-act="tab" data-v="${t[0]}" ${(UI.tab===t[0]&&!UI.dish)||(UI.dish&&t[0]==='menu')?'aria-current="page"':''}>${t[1]}${t[2]!==undefined?`<span class="n">${t[2]}</span>`:''}</button>`).join('')}</div></nav>`;
 }
@@ -108,7 +108,7 @@ function vProposte(){
 }
 function vTrash(){
   if(!S.trash.length)return '';
-  return `<details class="panel" id="trash" ${UI.trashOpen?'open':''}><summary style="cursor:pointer;font-weight:600">Cestino (${S.trash.length})</summary>
+  return `<details class="panel" id="trash" ${isOpen('trash')}><summary style="cursor:pointer;font-weight:600">Cestino (${S.trash.length})</summary>
     <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px">${S.trash.map(r=>`<div class="row spread"><span>${esc(r.title)} <span class="small muted">· proposta da ${esc(pname(r.proposerId))}</span></span>
       <span class="row">${canDelRecipe(r)?`<button class="btn sm" data-act="restore-recipe" data-id="${esc(r.id)}">Ripristina</button>`:''}
       ${isOrg()?`<button class="btn sm danger" data-act="purge-recipe" data-id="${esc(r.id)}">${UI.confirm==='purge:'+r.id?'Sì, elimina per sempre':'Elimina per sempre'}</button>`:''}</span></div>`).join('')}</div></details>`;

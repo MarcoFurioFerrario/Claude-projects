@@ -15,7 +15,7 @@ function vPiatto(){
     const txt=(u.base==='qb'||!q)?'q.b.':fmtQty(u.base,niceQty(u.base,q*u.mult*f));
     return `<tr><td>${esc(cap1(i.name))}${i.note?` <span class="small muted">${esc(i.note)}</span>`:''}</td><td>${esc(txt)}</td></tr>`;
   }).join('');
-  const vini=(r.vini||[]).map(v=>`<li><b>${esc(v.nome)}</b> <span class="muted small">· ${fmtN(roundUp('bottiglie',num(v.bottiglie)*f))} bottigli${roundUp('bottiglie',num(v.bottiglie)*f)===1?'a':'e'} per ${n} persone</span></li>`).join('');
+  const vini=(r.vini||[]).map(v=>{const nb=num(v.bottiglie)>0?roundUp('bottiglie',num(v.bottiglie)*f):0;return `<li><b>${esc(v.nome)}</b> <span class="muted small">· ${nb?fmtN(nb)+' bottigli'+(nb===1?'a':'e')+' per '+n+' persone':'abbinamento suggerito'}</span></li>`;}).join('');
   const fasi=[...(r.fasi||[])].sort((a,b)=>num(b.ore)-num(a.ore));
   const ld=lead(r),e=earliest(r);
   let verdict='';

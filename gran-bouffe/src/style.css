@@ -279,3 +279,15 @@ body.modal-open{overflow:hidden}
 .sv.warn{color:var(--warn);font-weight:600}
 .btn:focus-within{outline:2px solid var(--accent);outline-offset:2px}
 details>summary{list-style-position:inside}
+
+.card.sg.proposta{background:color-mix(in srgb,var(--info-soft) 40%,var(--surface))}
+.card.sg.menu{background:color-mix(in srgb,var(--ok-soft) 45%,var(--surface));border-color:var(--ok)}
+.card.sg .avv{color:var(--warn);font-weight:600}
+.card.sg .sim{padding:6px 10px;border-radius:8px;background:var(--surface-2)}
+.eqgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:20px}
+.eq{display:flex;flex-direction:column;gap:9px;margin-top:8px}
+.eqr{display:grid;grid-template-columns:minmax(80px,120px) minmax(0,1fr) auto;gap:10px;align-items:center;font-size:13px}
+.eqb{display:flex;height:10px;border-radius:99px;overflow:hidden;background:var(--surface-2);min-width:8px}
+.eqb i{display:block;height:100%}
+.eqb .m,.lg.m{background:var(--ok)}.eqb .p,.lg.p{background:var(--info)}.eqb .l,.lg.l{background:var(--line)}
+.lg{display:inline-block;width:10px;height:10px;border-radius:50%;vertical-align:middle}

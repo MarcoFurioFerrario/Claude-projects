@@ -79,7 +79,7 @@ function scaleF(r){
 }
 function allIngs(r){
   const a=(r.ingredients||[]).map(i=>({name:i.name,qty:i.qty,unit:i.unit,shop:i.shop||'dispensa'}));
-  for(const v of (r.vini||[]))a.push({name:v.nome,qty:v.bottiglie,unit:'bottiglie',shop:'cantina',vino:true});
+  for(const v of (r.vini||[]))if(num(v.bottiglie)>0)a.push({name:v.nome,qty:v.bottiglie,unit:'bottiglie',shop:'cantina',vino:true});
   return a;
 }
 function consolidate(day){
@@ -246,4 +246,23 @@ function timeline(){
   }
   items.sort((a,b)=>a.t-b.t||(a.kind==='meal'?1:-1));
   return items;
+}
+
+/* --- suggerimenti: collegamento con le proposte e piatti simili --- */
+function sugRecipe(s){
+  return S.recipes.find(r=>r.sugId===s.id)||S.recipes.find(r=>{const t=norm(r.title);return s.k.some(k=>t.indexOf(k)>=0);})||null;
+}
+const sugState=s=>{const r=sugRecipe(s);return r?(r.slot?'menu':'proposta'):'libera';};
+const sugFor=r=>(r.sugId&&sugById(r.sugId))||SUG.find(s=>s.k.some(k=>norm(r.title).indexOf(k)>=0))||null;
+const famMates=s=>s.f?SUG.filter(x=>x.f===s.f&&x.id!==s.id):[];
+function famDupes(){
+  const m={};
+  for(const r of slotted()){const s=sugFor(r);if(s&&s.f)(m[s.f]=m[s.f]||[]).push(r);}
+  return Object.keys(m).filter(f=>m[f].length>1).map(f=>[f,m[f]]);
+}
+function sugPre(s){
+  const src=(s.src&&s.src[0])||{};
+  return{sugId:s.id,title:s.t,category:s.c,region:s.r,link:src.u||'',
+    vini:s.v?[{nome:s.v,bottiglie:0}]:[],fasi:(s.fasi||[]).map(f=>({label:f.label,ore:f.ore})),
+    verStato:s.weak?'da_sostituire':'da_verificare',verNota:s.weak||''};
 }

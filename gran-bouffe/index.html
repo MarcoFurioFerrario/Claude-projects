@@ -285,6 +285,18 @@ body.modal-open{overflow:hidden}
 .btn:focus-within{outline:2px solid var(--accent);outline-offset:2px}
 details>summary{list-style-position:inside}
 
+.card.sg.proposta{background:color-mix(in srgb,var(--info-soft) 40%,var(--surface))}
+.card.sg.menu{background:color-mix(in srgb,var(--ok-soft) 45%,var(--surface));border-color:var(--ok)}
+.card.sg .avv{color:var(--warn);font-weight:600}
+.card.sg .sim{padding:6px 10px;border-radius:8px;background:var(--surface-2)}
+.eqgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:20px}
+.eq{display:flex;flex-direction:column;gap:9px;margin-top:8px}
+.eqr{display:grid;grid-template-columns:minmax(80px,120px) minmax(0,1fr) auto;gap:10px;align-items:center;font-size:13px}
+.eqb{display:flex;height:10px;border-radius:99px;overflow:hidden;background:var(--surface-2);min-width:8px}
+.eqb i{display:block;height:100%}
+.eqb .m,.lg.m{background:var(--ok)}.eqb .p,.lg.p{background:var(--info)}.eqb .l,.lg.l{background:var(--line)}
+.lg{display:inline-block;width:10px;height:10px;border-radius:50%;vertical-align:middle}
+
 </style>
 <div id="app"><p class="boot">Carico Gran Bouffe…</p></div>
 <div id="modal" hidden></div>
@@ -363,22 +375,6 @@ const VSTATI={
   da_sostituire:{label:'Link da sostituire',cls:'warn'},
   non_valido:{label:'Link non valido',cls:'bad'}
 };
-const IDEE=[
-  {t:'Risi e bisi',c:'primi',r:'Veneto'},{t:'Bigoli in salsa',c:'primi',r:'Veneto'},{t:'Risotto al radicchio di Treviso',c:'primi',r:'Veneto'},
-  {t:'Sarde in saor',c:'antipasti',r:'Veneto'},{t:'Baccalà mantecato',c:'antipasti',r:'Veneto'},{t:'Pasta e fasioi',c:'zuppe',r:'Veneto'},
-  {t:'Sopa coada',c:'zuppe',r:'Veneto'},{t:'Baccalà alla vicentina',c:'secondi',r:'Veneto'},{t:'Fegato alla veneziana',c:'secondi',r:'Veneto'},
-  {t:'Bollito misto con pearà',c:'secondi',r:'Veneto'},{t:'Luganega alla brace',c:'griglia',r:'Veneto'},{t:'Radicchio alla griglia',c:'contorni',r:'Veneto'},
-  {t:'Tiramisù',c:'dolci',r:'Veneto'},{t:'Frico',c:'antipasti',r:'Friuli-Venezia Giulia'},{t:'Prosciutto di San Daniele e formaggi',c:'antipasti',r:'Friuli-Venezia Giulia'},
-  {t:'Jota',c:'zuppe',r:'Friuli-Venezia Giulia'},{t:'Cjarsons',c:'primi',r:'Friuli-Venezia Giulia'},{t:'Gnocchi di susine',c:'primi',r:'Friuli-Venezia Giulia'},
-  {t:'Gulasch alla triestina',c:'secondi',r:'Friuli-Venezia Giulia'},{t:'Brovada e muset',c:'secondi',r:'Friuli-Venezia Giulia'},
-  {t:'Ćevapčići alla griglia',c:'griglia',r:'Friuli-Venezia Giulia'},{t:'Gubana',c:'dolci',r:'Friuli-Venezia Giulia'},
-  {t:'Canederli in brodo',c:'zuppe',r:'Trentino-Alto Adige'},{t:'Zuppa d’orzo',c:'zuppe',r:'Trentino-Alto Adige'},
-  {t:'Strangolapreti',c:'primi',r:'Trentino-Alto Adige'},{t:'Schlutzkrapfen',c:'primi',r:'Trentino-Alto Adige'},
-  {t:'Tortel di patate',c:'antipasti',r:'Trentino-Alto Adige'},{t:'Carne salada e fagioli',c:'secondi',r:'Trentino-Alto Adige'},
-  {t:'Polenta di Storo con formaggi',c:'contorni',r:'Trentino-Alto Adige'},{t:'Strudel di mele',c:'dolci',r:'Trentino-Alto Adige'},
-  {t:'Kaiserschmarrn',c:'dolci',r:'Trentino-Alto Adige'}
-];
-
 const PRESET=['Marco Furio','Marco Terracina','Teo','Tia','Melo','Jaki','Mazzetti','Fantoni','Murro','Fede','Umbe','Jack','Gesù Pippia','Turi','Lollo'];
 const DEF={fase:'proposte',edizione:'XI',tema:'Triveneto',dataVen:'',arrivo:'16:00',riservaOre:1,margine:0,
   orari:{'ven-cena':'20:30','sab-pranzo':'13:30','sab-cena':'20:30','dom-pranzo':'13:30'},cap:{ven:5,sab:12,dom:5}};
@@ -390,7 +386,7 @@ function mergeSettings(d){
 
 /* ============ stato ============ */
 const S={meId:null,participants:[],recipes:[],allRecipes:[],trash:[],backups:[],metaExists:false,pending:0,dirty:false,offline:false,lastOk:0,votes:{},spesa:{},settings:mergeSettings(),settingsExists:false,loaded:{},dbOk:null,readOnly:false,owner:false};
-const UI={tab:'proposte',dish:null,q:'',cat:'',reg:'',ver:'',mine:false,vcat:'antipasti',vmode:'mia',draft:{},sday:'',sshop:'',shide:false,confirm:'',sugg:false,login:{conf:true}};
+const UI={tab:'proposte',dish:null,q:'',cat:'',reg:'',ver:'',mine:false,vcat:'antipasti',vmode:'mia',draft:{},sday:'',sshop:'',shide:false,confirm:'',sugg:false,login:{conf:true},sq:'',scat:'',sreg:'',swt:'',slv:'',sst:'',ssort:'cat'};
 let db=null,sampleCap=null,dlCap=null,userCap=null;
 
 const P=id=>S.participants.find(p=>p.id===id);
@@ -409,6 +405,7 @@ const vstato=r=>((r.verifica||{}).stato)||'da_verificare';
 const chipCat=k=>{const c=catOf(k);return `<span class="chip" style="--h:${c.h}">${esc(c.label)}</span>`;};
 const badge=(t,cls)=>`<span class="badge ${cls||''}">${esc(t)}</span>`;
 const A={},CH={},IN={};
+const isOpen=id=>(UI.open&&UI.open[id])?'open':'';
 let toastT;
 function toast(msg,kind){
   const t=$('#toast');if(!t)return;
@@ -468,6 +465,195 @@ function copyText(text,okMsg){
   }catch(e){fallback();}
 }
 A['modal-close']=()=>closeModal();
+
+/* ============ catalogo "Suggerimenti": 44 piatti dai due documenti del gruppo ============
+   id = chiave stabile · t titolo · c categoria · r regione · rl dettaglio locale · f famiglia (per evitare piatti simili)
+   k = chiavi per riconoscere una proposta già fatta a mano · d perché è iconico · i ingredienti chiave
+   v vino · vs 'scheda' (dal documento) o 'sug' (suggerito, non nel documento)
+   lv livello fonte A/B/C (solo prima rassegna; '' = da assegnare) · weak = il link è generico o non coerente
+   tempi/avv = note pratiche · fasi = tempi da precaricare nella scheda quando si propone il piatto */
+const FAM={
+  baccala:'Baccalà e stoccafisso',bigoli:'Bigoli',ripiene:'Sfoglie ripiene',gnocchi:'Gnocchi di pane raffermo',
+  zuppe:'Zuppe di fagioli e mais',stufati:'Stufati e brasati di carne',pesce:'Pesce in umido',spirale:'Dolci a spirale con frutta secca',
+  secchi:'Dolci secchi da credenza',patate:'Piatti di patate',montasio:'Piatti al Montasio'
+};
+const LIVELLI={
+  A:{t:'Livello A',d:'Ricetta codificata o depositata, oppure prodotto riconosciuto da un ente ufficiale (Accademia, Confraternita, ERSA/AQUA, DOP, PAT).',cls:'ok'},
+  B:{t:'Livello B',d:'Fonte istituzionale o con riscontro storico verificabile (ricettari citati, enti turistici, confraternite).',cls:'info'},
+  C:{t:'Livello C',d:'Solo fonti divulgative, nessuna fonte primaria trovata: le prime da sostituire o integrare.',cls:'warn'}
+};
+const GEN_FVG='https://www.turismofvg.it/ProxyVFS.axd?snode=286130&stream=';
+const SUG=[
+/* ---- prima rassegna (con livello di affidabilità) ---- */
+{id:'sarde',t:'Sarde in saor',c:'antipasti',r:'Veneto',rl:'Venezia',f:'',k:['sarde in saor','sarde saor'],lv:'B',
+ d:'Sarde fritte e cipolle in agrodolce con aceto, uvetta e pinoli: il piatto-simbolo veneziano, nato come conserva.',i:'Sarde, cipolle, aceto, uvetta, pinoli',
+ v:'Soave Classico DOC',vs:'sug',src:[{l:'AIFB, Giornata nazionale delle sarde in saor',u:'https://www.aifb.it/cultura-enogastronomica-italiana/piatti-tradizione-italiana/giornata-nazionale-delle-sarde-saor/'},{l:'Taccuini Gastrosofici',u:'https://www.taccuinigastrosofici.it/ita/ricette/contemporanea/pesci/Sarde-in-saor.html'},{l:'La Cucina Italiana',u:'https://www.lacucinaitaliana.com/italian-food/italian-dishes/sarde-in-saor-venice-recipe',n:'non verificabile'}]},
+{id:'mantecato',t:'Baccalà mantecato',c:'antipasti',r:'Veneto',rl:'Venezia',f:'baccala',k:['baccala mantecato'],lv:'C',
+ d:'Baccalà montato a crema con olio; lo legano al naufragio di Pietro Querini (1431) e alla Confraternita del baccalà mantecato (2001).',i:'Baccalà, olio extravergine',
+ v:'Prosecco Superiore DOCG Brut',vs:'sug',src:[{l:'Visit Venezia',u:'https://www.visitvenezia.eu/en/venetianity/flavours-of-venice/baccala-mantecato-a-venetian-delicacy',n:'portale turistico: da integrare'}]},
+{id:'frico',t:'Frico friulano',c:'antipasti',r:'Friuli-Venezia Giulia',rl:'',f:'montasio',k:['frico'],lv:'A',
+ d:'Frico morbido di Montasio con patate e cipolla, servito con polenta; ricetta indicata da ERSA nel marchio regionale AQUA.',i:'Montasio, patate, cipolla',
+ v:'Friuli Colli Orientali Friulano DOC',vs:'sug',src:[{l:'Cucina Regionale Italiana, frico tradizionale',u:'https://cucinaregionaleitaliana.it/portfolio-items/frico-ricetta-tradizionale/'},{l:'La Cucina Italiana',u:'https://www.lacucinaitaliana.com/italian-food/italian-dishes/frico-delicious-traditional-recipe-friuli',n:'non verificabile'}]},
+{id:'carnesalada',t:'Carne salada e fasoi',c:'antipasti',r:'Trentino-Alto Adige',rl:'Trentino',f:'',k:['carne salada','carne salata'],lv:'B',
+ d:'Manzo salato e speziato servito con fagioli; se ne trovano tracce dal Quattrocento (Libro de cosina).',i:'Manzo salato e speziato, fagioli',
+ v:'Teroldego Rotaliano DOC',vs:'sug',src:[{l:'Visit Rotaliana',u:'https://www.visitrotaliana.it/it/gastronomia/ricette-trentine/carne-salada-trentina'},{l:'Fuoriporta, storia',u:'https://www.fuoriporta.org/tradizioni/carne-salata-il-gusto-del-trentino/'}]},
+{id:'tortel',t:'Tortel di patate',c:'antipasti',r:'Trentino-Alto Adige',rl:'Trentino, Val di Non',f:'patate',k:['tortel'],lv:'B',
+ d:'Frittelle di patate cotte in padella, con formaggi e salumi locali; a Sporminore c\'è una Confraternita dedicata (1998).',i:'Patate, formaggi e salumi locali',
+ v:'Trento DOC Brut',vs:'sug',src:[{l:'Trentino Qualità',u:'https://www.trentinoqualita.it/it/ricette/tortel-di-patate_493_idri/'}]},
+{id:'risibisi',t:'Risi e bisi',c:'primi',r:'Veneto',rl:'',f:'',k:['risi e bisi','risi bisi'],lv:'A',
+ d:'Riso Vialone nano e piselli all\'onda, né minestra né risotto; ricetta depositata nel 2013 a Venezia dal Comune di Scorzé.',i:'Riso Vialone nano, piselli',
+ v:'Soave Classico DOC',vs:'sug',src:[{l:'Cucina Regionale Italiana, risi e bisi',u:'https://cucinaregionaleitaliana.it/portfolio-items/risi-e-bisi/'}]},
+{id:'bigolisalsa',t:'Bigoli in salsa',c:'primi',r:'Veneto',rl:'Venezia',f:'bigoli',k:['bigoli in salsa'],lv:'C',
+ d:'Pasta lunga al torchio con cipolle e acciughe sotto sale, piatto di magro delle vigilie (Natale, Venerdì Santo).',i:'Bigoli, cipolle, acciughe sotto sale',
+ v:'Soave Classico DOC',vs:'sug',avv:'Nessuna ricetta codificata trovata.',src:[{l:'AIFB',u:'https://www.aifb.it/cultura-enogastronomica-italiana/piatti-tradizione-italiana/giornata-nazionale-dei-bigoli-in-salsa/'},{l:'Dissapore',u:'https://www.dissapore.com/ricette/bigoli-in-salsa-alla-veneziana/'},{l:'Mangiare bene Venezia',u:'https://www.mangiarebenevenezia.it/cosa-mangiare/bigoli-in-salsa-storia-ricetta-bigoi-venezia/'}]},
+{id:'canederli',t:'Canederli allo speck',c:'primi',r:'Trentino-Alto Adige',rl:'',f:'gnocchi',k:['canederli','knodel','knoedel'],lv:'A',
+ d:'Gnocchi di pane raffermo e Speck dell\'Alto Adige, in brodo o asciutti; ricetta depositata dall\'Accademia (Bolzano, 2003).',i:'Pane raffermo, Speck, uova, latte',
+ v:'Alto Adige Schiava DOC',vs:'sug',tempi:'Se in brodo, serve il brodo di carne preparato prima.',src:[{l:'Cucina Regionale Italiana, canederli con lo speck',u:'https://cucinaregionaleitaliana.it/portfolio-items/canederli-con-lo-speck/'}]},
+{id:'strangolapreti',t:'Strangolapreti trentini',c:'primi',r:'Trentino-Alto Adige',rl:'Trentino',f:'gnocchi',k:['strangolapreti'],lv:'C',
+ d:'Gnocchi di pane raffermo e verdure, emblema della cucina di recupero trentina.',i:'Pane raffermo, spinaci o bietole',
+ v:'Trentino Müller Thurgau DOC',vs:'sug',avv:'Nessuna fonte codificata trovata.',src:[{l:'Paesi del Gusto',u:'https://www.paesidelgusto.it/strangolapreti-trentini-perche-si-chiamano-cosi-e-ricetta-per-riciclare-il-pane-raffermo/'},{l:'Sapore Tipico',u:'https://www.saporetipico.it/prodotti-tipici/strangolapreti'}]},
+{id:'cjarsons',t:'Cjarsons della Carnia',c:'primi',r:'Friuli-Venezia Giulia',rl:'Carnia',f:'ripiene',k:['cjarsons','cjalsons','ciarsons'],lv:'B',
+ d:'Ravioli dolce-salati con ripieno diverso da paese a paese; Gianni Cosetti ha codificato la versione della Val Dal But.',i:'Pasta all\'uovo, ripieno dolce-salato',
+ v:'Collio Pinot Bianco DOC',vs:'sug',avv:'Non esiste una ricetta ufficiale unica.',src:[{l:'Linkiesta',u:'https://www.linkiesta.it/2021/10/cjarsons-piatto-tipico-carnia-friuli/'}]},
+{id:'jota',t:'Jota triestina',c:'zuppe',r:'Friuli-Venezia Giulia',rl:'Trieste',f:'zuppe',k:['jota'],lv:'A',
+ d:'Zuppa di fagioli, crauti e patate con maiale affumicato; PAT, codificata dall\'Accademia nel 2003 e depositata alla Camera di commercio.',i:'Fagioli, crauti, patate, maiale affumicato',
+ v:'Carso Terrano DOC',vs:'sug',tempi:'Fagioli secchi da mettere a bagno la sera prima.',avv:'Codifica del 2003 confermata solo da fonte secondaria.',src:[{l:'Il Cucchiaio d\'Argento',u:'https://www.cucchiaio.it/ricetta/ricetta-jota-triestina/'},{l:'Residenzale6a',u:'https://residenzale6a.it/ricetta-jota/',n:'fonte secondaria per la codifica'}]},
+{id:'fegato',t:'Fegato alla veneziana',c:'secondi',r:'Veneto',rl:'Venezia',f:'',k:['fegato alla veneziana','fegato veneziana'],lv:'B',
+ d:'Fegato di vitello e cipolle bianche stufate a lungo con vino bianco e burro; prima ricetta documentata nell\'Apicio moderno (1790).',i:'Fegato di vitello, cipolle bianche, vino bianco, burro',
+ v:'Valpolicella Classico Superiore DOC',vs:'sug',src:[{l:'AIFB, Giornata nazionale del fegato alla veneziana',u:'https://www.aifb.it/cultura-enogastronomica-italiana/piatti-tradizione-italiana/giornata-nazionale-del-fegato-alla-veneziana/'}]},
+{id:'vicentina',t:'Baccalà alla vicentina',c:'secondi',r:'Veneto',rl:'Vicenza',f:'baccala',k:['baccala alla vicentina','baccala vicentina'],lv:'A',
+ d:'Stoccafisso stufato con cipolle, sarde salate, latte e grana per circa 4 ore e mezza; ricetta della Venerabile Confraternita.',i:'Stoccafisso, cipolle, sarde salate, latte, grana',
+ v:'Soave Classico DOC',vs:'sug',tempi:'Stufatura lenta di circa 4 ore e mezza.',fasi:[{label:'Stufatura lenta dello stoccafisso',ore:4.5}],src:[{l:'Cucina Regionale Italiana, baccalà alla vicentina',u:'https://cucinaregionaleitaliana.it/portfolio-items/bacala-alla-vicentina/'},{l:'Venerabile Confraternita',u:'https://baccalaallavicentina.it/'}]},
+{id:'pastissada',t:'Pastissada de caval',c:'secondi',r:'Veneto',rl:'Verona',f:'stufati',k:['pastissada'],lv:'A',
+ d:'Stufato di cavallo in vino rosso e spezie, di solito con polenta; Prodotto Agroalimentare Tradizionale del Veneto.',i:'Carne di cavallo, vino rosso, spezie',
+ v:'Valpolicella Ripasso DOC',vs:'sug',avv:'Carne di cavallo: da sondare nel gruppo.',src:[{l:'Comune di Verona, turismo',u:'https://turismo.comune.verona.it/nqcontent.cfm?a_id=36312'},{l:'Eccellenze Venete',u:'https://www.eccellenzevenete.com/prodotto/pastissada-de-caval-2/'}]},
+{id:'gulasch',t:'Gulasch triestino',c:'secondi',r:'Friuli-Venezia Giulia',rl:'Trieste',f:'stufati',k:['gulasch','gulash','goulash'],lv:'B',
+ d:'Spezzatino di manzo con cipolle in peso pari alla carne e, nella versione originale, senza pomodoro; prima ricetta nel 1927.',i:'Manzo, cipolle',
+ v:'Carso Terrano DOC',vs:'sug',src:[{l:'AIFB, Giornata nazionale del gulash triestino',u:'https://www.aifb.it/cultura-enogastronomica-italiana/piatti-tradizione-italiana/giornata-nazionale-del-gulash-triestino/'}]},
+{id:'brovada',t:'Brovada e muset',c:'secondi',r:'Friuli-Venezia Giulia',rl:'',f:'',k:['brovada'],lv:'A',
+ d:'Rape fermentate nella vinaccia (Brovada DOP dal 2011) con il cotechino muset (PAT), servite con polenta.',i:'Brovada, muset, polenta',
+ v:'Friuli Colli Orientali Refosco dal Peduncolo Rosso DOC',vs:'sug',src:[{l:'Messaggero Veneto',u:'https://www.messaggeroveneto.it/cronaca/brovada-e-muset-la-ricetta-tradizionale-di-un-piatto-che-ha-fatto-storia-jsfvqiso'},{l:'Margherita Galanti',u:'https://margheritagalanti.org/2022/12/11/brovada-e-muset-con-polenta-friuli-venezia-giulia/'}]},
+{id:'grostl',t:'Gröstl tirolese',c:'secondi',r:'Trentino-Alto Adige',rl:'Alto Adige',f:'patate',k:['grostl','groestl'],lv:'B',
+ d:'Rosticciata di patate, carne e cipolla in padella, il piatto del lunedì per recuperare gli avanzi.',i:'Patate, carne, cipolla',
+ v:'Alto Adige Lagrein DOC',vs:'sug',src:[{l:'Tirol.at',u:'https://www.tirol.at/aktivitaeten/kulinarik/rezepte/tiroler-groestl',n:'in tedesco'},{l:'CiboToday',u:'https://www.cibotoday.it/video/groestl-alto-adige-tirolo-storia-ricetta.html'},{l:'Sagr',u:'https://sagr.it/trentino-alto-adige/alto-adige/ricette/grostl'}]},
+{id:'tiramisu',t:'Tiramisù',c:'dolci',r:'Veneto',rl:'Treviso, paternità contesa con il Friuli',f:'',k:['tiramisu'],lv:'A',
+ d:'Origine trevigiana per Treccani; la ricetta di Le Beccherie è depositata presso l\'Accademia dal 2010, il Friuli ha il PAT dal 2017.',i:'Savoiardi, mascarpone, uova, caffè, cacao',
+ v:'Prosecco Superiore DOCG Dry',vs:'sug',tempi:'Si prepara il giorno prima.',avv:'PAT veneto del 2024 confermato da una sola fonte.',src:[{l:'Treccani, vocabolario',u:'https://www.treccani.it/vocabolario/tiramisu'},{l:'Dissapore',u:'https://www.dissapore.com/ricette/tiramisu-veneto/'},{l:'Panorama',u:'https://www.panorama.it/lifestyle/cucina/origini-tiramisu-e-dove-mangiarlo'},{l:'Accademia Italiana della Cucina',u:'https://www.accademiaitalianadellacucina.it/ricette/ricetta/tiramis%C3%B9',n:'non verificabile'}]},
+{id:'gubana',t:'Gubana',c:'dolci',r:'Friuli-Venezia Giulia',rl:'Valli del Natisone',f:'spirale',k:['gubana'],lv:'A',
+ d:'Lievitato a chiocciola con frutta secca, uvetta e grappa; Consorzio dal 1990, PAT, già citata dalla Guida del TCI nel 1931.',i:'Pasta lievitata, frutta secca, uvetta, grappa',
+ v:'Picolit DOCG',vs:'sug',src:[{l:'Turismo FVG',u:'https://www.turismofvg.it/it/264707/la-ricetta-della-gubana-delle-valli-del-natisone-+-il-vino-perfetto-che-la-accompagna'},{l:'Il Giornale del Cibo (ricetta ERSA)',u:'https://www.ilgiornaledelcibo.it/ricetta-gubana/'}]},
+{id:'presnitz',t:'Presnitz triestino',c:'dolci',r:'Friuli-Venezia Giulia',rl:'Trieste',f:'spirale',k:['presnitz'],lv:'C',
+ d:'Sfoglia arrotolata a chiocciola con frutta secca e uvetta; la leggenda lo lega al 1832, la ricetta è in Maria Stelvio.',i:'Sfoglia, frutta secca, uvetta',
+ v:'Verduzzo Friulano passito',vs:'sug',avv:'Fonti ufficiali deboli.',src:[{l:'Discover Trieste',u:'https://www.discover-trieste.it/vivi/enogastronomia/ricette-triestine-piatti-tipici/presnitz-alla-triestina'}]},
+{id:'strudel',t:'Strudel di mele',c:'dolci',r:'Trentino-Alto Adige',rl:'Alto Adige e Trentino',f:'',k:['strudel'],lv:'B',
+ d:'Il dolce-simbolo della cucina tirolese; ricetta dai portali altoatesini, storia nei libri Athesia.',i:'Mele, uvetta, pasta',
+ v:'Alto Adige Gewürztraminer Vendemmia Tardiva',vs:'sug',src:[{l:'Genussland Südtirol',u:'https://www.genusslandsuedtirol.it/de/cmspre/suedtiroler-apfelstrudel/cmspre-recipe-70,43.html',n:'in tedesco'},{l:'Südtirol Info',u:'https://www.suedtirol.info/en/en/eating-and-drinking/plp-recipe/pdp-recipe.CE3E67B3-E101-4C55-9E8A-2F508DBDAD4D.shortcrust-apple-strudel',n:'in inglese'},{l:'AIFB, storia',u:'https://www.aifb.it/cultura-enogastronomica-italiana/piatti-tradizione-italiana/giornata-nazionale-dello-strudel/',n:'la ricetta lì è una variante con pere'}]},
+{id:'saraceno',t:'Torta di grano saraceno',c:'dolci',r:'Trentino-Alto Adige',rl:'condivisa con la Valtellina',f:'secchi',k:['grano saraceno','buchweizentorte','schwarzplententorte'],lv:'C',
+ d:'Torta di farina di grano saraceno con confettura di mirtilli rossi (Schwarzplententorte in Alto Adige).',i:'Farina di grano saraceno, confettura di mirtilli rossi',
+ v:'Alto Adige Moscato Rosa DOC',vs:'sug',avv:'Nessun riscontro storico: la prima da sostituire.',src:[{l:'Genussland Südtirol',u:'https://www.genusslandsuedtirol.it/de/cmspre/buchweizentorte/cmspre-recipe-106,46.html',n:'in tedesco'},{l:'Meraner Land',u:'https://www.merano-suedtirol.it/de/tisens-prissian/essen-trinken/rezepte-unserer-mitgliedsbetriebe-zum-nachkochen/351-koestliche-buchweizentorte.html',n:'in tedesco'},{l:'Montagna di Viaggi',u:'https://www.montagnadiviaggi.it/2020/10/ricetta-torta-grano-saraceno-alto-adige-trentino.html'}]},
+/* ---- seconda rassegna (livello da assegnare; abbinamenti dal documento) ---- */
+{id:'schie',t:'Schie con polenta bianca',c:'antipasti',r:'Veneto',rl:'laguna',f:'',k:['schie'],lv:'',
+ d:'Minuscoli gamberetti grigi di laguna, infarinati e fritti all\'ultimo, su polenta bianca morbida.',i:'Schie di laguna, farina di mais Biancoperla',
+ v:'Lessini Durello DOC Spumante',vs:'scheda',tempi:'Frittura da fare all\'ultimo.',src:[{l:'Accademia Italiana della Cucina, Civiltà della Tavola n. 268',u:'https://www.accademiaitalianadellacucina.it/sites/default/files/allegati/CdT_268.pdf'}]},
+{id:'granseola',t:'Granseola alla veneziana',c:'antipasti',r:'Veneto',rl:'Venezia',f:'',k:['granseola','granceola'],lv:'',
+ d:'Granchio lessato in court-bouillon, polpa sfilacciata e condita solo con olio, limone e prezzemolo, servita nel suo guscio.',i:'Polpa di granseola, olio extravergine, limone, prezzemolo',
+ v:'Lugana DOC Superiore',vs:'scheda',weak:'Il link è una pagina generica sui crostacei, non la ricetta.',src:[{l:'Cucina Regionale Italiana, crostacei',u:'https://cucinaregionaleitaliana.it/tecnica/alimenti/pesce/crostacei/'}]},
+{id:'toc',t:'Toc\' in braide',c:'antipasti',r:'Friuli-Venezia Giulia',rl:'',f:'montasio',k:['toc in braide','toc braide'],lv:'',
+ d:'Polenta morbida con fonduta di Montasio e burro nocciola fatto con farina di mais tostata: la colazione contadina friulana.',i:'Farina di mais, Montasio mezzano, burro, ricotta affumicata',
+ v:'Friuli Colli Orientali Friulano DOC',vs:'scheda',src:[{l:'Turismo FVG, toc in braide',u:'https://www.turismofvg.it/de/wein-und-essen/typische-produkte/toc-in-braide?LangSetCMS=de',n:'in tedesco'}]},
+{id:'salame',t:'Salame all\'aceto',c:'antipasti',r:'Friuli-Venezia Giulia',rl:'',f:'',k:['salame all aceto','salan tal aset'],lv:'',
+ d:'Fette di salame fresco all\'aglio rosolate in padella e sfumate con aceto e cipolla, servite con polenta.',i:'Salame fresco friulano, aceto di vino, cipolla',
+ v:'Friuli Grave Refosco dal Peduncolo Rosso DOC',vs:'scheda',weak:'Il link è una brochure generale del Friuli, non una scheda del piatto.',src:[{l:'Turismo FVG, brochure',u:GEN_FVG}]},
+{id:'tirtlan',t:'Tirtlan della Val Pusteria',c:'antipasti',r:'Trentino-Alto Adige',rl:'Val Pusteria',f:'ripiene',k:['tirtlan'],lv:'',
+ d:'Dischi di pasta di segale ripieni di crauti o di spinaci e ricotta, fritti fino a farli bollare.',i:'Farina di segale, crauti o spinaci e Topfen, strutto o olio',
+ v:'Alto Adige Valle Isarco Kerner DOC',vs:'scheda',tempi:'Frittura da fare all\'ultimo.',weak:'Il link è un indice di ricette dell\'Alto Adige, non la ricetta.',src:[{l:'Südtirol Info, ricette',u:'https://www.suedtirol.info/de/de/essen-und-trinken/rezepte',n:'in tedesco'}]},
+{id:'bigoliarna',t:'Bigoli co\' l\'arna',c:'primi',r:'Veneto',rl:'Vicenza',f:'bigoli',k:['bigoli co l arna','bigoli all arna','bigoli arna'],lv:'',
+ d:'Bigoli al torchio con ragù di anatra novella e frattaglie, mantecati con Asiago stravecchio; piatto di Thiene.',i:'Bigoli, anatra novella, fegatini, Asiago stravecchio',
+ v:'Colli Berici Tai Rosso DOC',vs:'scheda',src:[{l:'Il Cucchiaio d\'Argento',u:'https://www.cucchiaio.it/ricetta/ricetta-bigoli-co-larna/'}]},
+{id:'casunziei',t:'Casunziei all\'ampezzana',c:'primi',r:'Veneto',rl:'Dolomiti',f:'ripiene',k:['casunziei'],lv:'',
+ d:'Mezzelune sottili ripiene di barbabietola e patate, condite con burro e salvia, semi di papavero e ricotta affumicata.',i:'Barbabietola, patate, burro, salvia, semi di papavero',
+ v:'Alto Adige Pinot Nero DOC',vs:'scheda',tempi:'Pasta fresca da stendere e cuocere sul momento.',weak:'Il link è un elenco di piatti veneti, non la ricetta.',src:[{l:'Il Cucchiaio d\'Argento, piatti veneti',u:'https://www.cucchiaio.it/cucina/cucina-tipica-italiana/veneto/pag_2/'}]},
+{id:'fasioi',t:'Pasta e fasioi alla veneta',c:'zuppe',r:'Veneto',rl:'',f:'zuppe',k:['pasta e fasioi','pasta e fagioli','pasta fasioi'],lv:'',
+ d:'Pasta e fagioli cremosa con Fagiolo di Lamon IGP e maltagliati, così densa da reggere il cucchiaio.',i:'Fagioli di Lamon IGP, maltagliati all\'uovo, cotenna',
+ v:'Valpolicella Ripasso Classico DOC',vs:'scheda',tempi:'La base di fagioli migliora se fatta il giorno prima.',src:[{l:'Il Cucchiaio d\'Argento',u:'https://www.cucchiaio.it/ricetta/ricetta-pasta-fagioli/'}]},
+{id:'schlutz',t:'Schlutzkrapfen tirolesi',c:'primi',r:'Trentino-Alto Adige',rl:'Alto Adige',f:'ripiene',k:['schlutzkrapfen','schlutzer'],lv:'',
+ d:'Mezzelune con sfoglia di segale e ripieno di spinaci e Topfen, condite con burro nocciola ed erba cipollina.',i:'Segale e frumento, spinaci, Topfen, burro',
+ v:'Alto Adige Pinot Bianco DOC',vs:'scheda',tempi:'Pasta fresca da stendere e cuocere sul momento.',src:[{l:'Südtirol Info, ricetta originale',u:'https://www.suedtirol.info/de/de/essen-und-trinken/plp-rezept/pdp-rezept.29D7873B-602C-4E41-AC13-4A7A07D7BFF0.schlutzkrapfen-rezept---original-aus-suedtirol',n:'in tedesco'}]},
+{id:'blecs',t:'Blecs con zucca e formadi frant',c:'primi',r:'Friuli-Venezia Giulia',rl:'Carnia',f:'',k:['blecs'],lv:'',
+ d:'Triangoli di pasta di grano, segale e mais con zucca stufata e formadi frant: un piatto d\'autunno carnico.',i:'Farine miste, zucca, formadi frant, salvia',
+ v:'Colli Orientali del Friuli Schioppettino DOC',vs:'scheda',src:[{l:'Turismo FVG, ricetta dei blecs',u:'https://www.turismofvg.it/it/fvglivexperience/ricetta-autunnale-friulana-blecs-con-zucca-e-formadi-frant'}]},
+{id:'bobici',t:'Minestra de bobiçi',c:'zuppe',r:'Friuli-Venezia Giulia',rl:'Carso',f:'zuppe',k:['bobici'],lv:'',
+ d:'Zuppa di mais tenero, fagioli borlotti e patate, profumata da lardo battuto e costine affumicate; cucina del Carso.',i:'Mais fresco, borlotti, patate, costine affumicate',
+ v:'Carso Vitovska DOC',vs:'scheda',avv:'Serve mais fresco di fine estate.',weak:'Il link è una brochure generale del Friuli, non una scheda del piatto.',src:[{l:'Turismo FVG, brochure',u:GEN_FVG}]},
+{id:'pearà',t:'Gran bollito con salsa pearà',c:'secondi',r:'Veneto',rl:'Verona',f:'',k:['peara','bollito misto','gran bollito'],lv:'',
+ d:'Bollito misto veronese con la pearà di midollo, pane e abbondante pepe.',i:'Manzo, cotechino, gallina, midollo, pane, pepe',
+ v:'Amarone della Valpolicella DOCG',vs:'scheda',tempi:'Salsa: oltre 2 ore di cottura lenta; meglio farla il giorno prima.',fasi:[{label:'Cottura lenta della salsa pearà',ore:2}],src:[{l:'Il Cucchiaio d\'Argento, pearà',u:'https://www.cucchiaio.it/ricetta/ricetta-peara/'}]},
+{id:'seppie',t:'Seppie in nero alla veneziana',c:'secondi',r:'Veneto',rl:'',f:'pesce',k:['seppie in nero','seppie al nero','seppie nero'],lv:'',
+ d:'Seppie in umido con il loro nero, cipolla e vino bianco, servite con polenta gialla.',i:'Seppie fresche, nero di seppia, cipolla, vino bianco',
+ v:'Soave Superiore Classico DOCG',vs:'scheda',tempi:'Circa 45 minuti di cottura; migliorano se fatte il giorno prima.',weak:'Il link è un elenco di ricette con la seppia, non la ricetta.',src:[{l:'Il Cucchiaio d\'Argento, ricette con seppia',u:'https://www.cucchiaio.it/ricette/pesce_seppia~1/'}]},
+{id:'busara',t:'Scampi alla busara',c:'secondi',r:'Friuli-Venezia Giulia',rl:'Trieste e Istria',f:'pesce',k:['busara','busera'],lv:'',
+ d:'Scampi rosolati con aglio e peperoncino, sfumati col vino e finiti con pomodoro e pangrattato.',i:'Scampi, pomodoro pelato, aglio, pangrattato',
+ v:'Collio Ribolla Gialla DOC',vs:'scheda',weak:'Il link è una brochure generale del Friuli, non una scheda del piatto.',src:[{l:'Turismo FVG, brochure',u:GEN_FVG}]},
+{id:'boreto',t:'Boreto alla graisana',c:'secondi',r:'Friuli-Venezia Giulia',rl:'Grado',f:'pesce',k:['boreto','brodetto di grado'],lv:'',
+ d:'Pesce misto di laguna in padella con molto aglio, pepe e aceto, senza pomodoro; piatto antico di Grado, con polenta bianca.',i:'Pescato lagunare misto, aglio, pepe nero, aceto',
+ v:'Friuli Isonzo Malvasia DOC',vs:'scheda',weak:'Il link è la pagina generale dei prodotti tipici del Friuli.',src:[{l:'Turismo FVG, prodotti tipici',u:'https://www.turismofvg.it/it/enogastronomia/prodotti-tipici'}]},
+{id:'brasato',t:'Brasato di manzo al Teroldego',c:'secondi',r:'Trentino-Alto Adige',rl:'Trentino',f:'stufati',k:['brasato di manzo','brasato al teroldego'],lv:'',
+ d:'Cappello del prete marinato una notte nel Teroldego e brasato per oltre tre ore fino a una glassa scura.',i:'Manzo, Teroldego Rotaliano, verdure, ginepro',
+ v:'Teroldego Rotaliano Riserva DOC',vs:'scheda',tempi:'Marinatura una notte, brasatura oltre 3 ore; meglio farlo il giorno prima.',fasi:[{label:'Marinatura nel Teroldego',ore:12},{label:'Brasatura lenta',ore:3.5}],weak:'Il link rimanda alla carne salada, non al brasato.',src:[{l:'Visit Rotaliana, carne salada',u:'https://www.visitrotaliana.it/it/gastronomia/ricette-trentine/carne-salada-trentina'}]},
+{id:'capriolo',t:'Capriolo in salmì con polenta',c:'secondi',r:'Trentino-Alto Adige',rl:'Trentino',f:'stufati',k:['capriolo'],lv:'',
+ d:'Selvaggina marinata almeno 24 ore nel vino rosso con ginepro ed erbe, stufata a lungo; con mirtilli rossi e polenta di Storo.',i:'Capriolo, vino rosso, ginepro, mirtilli rossi',
+ v:'Trentino Marzemino Superiore DOC',vs:'scheda',tempi:'Marinatura di almeno 24 ore, poi stufatura lenta.',fasi:[{label:'Marinatura del capriolo',ore:24}],avv:'Selvaggina: da reperire per tempo.',weak:'Il link rimanda allo zelten, non al capriolo.',src:[{l:'Il Cucchiaio d\'Argento (pagina dello zelten)',u:'https://www.cucchiaio.it/ricetta/ricetta-zelten/'}]},
+{id:'zaleti',t:'Zaleti veneziani',c:'dolci',r:'Veneto',rl:'Venezia',f:'secchi',k:['zaleti','zaeti'],lv:'',
+ d:'Biscotti veneziani di farina di mais con uvetta ammollata nella grappa, già citati da Goldoni.',i:'Farina di mais fioretto, burro, uvetta, grappa',
+ v:'Torchiato di Fregona DOCG',vs:'scheda',src:[{l:'Il Cucchiaio d\'Argento',u:'https://www.cucchiaio.it/ricetta/ricetta-zaeti/'}]},
+{id:'fregolotta',t:'Torta fregolotta trevigiana',c:'dolci',r:'Veneto',rl:'Treviso',f:'secchi',k:['fregolotta'],lv:'',
+ d:'Torta secca trevigiana senza uova, di farina e mandorle, che si spezza a colpi di pugno.',i:'Farina 00, mandorle, panna, zucchero',
+ v:'Recioto di Soave Classico DOCG',vs:'scheda',src:[{l:'Il Cucchiaio d\'Argento',u:'https://www.cucchiaio.it/ricetta/ricetta-torta-fregolotta/'}]},
+{id:'putizza',t:'Putizza goriziana e triestina',c:'dolci',r:'Friuli-Venezia Giulia',rl:'Gorizia e Trieste',f:'spirale',k:['putizza','potica'],lv:'',
+ d:'Lievitato sottile arrotolato a spirale con ripieno di noci, fichi, cacao e rum; dolce del Carso e di Gorizia.',i:'Pasta lievitata, noci, fichi, cacao, rum',
+ v:'Ramandolo DOCG',vs:'scheda',src:[{l:'Il Cucchiaio d\'Argento',u:'https://www.cucchiaio.it/ricetta/ricetta-putizza/'}]},
+{id:'kaiser',t:'Kaiserschmarrn altoatesino',c:'dolci',r:'Trentino-Alto Adige',rl:'Alto Adige',f:'',k:['kaiserschmarrn','kaiserschmarren'],lv:'',
+ d:'Frittata dolce soffice strappata in padella con uvetta, servita con purea di mele o mirtilli rossi.',i:'Uova, farina, latte, uvetta, confettura di mirtilli',
+ v:'Alto Adige Moscato Giallo Passito DOC',vs:'scheda',tempi:'Si cuoce all\'ultimo, in padella.',avv:'Il link è la ricetta con le mele (Apfelschmarrn).',src:[{l:'Südtirol Info, ricetta originale',u:'https://www.suedtirol.info/de/de/essen-und-trinken/plp-rezept/pdp-rezept.A86D2DCA-7DD4-48A8-A3AF-EC5B2A85BFF5.apfelschmarren',n:'in tedesco'}]},
+{id:'zelten',t:'Zelten trentino-sudtirolese',c:'dolci',r:'Trentino-Alto Adige',rl:'Trentino e Alto Adige',f:'',k:['zelten'],lv:'',
+ d:'Pane speziato di Natale pieno di frutta secca e canditi, decorato con mandorle e noci.',i:'Fichi secchi, uvetta, noci, mandorle, spezie',
+ v:'Trentino Vino Santo DOC',vs:'scheda',src:[{l:'Il Cucchiaio d\'Argento',u:'https://www.cucchiaio.it/ricetta/ricetta-zelten/'}]}
+];
+SUG.forEach(s=>{if(s.id==='pearà')s.id='peara';});
+/* tipo di vino (Spumante / Bianco / Rosso / Passito / Dolce), nome locale, note di esecuzione e tipo di farina di mais.
+   Dove il documento non li indica restano vuoti; i tipi di vino della prima rassegna seguono gli abbinamenti suggeriti. */
+const WTYPES=['Spumante','Bianco','Rosso','Passito / Dolce'];
+const EXTRA={
+  sarde:{wt:'Bianco'},mantecato:{wt:'Spumante'},frico:{wt:'Bianco'},carnesalada:{wt:'Rosso'},tortel:{wt:'Spumante'},
+  risibisi:{wt:'Bianco'},bigolisalsa:{wt:'Bianco'},canederli:{wt:'Rosso'},strangolapreti:{wt:'Bianco'},cjarsons:{wt:'Bianco'},
+  jota:{wt:'Rosso'},fegato:{wt:'Rosso'},vicentina:{wt:'Bianco'},pastissada:{wt:'Rosso'},gulasch:{wt:'Rosso'},brovada:{wt:'Rosso'},
+  grostl:{wt:'Rosso'},tiramisu:{wt:'Spumante'},gubana:{wt:'Passito / Dolce'},presnitz:{wt:'Passito / Dolce'},
+  strudel:{wt:'Passito / Dolce'},saraceno:{wt:'Passito / Dolce'},
+  schie:{wt:'Spumante',ln:'Schie con polenta morbida di Biancoperla',e:'Frittura espressa ad alta temperatura per mantenere croccante il carapace.',mais:'Biancoperla'},
+  granseola:{wt:'Bianco',e:'Lessatura breve del crostaceo e pulizia manuale accurata.'},
+  toc:{wt:'Bianco',e:'Fonduta a bagnomaria dolce per evitare che i grassi si separino.',mais:'Gialla fine'},
+  salame:{wt:'Rosso',ln:'Salan tal asêt',e:'Riduzione rapida dell\'aceto per ottenere un fondo scuro e denso.',mais:'Gialla fine'},
+  tirtlan:{wt:'Bianco',e:'Bordi sigillati a pressione prima della frittura immediata.'},
+  bigoliarna:{wt:'Rosso',ln:'Bigoli con l\'anatra novella',e:'Cottura lenta del ragù a fuoco dolcissimo.'},
+  casunziei:{wt:'Rosso',ln:'Casunziei ampezzani',e:'Sfoglia tirata sottilissima e cottura rapidissima in acqua salata.'},
+  fasioi:{wt:'Rosso',ln:'Pasta e fagioli alla veneta',e:'Consistenza finale così densa da reggere il cucchiaio in verticale.'},
+  schlutz:{wt:'Bianco',e:'La farina di segale dà elasticità e una nota rustica alla pasta.'},
+  blecs:{wt:'Rosso',ln:'Blecs con zucca e formadi frant',e:'Mantecatura vigorosa a fuoco spento per conservare la cremosità.',mais:'Gialla fine'},
+  bobici:{wt:'Bianco',e:'Sobbollitura lenta per fondere la nota affumicata della carne nel mais.'},
+  peara:{wt:'Rosso',ln:'Bollito misto con la pearà',e:'Pearà in tegame di coccio per oltre due ore, senza staccare la crosta sul fondo.'},
+  seppie:{wt:'Bianco',ln:'Seppie in nero con polenta',e:'Estrazione delicata delle vescichette d\'inchiostro, tenute intere.',mais:'Biancoperla'},
+  busara:{wt:'Bianco',e:'Il pangrattato assorbe i succhi dei crostacei e fa un sugo denso e speziato.'},
+  boreto:{wt:'Bianco',ln:'Boreto de pesce alla gradese',e:'Aglio rosolato a lungo e aceto ridotto con decisione.',mais:'Biancoperla'},
+  brasato:{wt:'Rosso',ln:'Brasato al Teroldego Rotaliano',e:'Salsa di marinatura e verdure passate, ridotta in una glassa scura.',mais:'Storo, grana rustica'},
+  capriolo:{wt:'Rosso',ln:'Capriolo in salmì con mirtilli rossi',e:'La lunga marinatura è indispensabile per ammorbidire le fibre.',mais:'Storo, grana rustica'},
+  zaleti:{wt:'Passito / Dolce',ln:'Zaeti veneziani',e:'Cottura moderata per mantenere la friabilità interna.',mais:'Fioretto'},
+  fregolotta:{wt:'Passito / Dolce',e:'Non si taglia: si frantuma al centro con un colpo deciso.'},
+  putizza:{wt:'Passito / Dolce',ln:'Potica / Putizza',e:'Lunga lievitazione e riposo dopo la cottura per fondere gli aromi.'},
+  kaiser:{wt:'Passito / Dolce',e:'Caramellizzazione rapida in superficie, da servire bollente.'},
+  zelten:{wt:'Passito / Dolce',ln:'Zelten natalizio',e:'Mandorle intere sulla superficie prima della cottura.'}
+};
+SUG.forEach(s=>Object.assign(s,EXTRA[s.id]||{}));
+const sugById=id=>SUG.find(s=>s.id===id);
 
 /* ============ logica: tempi, votazioni, selezione, spesa ============ */
 const slotDef=k=>SLOTS.find(s=>s.key===k);
@@ -550,7 +736,7 @@ function scaleF(r){
 }
 function allIngs(r){
   const a=(r.ingredients||[]).map(i=>({name:i.name,qty:i.qty,unit:i.unit,shop:i.shop||'dispensa'}));
-  for(const v of (r.vini||[]))a.push({name:v.nome,qty:v.bottiglie,unit:'bottiglie',shop:'cantina',vino:true});
+  for(const v of (r.vini||[]))if(num(v.bottiglie)>0)a.push({name:v.nome,qty:v.bottiglie,unit:'bottiglie',shop:'cantina',vino:true});
   return a;
 }
 function consolidate(day){
@@ -719,6 +905,25 @@ function timeline(){
   return items;
 }
 
+/* --- suggerimenti: collegamento con le proposte e piatti simili --- */
+function sugRecipe(s){
+  return S.recipes.find(r=>r.sugId===s.id)||S.recipes.find(r=>{const t=norm(r.title);return s.k.some(k=>t.indexOf(k)>=0);})||null;
+}
+const sugState=s=>{const r=sugRecipe(s);return r?(r.slot?'menu':'proposta'):'libera';};
+const sugFor=r=>(r.sugId&&sugById(r.sugId))||SUG.find(s=>s.k.some(k=>norm(r.title).indexOf(k)>=0))||null;
+const famMates=s=>s.f?SUG.filter(x=>x.f===s.f&&x.id!==s.id):[];
+function famDupes(){
+  const m={};
+  for(const r of slotted()){const s=sugFor(r);if(s&&s.f)(m[s.f]=m[s.f]||[]).push(r);}
+  return Object.keys(m).filter(f=>m[f].length>1).map(f=>[f,m[f]]);
+}
+function sugPre(s){
+  const src=(s.src&&s.src[0])||{};
+  return{sugId:s.id,title:s.t,category:s.c,region:s.r,link:src.u||'',
+    vini:s.v?[{nome:s.v,bottiglie:0}]:[],fasi:(s.fasi||[]).map(f=>({label:f.label,ore:f.ore})),
+    verStato:s.weak?'da_sostituire':'da_verificare',verNota:s.weak||''};
+}
+
 /* ============ viste: accesso, testata, proposte ============ */
 const safeHref=u=>isUrl(u)?String(u).trim():'#';
 const sortedPeople=()=>[...S.participants].sort((a,b)=>((a.ord==null?1e9:a.ord)-(b.ord==null?1e9:b.ord))||a.name.localeCompare(b.name,'it'));
@@ -758,7 +963,7 @@ function vHeader(){
 }
 
 function vNav(){
-  const tabs=[['proposte','Proposte',S.recipes.length],['voto','Votazioni'],['menu','Menu',slotted().length+'/'+totalCap()],['spesa','Spesa'],['programma','Programma'],['persone','Persone',nConf()]];
+  const tabs=[['proposte','Proposte',S.recipes.length],['suggerimenti','Suggerimenti',SUG.filter(s=>sugState(s)==='libera').length],['voto','Votazioni'],['menu','Menu',slotted().length+'/'+totalCap()],['spesa','Spesa'],['programma','Programma'],['persone','Persone',nConf()]];
   return `<nav class="tabs" aria-label="Sezioni"><div class="in">${tabs.map(t=>
     `<button class="tab" data-act="tab" data-v="${t[0]}" ${(UI.tab===t[0]&&!UI.dish)||(UI.dish&&t[0]==='menu')?'aria-current="page"':''}>${t[1]}${t[2]!==undefined?`<span class="n">${t[2]}</span>`:''}</button>`).join('')}</div></nav>`;
 }
@@ -829,7 +1034,7 @@ function vProposte(){
 }
 function vTrash(){
   if(!S.trash.length)return '';
-  return `<details class="panel" id="trash" ${UI.trashOpen?'open':''}><summary style="cursor:pointer;font-weight:600">Cestino (${S.trash.length})</summary>
+  return `<details class="panel" id="trash" ${isOpen('trash')}><summary style="cursor:pointer;font-weight:600">Cestino (${S.trash.length})</summary>
     <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px">${S.trash.map(r=>`<div class="row spread"><span>${esc(r.title)} <span class="small muted">· proposta da ${esc(pname(r.proposerId))}</span></span>
       <span class="row">${canDelRecipe(r)?`<button class="btn sm" data-act="restore-recipe" data-id="${esc(r.id)}">Ripristina</button>`:''}
       ${isOrg()?`<button class="btn sm danger" data-act="purge-recipe" data-id="${esc(r.id)}">${UI.confirm==='purge:'+r.id?'Sì, elimina per sempre':'Elimina per sempre'}</button>`:''}</span></div>`).join('')}</div></details>`;
@@ -983,7 +1188,9 @@ function vMenu(){
         :`<button class="btn" data-act="suggest">Suggerisci dai voti</button><button class="btn" data-act="clear-menu" ${sl.length?'':'disabled'}>Svuota</button>`}</div>`:''}</div>
     ${!org?`<div class="note">Solo gli organizzatori assegnano i piatti ai pasti. Qui puoi vedere il menu e aprire le schede.</div>`:''}
     ${noIng?`<div class="note warn"><b>${noIng}</b> piatt${noIng===1?'o':'i'} del menu senza ingredienti: la lista della spesa è incompleta finché i responsabili non compilano le schede.</div>`:''}
+    ${famNote()}
     <div class="days">${days}</div>
+    ${vCarta()}
     <h3>Candidati</h3>${candHtml}</section>`;
 }
 A.suggest=()=>{
@@ -1013,6 +1220,168 @@ CH.setslot=async t=>{
   if(await write('update','recipes/'+id,{slot:v})){const r=R(id);if(v&&r&&!feasible(r,v))toast('Attenzione: i tempi di preparazione non stanno in questo pasto.','err');}
 };
 
+/* --- carta dei vini e piatti simili --- */
+function famNote(){
+  const d=famDupes();
+  if(!d.length)return '';
+  return `<div class="note"><b>Piatti simili nel menu.</b> ${d.map(([f,rs])=>`${esc(FAM[f])}: ${rs.map(r=>esc(r.title)).join(', ')}`).join(' · ')}. Valuta se servono tutti.</div>`;
+}
+function winesInMenu(){
+  const m=new Map();
+  for(const r of slotted())for(const v of (r.vini||[])){
+    const k=norm(v.nome);if(!k)continue;
+    const o=m.get(k)||{nome:v.nome,dishes:[],raw:0};o.dishes.push(r.title);o.raw+=num(v.bottiglie)*scaleF(r);m.set(k,o);
+  }
+  return [...m.values()].sort((a,b)=>a.nome.localeCompare(b.nome,'it'));
+}
+function vCarta(){
+  if(!slotted().length)return '';
+  const ws=winesInMenu();
+  const rows=ws.map(w=>`<div class="row spread" style="padding:7px 0;border-top:1px dashed var(--line)"><span><b>${esc(w.nome)}</b> <span class="small muted">· ${esc(w.dishes.join(', '))}</span></span><span class="small num muted">${w.raw>0?roundUp('bottiglie',w.raw)+' bott.':'quantità da definire'}</span></div>`).join('');
+  return `<div class="panel"><div class="row spread"><h3>Carta dei vini</h3><button class="btn sm" data-act="copy-carta">Copia la carta del banchetto</button></div>
+    ${ws.length?rows:'<p class="muted small" style="margin-top:8px">Nessun vino indicato nelle schede. Compaiono qui quando proponi un piatto dai Suggerimenti o li aggiungi nella scheda del piatto.</p>'}</div>`;
+}
+function cartaText(){
+  const out=['CARTA DEL BANCHETTO · Gran Bouffe '+(S.settings.tema||''),''];
+  for(const sl of SLOTS){
+    const rs=slotted().filter(r=>r.slot===sl.key).sort((a,b)=>catIdx(a.category)-catIdx(b.category)||byTitle(a,b));
+    if(!rs.length)continue;
+    out.push(sl.label.toUpperCase());
+    rs.forEach(r=>out.push('- '+r.title+((r.vini||[])[0]?' · '+r.vini[0].nome:'')));
+    out.push('');
+  }
+  return out.join('\n').trim();
+}
+A['copy-carta']=()=>copyText(cartaText(),'Carta copiata: incollala dove vuoi');
+
+/* ============ vista: suggerimenti (catalogo di 44 piatti del Triveneto) ============ */
+const LV_ORD={A:0,B:1,C:2,'':3};
+const lvBadge=lv=>lv?badge(LIVELLI[lv].t,LIVELLI[lv].cls):badge('Livello da assegnare','muted');
+
+function sugList(){return SUG.map(s=>({s,st:sugState(s),r:sugRecipe(s)}));}
+function filterSug(all){
+  const q=norm(UI.sq);
+  const l=all.filter(x=>{
+    const s=x.s;
+    if(UI.scat&&s.c!==UI.scat)return false;
+    if(UI.sreg&&s.r!==UI.sreg)return false;
+    if(UI.swt&&s.wt!==UI.swt)return false;
+    if(UI.slv&&(s.lv||'-')!==UI.slv)return false;
+    if(UI.sst&&x.st!==UI.sst)return false;
+    if(q&&norm([s.t,s.ln,s.i,s.v,s.r,s.rl,s.d].join(' ')).indexOf(q)<0)return false;
+    return true;
+  });
+  const byT=(a,b)=>a.s.t.localeCompare(b.s.t,'it');
+  const cmp={cat:(a,b)=>catIdx(a.s.c)-catIdx(b.s.c)||byT(a,b),
+    lv:(a,b)=>LV_ORD[a.s.lv]-LV_ORD[b.s.lv]||catIdx(a.s.c)-catIdx(b.s.c)||byT(a,b),
+    reg:(a,b)=>REGIONI.indexOf(a.s.r)-REGIONI.indexOf(b.s.r)||catIdx(a.s.c)-catIdx(b.s.c)||byT(a,b),
+    az:byT};
+  return l.sort(cmp[UI.ssort]||cmp.cat);
+}
+function eqHtml(rows){
+  const max=Math.max(1,...rows.map(r=>r.l+r.p+r.m));
+  return `<div class="eq">${rows.map(r=>{
+    const t=r.l+r.p+r.m;
+    return `<div class="eqr"><span>${esc(r.label)}</span><div class="eqb" style="width:${Math.max(6,t/max*100)}%" role="img" aria-label="${esc(r.label)}: ${r.m} approvate, ${r.p} proposte, ${r.l} da proporre"><i class="m" style="flex:${r.m}"></i><i class="p" style="flex:${r.p}"></i><i class="l" style="flex:${r.l}"></i></div><span class="num small muted">${r.m} · ${r.p} · ${r.l}</span></div>`;
+  }).join('')}</div>`;
+}
+function eqRows(all,labels,key){
+  return labels.map(([k,lab])=>{
+    const xs=all.filter(x=>x.s[key]===k);
+    return{label:lab,m:xs.filter(x=>x.st==='menu').length,p:xs.filter(x=>x.st==='proposta').length,l:xs.filter(x=>x.st==='libera').length};
+  });
+}
+function sugFlag(x){
+  if(x.st==='menu')return badge('Approvata · '+slotLabel(x.r.slot),'ok');
+  if(x.st==='proposta')return badge(['menu','cucina'].includes(S.settings.fase)?'Proposta · non selezionata':'Già proposta','info');
+  return badge('Da proporre','muted');
+}
+const REG_SHORT={'Veneto':'Veneto','Friuli-Venezia Giulia':'Friuli-V.G.','Trentino-Alto Adige':'Trentino-A.A.'};
+function sugCard(x,grouped){
+  const s=x.s,r=x.r,c=catOf(s.c);
+  const mates=x.st==='libera'?famMates(s).map(m=>({m,st:sugState(m)})).filter(y=>y.st!=='libera'):[];
+  const showLn=s.ln&&norm(s.ln)!==norm(s.t);
+  const srcs=s.src.map(u=>`<li><a href="${esc(safeHref(u.u))}" target="_blank" rel="noopener noreferrer">${esc(u.l)} ↗</a>${u.n?` <span class="small muted">(${esc(u.n)})</span>`:''}</li>`).join('');
+  const act=x.st==='libera'
+    ?`<button class="btn sm primary" data-act="sug-propose" data-id="${esc(s.id)}" ${canPropose()?'':'disabled'}>Proponi questo piatto</button>`
+    :`<span class="small muted">Proposta da ${esc(pname(r.proposerId))}</span><button class="btn sm" data-act="sug-open" data-id="${esc(s.id)}">${r.slot?'Apri la scheda':'Vedi la proposta'}</button>`;
+  return `<article class="card sg ${x.st}">
+    <div class="row spread"><div class="row" style="gap:6px">${grouped?'':chipCat(s.c)}<span class="chip plain">${esc(REG_SHORT[s.r]||s.r)}</span></div>${sugFlag(x)}</div>
+    <h3>${esc(s.t)}</h3>${(showLn||s.rl)?`<p class="small muted" style="margin-top:-4px">${showLn?`<i>${esc(s.ln)}</i>`:''}${showLn&&s.rl?' · ':''}${esc(s.rl||'')}</p>`:''}
+    <p class="small">${esc(s.d)}</p>
+    <dl class="kv"><dt>Ingredienti</dt><dd>${esc(s.i)}</dd>
+      <dt>Vino</dt><dd>${esc(s.v)} <span class="chip plain">${esc(s.wt)}</span>${s.vs==='sug'?' <span class="small muted">suggerito</span>':''}</dd></dl>
+    ${s.avv?`<p class="small avv">${esc(s.avv)}</p>`:''}
+    ${s.weak?`<p class="small avv"><b>Link da sostituire.</b> ${esc(s.weak)}</p>`:''}
+    ${mates.length?`<p class="small sim">Simile a ${mates.map(y=>`<b>${esc(y.m.t)}</b> (${y.st==='menu'?'in menu':'già proposta'})`).join(', ')}: ne basta uno?</p>`:''}
+    <details><summary class="small" style="cursor:pointer;font-weight:600">Fonti, tempi e note ${lvBadge(s.lv)}</summary>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
+        <ul class="steps" style="padding-left:18px;gap:4px">${srcs}</ul>
+        ${s.e?`<p class="small"><b>Esecuzione.</b> ${esc(s.e)}</p>`:''}
+        ${s.tempi?`<p class="small"><b>Tempi.</b> ${esc(s.tempi)}</p>`:''}
+        ${s.mais?`<p class="small"><b>Polenta o farina.</b> ${esc(s.mais)}</p>`:''}
+        ${s.f?`<p class="small muted">Famiglia: ${esc(FAM[s.f])}.</p>`:''}</div></details>
+    <div class="row spread" style="margin-top:auto">${act}</div></article>`;
+}
+function vSugg(){
+  const all=sugList(),list=filterSug(all);
+  const n={libera:0,proposta:0,menu:0};all.forEach(x=>n[x.st]++);
+  const regRows=eqRows(all,REGIONI.map(r=>[r,r]),'r'),catRows=eqRows(all,CATS.filter(c=>SUG.some(s=>s.c===c.key)).map(c=>[c.key,c.label]),'c'),wtRows=eqRows(all,WTYPES.map(w=>[w,w]),'wt');
+  const chips=[['','Tutte']].concat(CATS.filter(c=>SUG.some(s=>s.c===c.key)).map(c=>[c.key,c.label])).map(c=>`<button class="fchip" aria-pressed="${UI.scat===c[0]}" data-act="scat" data-v="${c[0]}">${esc(c[1])}</button>`).join('');
+  const opt=(v,cur,lab)=>`<option value="${esc(v)}" ${cur===v?'selected':''}>${esc(lab)}</option>`;
+  let body;
+  if(!list.length)body=`<div class="empty"><h3>Nessun piatto con questi filtri</h3><button class="btn" data-act="sclear">Azzera filtri</button></div>`;
+  else if(UI.ssort==='cat')body=CATS.map(c=>[c,list.filter(x=>x.s.c===c.key)]).filter(g=>g[1].length)
+    .map(([c,xs])=>`<div><h3 class="grp">${esc(c.label)} <span class="muted small num">${xs.length}</span></h3><div class="cards">${xs.map(x=>sugCard(x,true)).join('')}</div></div>`).join('');
+  else body=`<div class="cards">${list.map(x=>sugCard(x,false)).join('')}</div>`;
+  const weakN=SUG.filter(s=>s.weak).length;
+  return `<section class="view">
+    <div class="vhead"><div><h2>Suggerimenti</h2>
+      <p class="lede">${SUG.length} piatti tradizionali del Triveneto, con fonte, vino in abbinamento e note di esecuzione. Il segnalino dice se il piatto è già stato proposto o approvato; con un tocco lo proponi con link, vino e tempi già inseriti.</p></div></div>
+    <div class="panel totals"><div><div class="big num">${SUG.length}</div><div class="small muted">piatti nel catalogo</div></div>
+      <div><div class="big num">${n.libera}</div><div class="small muted">da proporre</div></div>
+      <div><div class="big num">${n.proposta}</div><div class="small muted">già proposti</div></div>
+      <div><div class="big num">${n.menu}</div><div class="small muted">approvati (in menu)</div></div></div>
+    <div class="filters">
+      <div class="field wide"><label for="sq">Cerca piatto, ingrediente o vino</label><input type="search" id="sq" data-in="sq" value="${esc(UI.sq)}" placeholder="es. polenta, Soave, anatra…"></div>
+      <div class="field"><label for="sreg">Regione</label><select id="sreg" data-chg="sreg"><option value="">Tutte</option>${REGIONI.map(r=>opt(r,UI.sreg,r)).join('')}</select></div>
+      <div class="field"><label for="swt">Tipo di vino</label><select id="swt" data-chg="swt"><option value="">Tutti</option>${WTYPES.map(w=>opt(w,UI.swt,w)).join('')}</select></div>
+      <div class="field"><label for="sst">Stato</label><select id="sst" data-chg="sst"><option value="">Tutti</option>${opt('libera',UI.sst,'Da proporre')}${opt('proposta',UI.sst,'Già proposti')}${opt('menu',UI.sst,'Approvati')}</select></div>
+      <div class="field"><label for="slv">Livello fonte</label><select id="slv" data-chg="slv"><option value="">Tutti</option>${['A','B','C'].map(l=>opt(l,UI.slv,LIVELLI[l].t)).join('')}${opt('-',UI.slv,'Da assegnare')}</select></div>
+      <div class="field"><label for="ssort">Ordina per</label><select id="ssort" data-chg="ssort">${opt('cat',UI.ssort,'Portata')}${opt('lv',UI.ssort,'Livello della fonte')}${opt('reg',UI.ssort,'Regione')}${opt('az',UI.ssort,'Nome')}</select></div>
+    </div>
+    <div class="filterchips">${chips}</div>
+    <p class="small muted">Mostro <b class="num">${list.length}</b> piatti su ${SUG.length}.</p>
+    ${body}
+    <details class="panel" id="sg-eq" ${isOpen('sg-eq')}><summary style="cursor:pointer;font-weight:600">Equilibrio del catalogo: regioni, portate e vini</summary>
+      <div class="eqgrid" style="margin-top:12px"><div><h4>Per regione</h4>${eqHtml(regRows)}</div><div><h4>Per portata</h4>${eqHtml(catRows)}</div><div><h4>Per tipo di vino</h4>${eqHtml(wtRows)}</div></div>
+      <p class="small muted" style="margin-top:12px"><span class="lg m"></span> approvati · <span class="lg p"></span> già proposti · <span class="lg l"></span> da proporre. I numeri sono approvati · proposti · da proporre.</p></details>
+    <details class="panel" id="sg-tips" ${isOpen('sg-tips')}><summary style="cursor:pointer;font-weight:600">Consigli di regia per il banchetto</summary>
+      <div class="cols" style="margin-top:12px"><div><h4>Tre farine di mais</h4><p class="small">Biancoperla per il pesce di laguna (schie, seppie, boreto); gialla fine per gli intingoli friulani (toc' in braide, salame all'aceto, blecs); Storo o Marano a grana rustica per selvaggina e brasati.</p></div>
+      <div><h4>Le 24 ore</h4><p class="small">Brasato al Teroldego, pearà, base dei fasioi e seppie in nero migliorano se fatti il giorno prima: l'energia dell'ultimo momento va a fritture e pasta fresca.</p></div>
+      <div><h4>Equilibrio e acidità</h4><p class="small">Aceto caldo (boreto, salame), crauti (tirtlan) e mirtilli rossi (capriolo, kaiserschmarrn) ripuliscono il palato tra una portata e l'altra. Evita troppi piatti simili: te lo segnalo qui e nel menu.</p></div></div></details>
+    <details class="panel" id="sg-lv" ${isOpen('sg-lv')}><summary style="cursor:pointer;font-weight:600">Come leggere i livelli delle fonti</summary>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px">${['A','B','C'].map(l=>`<p class="small">${lvBadge(l)} ${esc(LIVELLI[l].d)}</p>`).join('')}
+      <p class="small">${badge('Livello da assegnare','muted')} I 22 piatti della seconda rassegna non hanno ancora un livello: i loro link vanno controllati. In ${weakN} casi il link è generico o rimanda a un altro piatto, e sono segnati "Link da sostituire".</p>
+      <p class="small muted">Le fonti sono quelle dei due documenti del gruppo; i volumi cartacei di riferimento non sono stati consultati. I vini senza la scritta "suggerito" vengono dal documento, gli altri sono abbinamenti proposti per completare il catalogo.</p></div></details>
+  </section>`;
+}
+A['sug-propose']=t=>{
+  const s=sugById(t.dataset.id);if(!s)return;
+  if(!canPropose()){toast('Le proposte sono chiuse.','err');return;}
+  openRecipeEditor(null,sugPre(s));
+};
+A['sug-open']=t=>{
+  const s=sugById(t.dataset.id),r=s&&sugRecipe(s);if(!r)return;
+  if(r.slot){UI.dish=r.id;UI.tab='menu';setHash('piatto-'+r.id);}
+  else{UI.dish=null;UI.tab='proposte';UI.q=r.title;UI.cat='';UI.reg='';UI.ver='';UI.mine=false;setHash('proposte');}
+  render();window.scrollTo(0,0);
+};
+A.scat=t=>{UI.scat=t.dataset.v;render();};
+A.sclear=()=>{UI.sq='';UI.scat='';UI.sreg='';UI.swt='';UI.slv='';UI.sst='';render();};
+IN.sq=t=>{UI.sq=t.value;render();};
+['sreg','swt','sst','slv','ssort'].forEach(k=>{CH[k]=t=>{UI[k]=t.value;render();};});
+
 /* ============ viste: scheda piatto, spesa, programma, persone ============ */
 function absLabel(t){
   const idx=Math.floor(t/24+1e-9);
@@ -1030,7 +1399,7 @@ function vPiatto(){
     const txt=(u.base==='qb'||!q)?'q.b.':fmtQty(u.base,niceQty(u.base,q*u.mult*f));
     return `<tr><td>${esc(cap1(i.name))}${i.note?` <span class="small muted">${esc(i.note)}</span>`:''}</td><td>${esc(txt)}</td></tr>`;
   }).join('');
-  const vini=(r.vini||[]).map(v=>`<li><b>${esc(v.nome)}</b> <span class="muted small">· ${fmtN(roundUp('bottiglie',num(v.bottiglie)*f))} bottigli${roundUp('bottiglie',num(v.bottiglie)*f)===1?'a':'e'} per ${n} persone</span></li>`).join('');
+  const vini=(r.vini||[]).map(v=>{const nb=num(v.bottiglie)>0?roundUp('bottiglie',num(v.bottiglie)*f):0;return `<li><b>${esc(v.nome)}</b> <span class="muted small">· ${nb?fmtN(nb)+' bottigli'+(nb===1?'a':'e')+' per '+n+' persone':'abbinamento suggerito'}</span></li>`;}).join('');
   const fasi=[...(r.fasi||[])].sort((a,b)=>num(b.ore)-num(a.ore));
   const ld=lead(r),e=earliest(r);
   let verdict='';
@@ -1259,26 +1628,29 @@ function renderOwners(){const e=$('#ed-owners');if(e)e.innerHTML=ownersHtml();}
 function renderIdeas(){
   const e=$('#ed-ideas');if(!e||DR.id)return;
   const q=norm(DR.title);
-  const list=IDEE.filter(i=>(!DR.category||i.c===DR.category)&&!S.recipes.some(r=>norm(r.title)===norm(i.t))&&(!q||norm(i.t).includes(q))).slice(0,8);
+  const list=SUG.filter(i=>(!DR.category||i.c===DR.category)&&sugState(i)==='libera'&&(!q||norm(i.t).indexOf(q)>=0)).slice(0,8);
   const dup=q.length>2?S.recipes.filter(r=>r.id!==DR.id&&(norm(r.title).includes(q)||q.includes(norm(r.title)))):[];
   e.innerHTML=(dup.length?`<p class="err">Esiste già una proposta simile: ${esc(dup.map(r=>r.title).join(', '))}.</p>`:'')
-    +(list.length?`<span class="hint">Idee dal Triveneto:</span> ${list.map(i=>`<button type="button" class="idea" data-act="dr-idea" data-t="${esc(i.t)}" data-c="${i.c}" data-r="${esc(i.r)}">${esc(i.t)}</button>`).join(' ')}`:'');
+    +(list.length?`<span class="hint">Dai suggerimenti:</span> ${list.map(i=>`<button type="button" class="idea" data-act="dr-idea" data-id="${esc(i.id)}">${esc(i.t)}</button>`).join(' ')}`:'');
 }
 A['dr-owner']=t=>{
   const id=t.dataset.id,i=DR.ownerIds.indexOf(id);
   if(i<0)DR.ownerIds.push(id);else DR.ownerIds.splice(i,1);
   renderOwners();
 };
+function syncRecipeInputs(){
+  $('#ed-title').value=DR.title;$('#ed-cat').value=DR.category;$('#ed-reg').value=DR.region;$('#ed-link').value=DR.link;
+}
 A['dr-idea']=t=>{
-  DR.title=t.dataset.t;DR.category=t.dataset.c;DR.region=t.dataset.r;
-  $('#ed-title').value=DR.title;$('#ed-cat').value=DR.category;$('#ed-reg').value=DR.region;
-  renderIdeas();$('#ed-link').focus();
+  const s=sugById(t.dataset.id);if(!s)return;
+  Object.assign(DR,sugPre(s));syncRecipeInputs();renderIdeas();$('#ed-link').focus();
 };
-function openRecipeEditor(id){
+function openRecipeEditor(id,pre){
   const r=id?R(id):null;
   if(!S.meId){toast('Scegli prima il tuo nome.','err');return;}
   DR={id:id||null,title:r?r.title:'',category:r?r.category:(UI.cat||'primi'),region:r?r.region||'':'',link:r?r.link:'',note:r?r.note||'':'',
-    ownerIds:r?[...(r.ownerIds||[])]:[S.meId],ver:Object.assign({stato:'da_verificare',linkAutorevole:'',fonte:'',nota:''},r&&r.verifica||{})};
+    ownerIds:r?[...(r.ownerIds||[])]:[S.meId],ver:Object.assign({stato:'da_verificare',linkAutorevole:'',fonte:'',nota:''},r&&r.verifica||{}),sugId:'',fasi:[],vini:[],verStato:'da_verificare',verNota:''};
+  if(pre&&!id)Object.assign(DR,pre);
   const org=isOrg();
   openModal(`<header><div><h3>${id?'Modifica proposta':'Proponi un piatto'}</h3><p class="hint">${id?'Proposto da '+esc(pname(r.proposerId)):'Proponente: '+esc(me().name)}</p></div><button class="btn sm" data-act="modal-close">Annulla</button></header>
     <div class="field"><label for="ed-title">Nome del piatto *</label><input type="text" id="ed-title" data-in="dr" data-f="title" value="${esc(DR.title)}" placeholder="es. Risi e bisi" autocomplete="off"></div>
@@ -1318,7 +1690,7 @@ A['save-recipe']=async()=>{
     ok=await write('update','recipes/'+DR.id,patch);
   }else{
     ok=await write('set','recipes/'+uid('r'),{title,category:DR.category,region:DR.region,link,note:DR.note.trim(),proposerId:S.meId,ownerIds:DR.ownerIds,teamIds:[],
-      createdAt:Date.now(),verifica:{stato:'da_verificare'},slot:'',serves:4,porzione:'normale',ingredients:[],steps:[],fasi:[],preparabileACasa:false,vini:[],consigli:''});
+      createdAt:Date.now(),verifica:{stato:DR.verStato||'da_verificare',nota:DR.verNota||''},sugId:DR.sugId||'',slot:'',serves:4,porzione:'normale',ingredients:[],steps:[],fasi:DR.fasi||[],preparabileACasa:false,vini:DR.vini||[],consigli:''});
   }
   if(ok){closeModal();toast(DR.id?'Proposta aggiornata':'Proposta aggiunta');DR=null;}
 };
@@ -1367,7 +1739,7 @@ function openDishEditor(id){
     <div class="field"><span class="lbl">Tempi: cosa va avviato in anticipo</span><p class="hint">Indica le ore prima del servizio. Es. brodo che riposa 24 ore → 24; cottura di 3 ore → 3.</p>
       <div id="rows-fasi" style="display:flex;flex-direction:column;gap:6px"></div><div><button type="button" class="btn sm" data-act="row-add" data-l="fasi">+ Fase</button></div></div>
     <label class="checkline"><input type="checkbox" id="d-casa" data-in="dr" data-f="casa" ${DR.casa?'checked':''}> La parte lunga si prepara a casa prima di partire (e si porta già pronta)</label>
-    <div class="field"><span class="lbl">Vini in abbinamento (bottiglie per le persone indicate sopra)</span>
+    <div class="field"><span class="lbl">Vini in abbinamento (bottiglie per le persone indicate sopra; 0 = solo abbinamento)</span>
       <div id="rows-vini" style="display:flex;flex-direction:column;gap:6px"></div><div><button type="button" class="btn sm" data-act="row-add" data-l="vini">+ Vino</button></div></div>
     <div class="field"><label for="d-cons">Consigli</label><textarea id="d-cons" rows="3" data-in="dr" data-f="consigli">${esc(DR.consigli)}</textarea></div>
     <div class="field"><span class="lbl">Squadra di preparazione (oltre ai responsabili)</span><div class="pickrow" id="ed-team"></div></div>
@@ -1567,7 +1939,7 @@ function vBackup(){
       <button class="btn" data-act="backup-download">Scarica una copia sul dispositivo</button>
       <label class="btn" style="cursor:pointer">Ripristina da file<input type="file" id="bk-file" accept=".json,application/json" data-chg="bk-file" class="sr"></label></div>`
       :`<p class="hint" style="margin-top:8px">Il ripristino lo fanno gli organizzatori.</p>`}
-    ${bs.length?`<details id="bk" style="margin-top:12px" ${UI.bkOpen?'open':''}><summary style="cursor:pointer;font-weight:600">Copie precedenti (${bs.length})</summary>${list}</details>`:''}</div>`;
+    ${bs.length?`<details id="bk" style="margin-top:12px" ${isOpen('bk')}><summary style="cursor:pointer;font-weight:600">Copie precedenti (${bs.length})</summary>${list}</details>`:''}</div>`;
 }
 
 /* ============ avvio, sottoscrizioni, eventi ============ */
@@ -1576,7 +1948,7 @@ function setHash(h){try{history.replaceState(null,'','#'+h);}catch(e){try{locati
 function routeFromHash(){
   let h='';try{h=location.hash.slice(1);}catch(e){}
   if(h.startsWith('piatto-')){UI.dish=h.slice(7);UI.tab='menu';}
-  else if(['proposte','voto','menu','spesa','programma','persone'].includes(h)){UI.tab=h;UI.dish=null;}
+  else if(['proposte','suggerimenti','voto','menu','spesa','programma','persone'].includes(h)){UI.tab=h;UI.dish=null;}
 }
 function doLogout(){S.meId=null;store.set('gb.me','');render();}
 
@@ -1593,7 +1965,7 @@ function build(){
   if(S.dbOk===false)return noDb();
   if(!S.loaded.p||!S.loaded.r||!S.loaded.s)return `<p class="boot">Carico i dati del weekend…</p>`;
   if(!me())return vLogin();
-  const views={proposte:vProposte,voto:vVoto,menu:vMenu,spesa:vSpesa,programma:vProgramma,persone:vPersone};
+  const views={proposte:vProposte,suggerimenti:vSugg,voto:vVoto,menu:vMenu,spesa:vSpesa,programma:vProgramma,persone:vPersone};
   const view=UI.dish?vPiatto():(views[UI.tab]||vProposte)();
   return vHeader()+vNav()+`<main class="wrap">${S.offline?`<div class="note warn" style="margin-top:16px"><b>Sei offline.</b> Puoi continuare: le modifiche restano in coda e si salvano appena torna la connessione. Non chiudere la pagina.</div>`:''}${S.readOnly?`<div class="note bad" style="margin-top:16px"><b>Sola lettura.</b> Puoi guardare tutto ma non modificare: chiedi a Marco di darti accesso come collaboratore.</div>`:''}${view}</main>`;
 }
@@ -1720,8 +2092,8 @@ function initStandalone(){
 window.addEventListener('offline',()=>{S.offline=true;paintSave();schedule();});
 window.addEventListener('online',()=>{S.offline=false;paintSave();schedule();});
 document.addEventListener('click',e=>{ // ricorda se i riquadri a tendina sono aperti, anche dopo un aggiornamento dei dati
-  const sm=e.target.closest&&e.target.closest('details#trash>summary,details#bk>summary');
-  if(sm){const d=sm.parentElement;if(d.id==='trash')UI.trashOpen=!d.open;else UI.bkOpen=!d.open;}
+  const sm=e.target.closest&&e.target.closest('details[id]>summary');
+  if(sm){const d=sm.parentElement;UI.open=UI.open||{};UI.open[d.id]=!d.open;}
 },true);
 setInterval(()=>{ // copia di sicurezza periodica, solo se ci sono state modifiche
   if(!db||!S.dirty||S.pending>0||S.offline)return;

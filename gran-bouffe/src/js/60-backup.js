@@ -111,5 +111,5 @@ function vBackup(){
       <button class="btn" data-act="backup-download">Scarica una copia sul dispositivo</button>
       <label class="btn" style="cursor:pointer">Ripristina da file<input type="file" id="bk-file" accept=".json,application/json" data-chg="bk-file" class="sr"></label></div>`
       :`<p class="hint" style="margin-top:8px">Il ripristino lo fanno gli organizzatori.</p>`}
-    ${bs.length?`<details id="bk" style="margin-top:12px" ${UI.bkOpen?'open':''}><summary style="cursor:pointer;font-weight:600">Copie precedenti (${bs.length})</summary>${list}</details>`:''}</div>`;
+    ${bs.length?`<details id="bk" style="margin-top:12px" ${isOpen('bk')}><summary style="cursor:pointer;font-weight:600">Copie precedenti (${bs.length})</summary>${list}</details>`:''}</div>`;
 }

@@ -70,22 +70,6 @@ const VSTATI={
   da_sostituire:{label:'Link da sostituire',cls:'warn'},
   non_valido:{label:'Link non valido',cls:'bad'}
 };
-const IDEE=[
-  {t:'Risi e bisi',c:'primi',r:'Veneto'},{t:'Bigoli in salsa',c:'primi',r:'Veneto'},{t:'Risotto al radicchio di Treviso',c:'primi',r:'Veneto'},
-  {t:'Sarde in saor',c:'antipasti',r:'Veneto'},{t:'Baccalà mantecato',c:'antipasti',r:'Veneto'},{t:'Pasta e fasioi',c:'zuppe',r:'Veneto'},
-  {t:'Sopa coada',c:'zuppe',r:'Veneto'},{t:'Baccalà alla vicentina',c:'secondi',r:'Veneto'},{t:'Fegato alla veneziana',c:'secondi',r:'Veneto'},
-  {t:'Bollito misto con pearà',c:'secondi',r:'Veneto'},{t:'Luganega alla brace',c:'griglia',r:'Veneto'},{t:'Radicchio alla griglia',c:'contorni',r:'Veneto'},
-  {t:'Tiramisù',c:'dolci',r:'Veneto'},{t:'Frico',c:'antipasti',r:'Friuli-Venezia Giulia'},{t:'Prosciutto di San Daniele e formaggi',c:'antipasti',r:'Friuli-Venezia Giulia'},
-  {t:'Jota',c:'zuppe',r:'Friuli-Venezia Giulia'},{t:'Cjarsons',c:'primi',r:'Friuli-Venezia Giulia'},{t:'Gnocchi di susine',c:'primi',r:'Friuli-Venezia Giulia'},
-  {t:'Gulasch alla triestina',c:'secondi',r:'Friuli-Venezia Giulia'},{t:'Brovada e muset',c:'secondi',r:'Friuli-Venezia Giulia'},
-  {t:'Ćevapčići alla griglia',c:'griglia',r:'Friuli-Venezia Giulia'},{t:'Gubana',c:'dolci',r:'Friuli-Venezia Giulia'},
-  {t:'Canederli in brodo',c:'zuppe',r:'Trentino-Alto Adige'},{t:'Zuppa d’orzo',c:'zuppe',r:'Trentino-Alto Adige'},
-  {t:'Strangolapreti',c:'primi',r:'Trentino-Alto Adige'},{t:'Schlutzkrapfen',c:'primi',r:'Trentino-Alto Adige'},
-  {t:'Tortel di patate',c:'antipasti',r:'Trentino-Alto Adige'},{t:'Carne salada e fagioli',c:'secondi',r:'Trentino-Alto Adige'},
-  {t:'Polenta di Storo con formaggi',c:'contorni',r:'Trentino-Alto Adige'},{t:'Strudel di mele',c:'dolci',r:'Trentino-Alto Adige'},
-  {t:'Kaiserschmarrn',c:'dolci',r:'Trentino-Alto Adige'}
-];
-
 const PRESET=['Marco Furio','Marco Terracina','Teo','Tia','Melo','Jaki','Mazzetti','Fantoni','Murro','Fede','Umbe','Jack','Gesù Pippia','Turi','Lollo'];
 const DEF={fase:'proposte',edizione:'XI',tema:'Triveneto',dataVen:'',arrivo:'16:00',riservaOre:1,margine:0,
   orari:{'ven-cena':'20:30','sab-pranzo':'13:30','sab-cena':'20:30','dom-pranzo':'13:30'},cap:{ven:5,sab:12,dom:5}};
@@ -97,7 +81,7 @@ function mergeSettings(d){
 
 /* ============ stato ============ */
 const S={meId:null,participants:[],recipes:[],allRecipes:[],trash:[],backups:[],metaExists:false,pending:0,dirty:false,offline:false,lastOk:0,votes:{},spesa:{},settings:mergeSettings(),settingsExists:false,loaded:{},dbOk:null,readOnly:false,owner:false};
-const UI={tab:'proposte',dish:null,q:'',cat:'',reg:'',ver:'',mine:false,vcat:'antipasti',vmode:'mia',draft:{},sday:'',sshop:'',shide:false,confirm:'',sugg:false,login:{conf:true}};
+const UI={tab:'proposte',dish:null,q:'',cat:'',reg:'',ver:'',mine:false,vcat:'antipasti',vmode:'mia',draft:{},sday:'',sshop:'',shide:false,confirm:'',sugg:false,login:{conf:true},sq:'',scat:'',sreg:'',swt:'',slv:'',sst:'',ssort:'cat'};
 let db=null,sampleCap=null,dlCap=null,userCap=null;
 
 const P=id=>S.participants.find(p=>p.id===id);
@@ -116,6 +100,7 @@ const vstato=r=>((r.verifica||{}).stato)||'da_verificare';
 const chipCat=k=>{const c=catOf(k);return `<span class="chip" style="--h:${c.h}">${esc(c.label)}</span>`;};
 const badge=(t,cls)=>`<span class="badge ${cls||''}">${esc(t)}</span>`;
 const A={},CH={},IN={};
+const isOpen=id=>(UI.open&&UI.open[id])?'open':'';
 let toastT;
 function toast(msg,kind){
   const t=$('#toast');if(!t)return;

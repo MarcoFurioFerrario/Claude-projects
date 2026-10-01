@@ -24,26 +24,29 @@ function renderOwners(){const e=$('#ed-owners');if(e)e.innerHTML=ownersHtml();}
 function renderIdeas(){
   const e=$('#ed-ideas');if(!e||DR.id)return;
   const q=norm(DR.title);
-  const list=IDEE.filter(i=>(!DR.category||i.c===DR.category)&&!S.recipes.some(r=>norm(r.title)===norm(i.t))&&(!q||norm(i.t).includes(q))).slice(0,8);
+  const list=SUG.filter(i=>(!DR.category||i.c===DR.category)&&sugState(i)==='libera'&&(!q||norm(i.t).indexOf(q)>=0)).slice(0,8);
   const dup=q.length>2?S.recipes.filter(r=>r.id!==DR.id&&(norm(r.title).includes(q)||q.includes(norm(r.title)))):[];
   e.innerHTML=(dup.length?`<p class="err">Esiste già una proposta simile: ${esc(dup.map(r=>r.title).join(', '))}.</p>`:'')
-    +(list.length?`<span class="hint">Idee dal Triveneto:</span> ${list.map(i=>`<button type="button" class="idea" data-act="dr-idea" data-t="${esc(i.t)}" data-c="${i.c}" data-r="${esc(i.r)}">${esc(i.t)}</button>`).join(' ')}`:'');
+    +(list.length?`<span class="hint">Dai suggerimenti:</span> ${list.map(i=>`<button type="button" class="idea" data-act="dr-idea" data-id="${esc(i.id)}">${esc(i.t)}</button>`).join(' ')}`:'');
 }
 A['dr-owner']=t=>{
   const id=t.dataset.id,i=DR.ownerIds.indexOf(id);
   if(i<0)DR.ownerIds.push(id);else DR.ownerIds.splice(i,1);
   renderOwners();
 };
+function syncRecipeInputs(){
+  $('#ed-title').value=DR.title;$('#ed-cat').value=DR.category;$('#ed-reg').value=DR.region;$('#ed-link').value=DR.link;
+}
 A['dr-idea']=t=>{
-  DR.title=t.dataset.t;DR.category=t.dataset.c;DR.region=t.dataset.r;
-  $('#ed-title').value=DR.title;$('#ed-cat').value=DR.category;$('#ed-reg').value=DR.region;
-  renderIdeas();$('#ed-link').focus();
+  const s=sugById(t.dataset.id);if(!s)return;
+  Object.assign(DR,sugPre(s));syncRecipeInputs();renderIdeas();$('#ed-link').focus();
 };
-function openRecipeEditor(id){
+function openRecipeEditor(id,pre){
   const r=id?R(id):null;
   if(!S.meId){toast('Scegli prima il tuo nome.','err');return;}
   DR={id:id||null,title:r?r.title:'',category:r?r.category:(UI.cat||'primi'),region:r?r.region||'':'',link:r?r.link:'',note:r?r.note||'':'',
-    ownerIds:r?[...(r.ownerIds||[])]:[S.meId],ver:Object.assign({stato:'da_verificare',linkAutorevole:'',fonte:'',nota:''},r&&r.verifica||{})};
+    ownerIds:r?[...(r.ownerIds||[])]:[S.meId],ver:Object.assign({stato:'da_verificare',linkAutorevole:'',fonte:'',nota:''},r&&r.verifica||{}),sugId:'',fasi:[],vini:[],verStato:'da_verificare',verNota:''};
+  if(pre&&!id)Object.assign(DR,pre);
   const org=isOrg();
   openModal(`<header><div><h3>${id?'Modifica proposta':'Proponi un piatto'}</h3><p class="hint">${id?'Proposto da '+esc(pname(r.proposerId)):'Proponente: '+esc(me().name)}</p></div><button class="btn sm" data-act="modal-close">Annulla</button></header>
     <div class="field"><label for="ed-title">Nome del piatto *</label><input type="text" id="ed-title" data-in="dr" data-f="title" value="${esc(DR.title)}" placeholder="es. Risi e bisi" autocomplete="off"></div>
@@ -83,7 +86,7 @@ A['save-recipe']=async()=>{
     ok=await write('update','recipes/'+DR.id,patch);
   }else{
     ok=await write('set','recipes/'+uid('r'),{title,category:DR.category,region:DR.region,link,note:DR.note.trim(),proposerId:S.meId,ownerIds:DR.ownerIds,teamIds:[],
-      createdAt:Date.now(),verifica:{stato:'da_verificare'},slot:'',serves:4,porzione:'normale',ingredients:[],steps:[],fasi:[],preparabileACasa:false,vini:[],consigli:''});
+      createdAt:Date.now(),verifica:{stato:DR.verStato||'da_verificare',nota:DR.verNota||''},sugId:DR.sugId||'',slot:'',serves:4,porzione:'normale',ingredients:[],steps:[],fasi:DR.fasi||[],preparabileACasa:false,vini:DR.vini||[],consigli:''});
   }
   if(ok){closeModal();toast(DR.id?'Proposta aggiornata':'Proposta aggiunta');DR=null;}
 };
@@ -132,7 +135,7 @@ function openDishEditor(id){
     <div class="field"><span class="lbl">Tempi: cosa va avviato in anticipo</span><p class="hint">Indica le ore prima del servizio. Es. brodo che riposa 24 ore → 24; cottura di 3 ore → 3.</p>
       <div id="rows-fasi" style="display:flex;flex-direction:column;gap:6px"></div><div><button type="button" class="btn sm" data-act="row-add" data-l="fasi">+ Fase</button></div></div>
     <label class="checkline"><input type="checkbox" id="d-casa" data-in="dr" data-f="casa" ${DR.casa?'checked':''}> La parte lunga si prepara a casa prima di partire (e si porta già pronta)</label>
-    <div class="field"><span class="lbl">Vini in abbinamento (bottiglie per le persone indicate sopra)</span>
+    <div class="field"><span class="lbl">Vini in abbinamento (bottiglie per le persone indicate sopra; 0 = solo abbinamento)</span>
       <div id="rows-vini" style="display:flex;flex-direction:column;gap:6px"></div><div><button type="button" class="btn sm" data-act="row-add" data-l="vini">+ Vino</button></div></div>
     <div class="field"><label for="d-cons">Consigli</label><textarea id="d-cons" rows="3" data-in="dr" data-f="consigli">${esc(DR.consigli)}</textarea></div>
     <div class="field"><span class="lbl">Squadra di preparazione (oltre ai responsabili)</span><div class="pickrow" id="ed-team"></div></div>

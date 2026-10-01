@@ -116,7 +116,9 @@ function vMenu(){
         :`<button class="btn" data-act="suggest">Suggerisci dai voti</button><button class="btn" data-act="clear-menu" ${sl.length?'':'disabled'}>Svuota</button>`}</div>`:''}</div>
     ${!org?`<div class="note">Solo gli organizzatori assegnano i piatti ai pasti. Qui puoi vedere il menu e aprire le schede.</div>`:''}
     ${noIng?`<div class="note warn"><b>${noIng}</b> piatt${noIng===1?'o':'i'} del menu senza ingredienti: la lista della spesa è incompleta finché i responsabili non compilano le schede.</div>`:''}
+    ${famNote()}
     <div class="days">${days}</div>
+    ${vCarta()}
     <h3>Candidati</h3>${candHtml}</section>`;
 }
 A.suggest=()=>{
@@ -145,3 +147,37 @@ CH.setslot=async t=>{
   const id=t.dataset.id,v=t.value;
   if(await write('update','recipes/'+id,{slot:v})){const r=R(id);if(v&&r&&!feasible(r,v))toast('Attenzione: i tempi di preparazione non stanno in questo pasto.','err');}
 };
+
+/* --- carta dei vini e piatti simili --- */
+function famNote(){
+  const d=famDupes();
+  if(!d.length)return '';
+  return `<div class="note"><b>Piatti simili nel menu.</b> ${d.map(([f,rs])=>`${esc(FAM[f])}: ${rs.map(r=>esc(r.title)).join(', ')}`).join(' · ')}. Valuta se servono tutti.</div>`;
+}
+function winesInMenu(){
+  const m=new Map();
+  for(const r of slotted())for(const v of (r.vini||[])){
+    const k=norm(v.nome);if(!k)continue;
+    const o=m.get(k)||{nome:v.nome,dishes:[],raw:0};o.dishes.push(r.title);o.raw+=num(v.bottiglie)*scaleF(r);m.set(k,o);
+  }
+  return [...m.values()].sort((a,b)=>a.nome.localeCompare(b.nome,'it'));
+}
+function vCarta(){
+  if(!slotted().length)return '';
+  const ws=winesInMenu();
+  const rows=ws.map(w=>`<div class="row spread" style="padding:7px 0;border-top:1px dashed var(--line)"><span><b>${esc(w.nome)}</b> <span class="small muted">· ${esc(w.dishes.join(', '))}</span></span><span class="small num muted">${w.raw>0?roundUp('bottiglie',w.raw)+' bott.':'quantità da definire'}</span></div>`).join('');
+  return `<div class="panel"><div class="row spread"><h3>Carta dei vini</h3><button class="btn sm" data-act="copy-carta">Copia la carta del banchetto</button></div>
+    ${ws.length?rows:'<p class="muted small" style="margin-top:8px">Nessun vino indicato nelle schede. Compaiono qui quando proponi un piatto dai Suggerimenti o li aggiungi nella scheda del piatto.</p>'}</div>`;
+}
+function cartaText(){
+  const out=['CARTA DEL BANCHETTO · Gran Bouffe '+(S.settings.tema||''),''];
+  for(const sl of SLOTS){
+    const rs=slotted().filter(r=>r.slot===sl.key).sort((a,b)=>catIdx(a.category)-catIdx(b.category)||byTitle(a,b));
+    if(!rs.length)continue;
+    out.push(sl.label.toUpperCase());
+    rs.forEach(r=>out.push('- '+r.title+((r.vini||[])[0]?' · '+r.vini[0].nome:'')));
+    out.push('');
+  }
+  return out.join('\n').trim();
+}
+A['copy-carta']=()=>copyText(cartaText(),'Carta copiata: incollala dove vuoi');
