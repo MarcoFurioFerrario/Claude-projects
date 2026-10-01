@@ -9,6 +9,7 @@
   --chip-s:42%; --chip-l:88%; --chip-fg:26%;
   --font-display:"Young Serif",Georgia,"Times New Roman",serif;
   --font-ui:"Instrument Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --hero-a:#45102C; --hero-b:#7A1D4C; --hero-ink:#FFFFFF; --reg-l:34%; --grp-l:42%;
   --r:10px; --shadow:0 1px 2px rgba(20,30,30,.08),0 6px 18px rgba(20,30,30,.06);
 }
 @media (prefers-color-scheme:dark){
@@ -20,6 +21,7 @@
     --bad:#F08A72; --bad-soft:#3D1D17; --info:#6DB7DA; --info-soft:#15303D;
     --chip-s:30%; --chip-l:22%; --chip-fg:80%;
     --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 18px rgba(0,0,0,.25);
+    --hero-a:#2A1220; --hero-b:#55223F; --hero-ink:#F6E7EE; --reg-l:38%; --grp-l:62%;
     color-scheme:dark;
   }
 }
@@ -31,6 +33,7 @@
   --bad:#F08A72; --bad-soft:#3D1D17; --info:#6DB7DA; --info-soft:#15303D;
   --chip-s:30%; --chip-l:22%; --chip-fg:80%;
   --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 18px rgba(0,0,0,.25);
+  --hero-a:#2A1220; --hero-b:#55223F; --hero-ink:#F6E7EE; --reg-l:38%; --grp-l:62%;
   color-scheme:dark;
 }
 *{box-sizing:border-box}
@@ -294,3 +297,29 @@ details>summary{list-style-position:inside}
 
 .upd{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;margin-inline:-16px;padding:10px 16px;background:var(--polenta);color:var(--polenta-ink);display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap;font-size:14px}
 .upd .btn.primary{background:var(--polenta-ink);border-color:var(--polenta-ink);color:var(--polenta)}
+
+/* Suggerimenti in evidenza */
+.tab-sug{background:var(--accent);color:var(--accent-ink);border-radius:999px;border-bottom:0;margin:6px 10px 6px 0;padding:7px 16px;font-weight:700}
+.tab-sug:hover{color:var(--accent-ink);filter:brightness(1.1)}
+.tab-sug .n{background:var(--polenta);color:var(--polenta-ink)}
+.tab.tab-sug[aria-current="page"]{color:var(--accent-ink);box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--accent)}
+.pill-sug{background:var(--polenta);color:var(--polenta-ink);border:0;border-radius:999px;padding:5px 14px;font-weight:700;font-size:13px;cursor:pointer}
+.pill-sug:hover{filter:brightness(1.06)}
+.pill-sug b{font-family:var(--font-display);font-weight:400;font-size:16px}
+.hero-sug{background:linear-gradient(135deg,var(--hero-a),var(--hero-b));color:var(--hero-ink);border-radius:16px;padding:24px clamp(16px,3vw,32px);display:grid;grid-template-columns:minmax(0,1fr);gap:18px 36px;box-shadow:var(--shadow);min-width:0}
+.hs-l,.hs-r{display:flex;flex-direction:column;gap:14px;min-width:0}
+@media (min-width:900px){.hero-sug{grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);align-items:center}.hs-r{padding-left:32px;border-left:1px solid rgba(255,255,255,.28)}.hs-r .hs-meta{flex-direction:column;gap:4px}.hs-r .hs-meta b{font-size:30px}}
+.hero-sug h2{display:flex;gap:clamp(12px,2.5vw,22px);align-items:center;font-size:clamp(22px,3.4vw,32px);line-height:1.1}
+.hs-num{font-family:var(--font-display);font-size:clamp(68px,13vw,112px);line-height:.85;color:var(--polenta);letter-spacing:-.02em}
+.hero-sug p{max-width:62ch;opacity:.94}
+.hs-meta{display:flex;gap:6px 24px;flex-wrap:wrap;font-size:14px}
+.hs-meta b{font-family:var(--font-display);font-weight:400;font-size:24px;color:var(--polenta);margin-right:5px}
+.hs-regs{display:flex;gap:8px;flex-wrap:wrap}
+.chip.reg{background:hsl(var(--h,0) 45% var(--reg-l));color:#fff}
+button.chip.reg{border:1px solid rgba(255,255,255,.4);cursor:pointer;padding:6px 14px;font-size:13px}
+button.chip.reg[aria-pressed="true"]{outline:3px solid var(--polenta);outline-offset:1px}
+.hs-regs:has(.chip[aria-pressed="true"]) .chip[aria-pressed="false"]{opacity:.55}
+.grp[style]{border-bottom-color:hsl(var(--h) 50% var(--grp-l))}
+.grp[style]::before{content:"";width:12px;height:12px;border-radius:50%;background:hsl(var(--h) 50% var(--grp-l));align-self:center}
+.promo{display:flex;gap:12px 20px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:14px 18px;border-radius:12px;background:var(--polenta);color:var(--polenta-ink)}
+.promo .btn.primary{background:var(--polenta-ink);border-color:var(--polenta-ink);color:var(--polenta)}

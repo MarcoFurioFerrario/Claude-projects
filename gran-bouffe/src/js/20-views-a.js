@@ -32,14 +32,14 @@ function vHeader(){
     <div class="who">${me()?`<span>Ciao, <b>${esc(me().name)}</b>${isOrg()?' · organizzatore':''}</span> <button class="link" data-act="logout">Cambia nome</button>`:''} <span id="savestat">${saveHtml()}</span></div>
   </header>
   <div class="wrap"><ol class="rail" aria-label="Fasi del progetto">${rail}</ol>
-  <div class="stats"><span><b class="num">${nConf()}</b> confermati</span><span><b class="num">${S.recipes.length}</b> proposte</span>
+  <div class="stats">${(UI.tab==='suggerimenti'&&!UI.dish)?'':`<button class="pill-sug" data-act="tab" data-v="suggerimenti"><b class="num">${SUG.length}</b> ricette pronte da cui attingere <span aria-hidden="true">→</span></button>`}<span><b class="num">${nConf()}</b> confermati</span><span><b class="num">${S.recipes.length}</b> proposte</span>
   <span><b class="num">${nv}</b> hanno votato</span><span><b class="num">${sel}</b>/${tot} piatti in menu</span></div></div>`;
 }
 
 function vNav(){
-  const tabs=[['proposte','Proposte',S.recipes.length],['suggerimenti','Suggerimenti',SUG.filter(s=>sugState(s)==='libera').length],['voto','Votazioni'],['menu','Menu',slotted().length+'/'+totalCap()],['spesa','Spesa'],['programma','Programma'],['persone','Persone',nConf()]];
+  const tabs=[['suggerimenti','Suggerimenti',SUG.length],['proposte','Proposte',S.recipes.length],['voto','Votazioni'],['menu','Menu',slotted().length+'/'+totalCap()],['spesa','Spesa'],['programma','Programma'],['persone','Persone',nConf()]];
   return `<nav class="tabs" aria-label="Sezioni"><div class="in">${tabs.map(t=>
-    `<button class="tab" data-act="tab" data-v="${t[0]}" ${(UI.tab===t[0]&&!UI.dish)||(UI.dish&&t[0]==='menu')?'aria-current="page"':''}>${t[1]}${t[2]!==undefined?`<span class="n">${t[2]}</span>`:''}</button>`).join('')}</div></nav>`;
+    `<button class="tab${t[0]==='suggerimenti'?' tab-sug':''}" data-act="tab" data-v="${t[0]}" ${(UI.tab===t[0]&&!UI.dish)||(UI.dish&&t[0]==='menu')?'aria-current="page"':''}>${t[1]}${t[2]!==undefined?`<span class="n">${t[2]}</span>`:''}</button>`).join('')}</div></nav>`;
 }
 
 /* --- proposte --- */
@@ -94,6 +94,7 @@ function vProposte(){
     <div class="vhead"><div><h2>Proposte</h2>
       <p class="lede">Ogni proposta ha un proponente, almeno un responsabile della produzione, una categoria e il link a una ricetta. Il link viene controllato e affiancato da una fonte di riferimento autorevole. <b class="num">${S.recipes.length}</b> proposte finora, obiettivo 40–50.</p></div>
       <button class="btn primary" data-act="new-recipe" ${canPropose()?'':'disabled'}>+ Proponi un piatto</button></div>
+    ${canPropose()&&SUG.some(x=>sugState(x)==='libera')?`<div class="promo"><div><b>Hai già ${SUG.length} ricette da cui attingere.</b> ${SUG.filter(x=>sugState(x)==='libera').length} sono ancora da proporre: scegli dai Suggerimenti e il modulo si compila da solo.</div><button class="btn primary" data-act="tab" data-v="suggerimenti">Vai ai Suggerimenti</button></div>`:''}
     ${!canPropose()?`<div class="note">Le proposte sono chiuse perché sono aperte le votazioni. L’organizzatore può riaprirle dalla barra delle fasi.</div>`:''}
     ${isOrg()&&pend?`<div class="note warn"><b>${pend} ${pend===1?'link da verificare':'link da verificare'}.</b> Chiedi a Claude di controllarli: verifica che il link funzioni e corrisponda al piatto, poi aggiunge una fonte autorevole (Accademia Italiana della Cucina, La Cucina Italiana, Cucchiaio d’Argento, Artusi, enti del territorio). Lo stato compare su ogni scheda.</div>`:''}
     <div class="filters">
@@ -114,7 +115,7 @@ function vTrash(){
       ${isOrg()?`<button class="btn sm danger" data-act="purge-recipe" data-id="${esc(r.id)}">${UI.confirm==='purge:'+r.id?'Sì, elimina per sempre':'Elimina per sempre'}</button>`:''}</span></div>`).join('')}</div></details>`;
 }
 
-A.tab=t=>{UI.tab=t.dataset.v;UI.dish=null;setHash(UI.tab);render();window.scrollTo(0,0);};
+A.tab=t=>{UI.navigated=true;UI.tab=t.dataset.v;UI.dish=null;setHash(UI.tab);render();window.scrollTo(0,0);};
 A.fcat=t=>{UI.cat=t.dataset.v;render();};
 A.fclear=()=>{UI.q='';UI.cat='';UI.reg='';UI.ver='';UI.mine=false;render();};
 A['del-cancel']=()=>{UI.confirm='';render();};
@@ -134,7 +135,7 @@ A['purge-recipe']=async t=>{
   if(await write('delete','recipes/'+id))toast('Eliminata per sempre');
   render();
 };
-A['open-dish']=t=>{UI.dish=t.dataset.id;UI.tab='menu';setHash('piatto-'+t.dataset.id);render();window.scrollTo(0,0);};
+A['open-dish']=t=>{UI.navigated=true;UI.dish=t.dataset.id;UI.tab='menu';setHash('piatto-'+t.dataset.id);render();window.scrollTo(0,0);};
 A.fase=async t=>{
   const v=t.dataset.v;if(S.settings.fase===v)return;
   if(await saveSettings({fase:v}))toast('Fase impostata: '+(FASI.find(f=>f[0]===v)||[])[1]);

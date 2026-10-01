@@ -63,7 +63,7 @@ const mockFirebase=`
   // 5) cambia nome cancella il cookie
   await page.click('[data-act=logout]');await page.waitForSelector('.names');
   !(await ctx.cookies()).some(c=>c.name==='gb_me'&&c.value)?pass('"Cambia nome" cancella il cookie'):fail('cookie rimasto');
-  await page.click('.names .btn:has-text("Marco Furio")');await page.waitForSelector('.rail');
+  await page.click('.names .btn:has-text("Marco Furio")');await page.waitForSelector('.rail');await page.click('.tab:has-text("Proposte")');
   // 6) scritture: proposta, voto su due categorie (merge), verifica
   await page.click('[data-act=new-recipe]');await page.fill('#ed-title','Frico');await page.selectOption('#ed-cat','antipasti');await page.fill('#ed-link','https://example.org/frico');
   await page.click('[data-act=save-recipe]');await page.waitForSelector('.card');

@@ -39,7 +39,7 @@ const ranks={ // id votante -> categoria -> ordine
   nNames===15?pass('15 nomi preimpostati'):fail('nomi '+nNames);
   await p.screenshot({path:out+'/02-login-mobile.png'});
   await p.click('.names .btn:has-text("Teo")');
-  await p.waitForSelector('.rail');
+  await p.waitForSelector('.rail');await p.click('.tab:has-text("Proposte")');
   await p.screenshot({path:out+'/03-proposte-vuoto-mobile.png'});
   const conf=await p.textContent('.stats');conf.includes('15')?pass('15 confermati: '+conf.replace(/\s+/g,' ')):fail('confermati '+conf);
 

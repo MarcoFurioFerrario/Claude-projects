@@ -18,9 +18,21 @@ const recipes=[
   await d.waitForSelector('.login');
   await d.evaluate(({s,recipes})=>{s.forEach(w=>__db.data.set(w.collection+'/'+w.doc_id,w.data));recipes.forEach(r=>__db.data.set(r[0],r[1]));__db.notify();},{s:seed,recipes});
   await d.click('.names .btn:has-text("Marco Furio")');await d.waitForSelector('.rail');
-  await d.click('.tab:has-text("Suggerimenti")');await d.waitForSelector('.card.sg');
-  const tot=await d.$$eval('.totals .big',e=>e.map(x=>x.textContent));
-  tot.join(',')==='44,38,2,4'?pass('contatori: 44 piatti, 38 da proporre, 2 proposti, 4 approvati'):fail('contatori '+tot);
+  // home: Suggerimenti è la prima scheda, colorata, ed è la pagina d'ingresso
+  (await d.$$eval('.tab',e=>e[0].textContent.startsWith('Suggerimenti')&&e[0].classList.contains('tab-sug')))?pass('Suggerimenti è la prima scheda ed è colorata'):fail('ordine schede');
+  await d.waitForSelector('.hero-sug');
+  (await d.textContent('.hs-num'))==='44'&&(await d.textContent('.hero-sug')).includes('ricette già pronte da cui attingere')?pass('home: banda "44 ricette già pronte da cui attingere"'):fail('hero');
+  (await d.$('.pill-sug'))===null?pass('nessuna pillola ridondante mentre sei già nei Suggerimenti'):fail('pillola doppia');
+  await d.click('.tab:has-text("Proposte")');await d.waitForSelector('.promo');
+  (await d.textContent('.pill-sug')).includes('44 ricette pronte')&&(await d.textContent('.promo')).includes('Hai già 44 ricette da cui attingere')?pass('Proposte: pillola in testata e avviso con "44 ricette"'):fail('promo');
+  await d.screenshot({path:out+'/25-proposte-promo.png',clip:{x:0,y:0,width:1280,height:700}});
+  await d.click('.promo [data-act=tab]');await d.waitForSelector('.hero-sug');
+  await d.screenshot({path:out+'/26-suggerimenti-hero.png',clip:{x:0,y:0,width:1280,height:900}});
+  await d.waitForSelector('.card.sg');
+  await d.click('.hs-regs [data-v="Veneto"]');(await d.$$eval('.card.sg',e=>e.length))===17?pass('chip regione Veneto: 17 piatti'):fail('chip regione');
+  await d.click('.hs-regs [data-v="Veneto"]');(await d.$$eval('.card.sg',e=>e.length))===44?pass('secondo tocco: filtro tolto'):fail('chip toggle');
+  const tot=await d.$$eval('.hs-meta b',e=>e.map(x=>x.textContent));
+  tot.join(',')==='38,2,4'?pass('contatori: 38 da proporre, 2 proposti, 4 approvati'):fail('contatori '+tot);
   const card=t=>`.card.sg:has(h3:text-is("${t}"))`;
   (await d.textContent(card('Tiramisù')+' .badge')).includes('Approvata · Domenica pranzo')?pass('flag Approvata su Tiramisù (riconosciuto anche se proposto a mano senza accento)'):fail('flag tiramisu');
   (await d.textContent(card('Sarde in saor')+' .badge')).includes('Già proposta')?pass('flag Già proposta su Sarde in saor'):fail('flag sarde');

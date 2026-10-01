@@ -14,6 +14,8 @@ const LIVELLI={
   B:{t:'Livello B',d:'Fonte istituzionale o con riscontro storico verificabile (ricettari citati, enti turistici, confraternite).',cls:'info'},
   C:{t:'Livello C',d:'Solo fonti divulgative, nessuna fonte primaria trovata: le prime da sostituire o integrare.',cls:'warn'}
 };
+const REG_H={'Veneto':200,'Friuli-Venezia Giulia':140,'Trentino-Alto Adige':22};
+const REG_SHORT={'Veneto':'Veneto','Friuli-Venezia Giulia':'Friuli-V.G.','Trentino-Alto Adige':'Trentino-A.A.'};
 const GEN_FVG='https://www.turismofvg.it/ProxyVFS.axd?snode=286130&stream=';
 const SUG=[
 /* ---- prima rassegna (con livello di affidabilità) ---- */

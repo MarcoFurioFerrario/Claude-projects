@@ -81,7 +81,7 @@ function mergeSettings(d){
 
 /* ============ stato ============ */
 const S={meId:null,participants:[],recipes:[],allRecipes:[],trash:[],backups:[],metaExists:false,pending:0,dirty:false,offline:false,lastOk:0,votes:{},spesa:{},settings:mergeSettings(),settingsExists:false,loaded:{},dbOk:null,readOnly:false,owner:false};
-const UI={tab:'proposte',dish:null,q:'',cat:'',reg:'',ver:'',mine:false,vcat:'antipasti',vmode:'mia',draft:{},sday:'',sshop:'',shide:false,confirm:'',sugg:false,login:{conf:true},sq:'',scat:'',sreg:'',swt:'',slv:'',sst:'',ssort:'cat'};
+const UI={tab:'suggerimenti',homed:false,navigated:false,dish:null,q:'',cat:'',reg:'',ver:'',mine:false,vcat:'antipasti',vmode:'mia',draft:{},sday:'',sshop:'',shide:false,confirm:'',sugg:false,login:{conf:true},sq:'',scat:'',sreg:'',swt:'',slv:'',sst:'',ssort:'cat'};
 let db=null,sampleCap=null,dlCap=null,userCap=null;
 
 const P=id=>S.participants.find(p=>p.id===id);
@@ -100,6 +100,7 @@ const vstato=r=>((r.verifica||{}).stato)||'da_verificare';
 const chipCat=k=>{const c=catOf(k);return `<span class="chip" style="--h:${c.h}">${esc(c.label)}</span>`;};
 const badge=(t,cls)=>`<span class="badge ${cls||''}">${esc(t)}</span>`;
 const A={},CH={},IN={};
+const homeTab=()=>({voto:'voto',menu:'menu',cucina:'menu'}[S.settings.fase])||'suggerimenti';
 const isOpen=id=>(UI.open&&UI.open[id])?'open':'';
 let toastT;
 function toast(msg,kind){

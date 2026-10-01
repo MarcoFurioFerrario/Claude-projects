@@ -22,6 +22,7 @@
   --chip-s:42%; --chip-l:88%; --chip-fg:26%;
   --font-display:"Young Serif",Georgia,"Times New Roman",serif;
   --font-ui:"Instrument Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --hero-a:#45102C; --hero-b:#7A1D4C; --hero-ink:#FFFFFF; --reg-l:34%; --grp-l:42%;
   --r:10px; --shadow:0 1px 2px rgba(20,30,30,.08),0 6px 18px rgba(20,30,30,.06);
 }
 @media (prefers-color-scheme:dark){
@@ -33,6 +34,7 @@
     --bad:#F08A72; --bad-soft:#3D1D17; --info:#6DB7DA; --info-soft:#15303D;
     --chip-s:30%; --chip-l:22%; --chip-fg:80%;
     --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 18px rgba(0,0,0,.25);
+    --hero-a:#2A1220; --hero-b:#55223F; --hero-ink:#F6E7EE; --reg-l:38%; --grp-l:62%;
     color-scheme:dark;
   }
 }
@@ -44,6 +46,7 @@
   --bad:#F08A72; --bad-soft:#3D1D17; --info:#6DB7DA; --info-soft:#15303D;
   --chip-s:30%; --chip-l:22%; --chip-fg:80%;
   --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 18px rgba(0,0,0,.25);
+  --hero-a:#2A1220; --hero-b:#55223F; --hero-ink:#F6E7EE; --reg-l:38%; --grp-l:62%;
   color-scheme:dark;
 }
 *{box-sizing:border-box}
@@ -308,6 +311,32 @@ details>summary{list-style-position:inside}
 .upd{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;margin-inline:-16px;padding:10px 16px;background:var(--polenta);color:var(--polenta-ink);display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap;font-size:14px}
 .upd .btn.primary{background:var(--polenta-ink);border-color:var(--polenta-ink);color:var(--polenta)}
 
+/* Suggerimenti in evidenza */
+.tab-sug{background:var(--accent);color:var(--accent-ink);border-radius:999px;border-bottom:0;margin:6px 10px 6px 0;padding:7px 16px;font-weight:700}
+.tab-sug:hover{color:var(--accent-ink);filter:brightness(1.1)}
+.tab-sug .n{background:var(--polenta);color:var(--polenta-ink)}
+.tab.tab-sug[aria-current="page"]{color:var(--accent-ink);box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--accent)}
+.pill-sug{background:var(--polenta);color:var(--polenta-ink);border:0;border-radius:999px;padding:5px 14px;font-weight:700;font-size:13px;cursor:pointer}
+.pill-sug:hover{filter:brightness(1.06)}
+.pill-sug b{font-family:var(--font-display);font-weight:400;font-size:16px}
+.hero-sug{background:linear-gradient(135deg,var(--hero-a),var(--hero-b));color:var(--hero-ink);border-radius:16px;padding:24px clamp(16px,3vw,32px);display:grid;grid-template-columns:minmax(0,1fr);gap:18px 36px;box-shadow:var(--shadow);min-width:0}
+.hs-l,.hs-r{display:flex;flex-direction:column;gap:14px;min-width:0}
+@media (min-width:900px){.hero-sug{grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);align-items:center}.hs-r{padding-left:32px;border-left:1px solid rgba(255,255,255,.28)}.hs-r .hs-meta{flex-direction:column;gap:4px}.hs-r .hs-meta b{font-size:30px}}
+.hero-sug h2{display:flex;gap:clamp(12px,2.5vw,22px);align-items:center;font-size:clamp(22px,3.4vw,32px);line-height:1.1}
+.hs-num{font-family:var(--font-display);font-size:clamp(68px,13vw,112px);line-height:.85;color:var(--polenta);letter-spacing:-.02em}
+.hero-sug p{max-width:62ch;opacity:.94}
+.hs-meta{display:flex;gap:6px 24px;flex-wrap:wrap;font-size:14px}
+.hs-meta b{font-family:var(--font-display);font-weight:400;font-size:24px;color:var(--polenta);margin-right:5px}
+.hs-regs{display:flex;gap:8px;flex-wrap:wrap}
+.chip.reg{background:hsl(var(--h,0) 45% var(--reg-l));color:#fff}
+button.chip.reg{border:1px solid rgba(255,255,255,.4);cursor:pointer;padding:6px 14px;font-size:13px}
+button.chip.reg[aria-pressed="true"]{outline:3px solid var(--polenta);outline-offset:1px}
+.hs-regs:has(.chip[aria-pressed="true"]) .chip[aria-pressed="false"]{opacity:.55}
+.grp[style]{border-bottom-color:hsl(var(--h) 50% var(--grp-l))}
+.grp[style]::before{content:"";width:12px;height:12px;border-radius:50%;background:hsl(var(--h) 50% var(--grp-l));align-self:center}
+.promo{display:flex;gap:12px 20px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:14px 18px;border-radius:12px;background:var(--polenta);color:var(--polenta-ink)}
+.promo .btn.primary{background:var(--polenta-ink);border-color:var(--polenta-ink);color:var(--polenta)}
+
 </style>
 
 </head>
@@ -403,7 +432,7 @@ function mergeSettings(d){
 
 /* ============ stato ============ */
 const S={meId:null,participants:[],recipes:[],allRecipes:[],trash:[],backups:[],metaExists:false,pending:0,dirty:false,offline:false,lastOk:0,votes:{},spesa:{},settings:mergeSettings(),settingsExists:false,loaded:{},dbOk:null,readOnly:false,owner:false};
-const UI={tab:'proposte',dish:null,q:'',cat:'',reg:'',ver:'',mine:false,vcat:'antipasti',vmode:'mia',draft:{},sday:'',sshop:'',shide:false,confirm:'',sugg:false,login:{conf:true},sq:'',scat:'',sreg:'',swt:'',slv:'',sst:'',ssort:'cat'};
+const UI={tab:'suggerimenti',homed:false,navigated:false,dish:null,q:'',cat:'',reg:'',ver:'',mine:false,vcat:'antipasti',vmode:'mia',draft:{},sday:'',sshop:'',shide:false,confirm:'',sugg:false,login:{conf:true},sq:'',scat:'',sreg:'',swt:'',slv:'',sst:'',ssort:'cat'};
 let db=null,sampleCap=null,dlCap=null,userCap=null;
 
 const P=id=>S.participants.find(p=>p.id===id);
@@ -422,6 +451,7 @@ const vstato=r=>((r.verifica||{}).stato)||'da_verificare';
 const chipCat=k=>{const c=catOf(k);return `<span class="chip" style="--h:${c.h}">${esc(c.label)}</span>`;};
 const badge=(t,cls)=>`<span class="badge ${cls||''}">${esc(t)}</span>`;
 const A={},CH={},IN={};
+const homeTab=()=>({voto:'voto',menu:'menu',cucina:'menu'}[S.settings.fase])||'suggerimenti';
 const isOpen=id=>(UI.open&&UI.open[id])?'open':'';
 let toastT;
 function toast(msg,kind){
@@ -439,7 +469,7 @@ function errMsg(e){
   if(c==='revoked')return 'Accesso alla pagina revocato.';
   return 'Salvataggio non riuscito'+(e&&e.message?': '+e.message:'.');
 }
-const BUILD='muq054vw';
+const BUILD='muq0drtw';
 const BACKUP_EVERY=window.GB_BACKUP_EVERY||15*60*1000,BACKUP_KEEP=60;
 function saveHtml(){
   if(S.offline)return '<span class="sv warn">Offline: le modifiche restano in coda</span>';
@@ -500,6 +530,8 @@ const LIVELLI={
   B:{t:'Livello B',d:'Fonte istituzionale o con riscontro storico verificabile (ricettari citati, enti turistici, confraternite).',cls:'info'},
   C:{t:'Livello C',d:'Solo fonti divulgative, nessuna fonte primaria trovata: le prime da sostituire o integrare.',cls:'warn'}
 };
+const REG_H={'Veneto':200,'Friuli-Venezia Giulia':140,'Trentino-Alto Adige':22};
+const REG_SHORT={'Veneto':'Veneto','Friuli-Venezia Giulia':'Friuli-V.G.','Trentino-Alto Adige':'Trentino-A.A.'};
 const GEN_FVG='https://www.turismofvg.it/ProxyVFS.axd?snode=286130&stream=';
 const SUG=[
 /* ---- prima rassegna (con livello di affidabilità) ---- */
@@ -976,14 +1008,14 @@ function vHeader(){
     <div class="who">${me()?`<span>Ciao, <b>${esc(me().name)}</b>${isOrg()?' · organizzatore':''}</span> <button class="link" data-act="logout">Cambia nome</button>`:''} <span id="savestat">${saveHtml()}</span></div>
   </header>
   <div class="wrap"><ol class="rail" aria-label="Fasi del progetto">${rail}</ol>
-  <div class="stats"><span><b class="num">${nConf()}</b> confermati</span><span><b class="num">${S.recipes.length}</b> proposte</span>
+  <div class="stats">${(UI.tab==='suggerimenti'&&!UI.dish)?'':`<button class="pill-sug" data-act="tab" data-v="suggerimenti"><b class="num">${SUG.length}</b> ricette pronte da cui attingere <span aria-hidden="true">→</span></button>`}<span><b class="num">${nConf()}</b> confermati</span><span><b class="num">${S.recipes.length}</b> proposte</span>
   <span><b class="num">${nv}</b> hanno votato</span><span><b class="num">${sel}</b>/${tot} piatti in menu</span></div></div>`;
 }
 
 function vNav(){
-  const tabs=[['proposte','Proposte',S.recipes.length],['suggerimenti','Suggerimenti',SUG.filter(s=>sugState(s)==='libera').length],['voto','Votazioni'],['menu','Menu',slotted().length+'/'+totalCap()],['spesa','Spesa'],['programma','Programma'],['persone','Persone',nConf()]];
+  const tabs=[['suggerimenti','Suggerimenti',SUG.length],['proposte','Proposte',S.recipes.length],['voto','Votazioni'],['menu','Menu',slotted().length+'/'+totalCap()],['spesa','Spesa'],['programma','Programma'],['persone','Persone',nConf()]];
   return `<nav class="tabs" aria-label="Sezioni"><div class="in">${tabs.map(t=>
-    `<button class="tab" data-act="tab" data-v="${t[0]}" ${(UI.tab===t[0]&&!UI.dish)||(UI.dish&&t[0]==='menu')?'aria-current="page"':''}>${t[1]}${t[2]!==undefined?`<span class="n">${t[2]}</span>`:''}</button>`).join('')}</div></nav>`;
+    `<button class="tab${t[0]==='suggerimenti'?' tab-sug':''}" data-act="tab" data-v="${t[0]}" ${(UI.tab===t[0]&&!UI.dish)||(UI.dish&&t[0]==='menu')?'aria-current="page"':''}>${t[1]}${t[2]!==undefined?`<span class="n">${t[2]}</span>`:''}</button>`).join('')}</div></nav>`;
 }
 
 /* --- proposte --- */
@@ -1038,6 +1070,7 @@ function vProposte(){
     <div class="vhead"><div><h2>Proposte</h2>
       <p class="lede">Ogni proposta ha un proponente, almeno un responsabile della produzione, una categoria e il link a una ricetta. Il link viene controllato e affiancato da una fonte di riferimento autorevole. <b class="num">${S.recipes.length}</b> proposte finora, obiettivo 40–50.</p></div>
       <button class="btn primary" data-act="new-recipe" ${canPropose()?'':'disabled'}>+ Proponi un piatto</button></div>
+    ${canPropose()&&SUG.some(x=>sugState(x)==='libera')?`<div class="promo"><div><b>Hai già ${SUG.length} ricette da cui attingere.</b> ${SUG.filter(x=>sugState(x)==='libera').length} sono ancora da proporre: scegli dai Suggerimenti e il modulo si compila da solo.</div><button class="btn primary" data-act="tab" data-v="suggerimenti">Vai ai Suggerimenti</button></div>`:''}
     ${!canPropose()?`<div class="note">Le proposte sono chiuse perché sono aperte le votazioni. L’organizzatore può riaprirle dalla barra delle fasi.</div>`:''}
     ${isOrg()&&pend?`<div class="note warn"><b>${pend} ${pend===1?'link da verificare':'link da verificare'}.</b> Chiedi a Claude di controllarli: verifica che il link funzioni e corrisponda al piatto, poi aggiunge una fonte autorevole (Accademia Italiana della Cucina, La Cucina Italiana, Cucchiaio d’Argento, Artusi, enti del territorio). Lo stato compare su ogni scheda.</div>`:''}
     <div class="filters">
@@ -1058,7 +1091,7 @@ function vTrash(){
       ${isOrg()?`<button class="btn sm danger" data-act="purge-recipe" data-id="${esc(r.id)}">${UI.confirm==='purge:'+r.id?'Sì, elimina per sempre':'Elimina per sempre'}</button>`:''}</span></div>`).join('')}</div></details>`;
 }
 
-A.tab=t=>{UI.tab=t.dataset.v;UI.dish=null;setHash(UI.tab);render();window.scrollTo(0,0);};
+A.tab=t=>{UI.navigated=true;UI.tab=t.dataset.v;UI.dish=null;setHash(UI.tab);render();window.scrollTo(0,0);};
 A.fcat=t=>{UI.cat=t.dataset.v;render();};
 A.fclear=()=>{UI.q='';UI.cat='';UI.reg='';UI.ver='';UI.mine=false;render();};
 A['del-cancel']=()=>{UI.confirm='';render();};
@@ -1078,7 +1111,7 @@ A['purge-recipe']=async t=>{
   if(await write('delete','recipes/'+id))toast('Eliminata per sempre');
   render();
 };
-A['open-dish']=t=>{UI.dish=t.dataset.id;UI.tab='menu';setHash('piatto-'+t.dataset.id);render();window.scrollTo(0,0);};
+A['open-dish']=t=>{UI.navigated=true;UI.dish=t.dataset.id;UI.tab='menu';setHash('piatto-'+t.dataset.id);render();window.scrollTo(0,0);};
 A.fase=async t=>{
   const v=t.dataset.v;if(S.settings.fase===v)return;
   if(await saveSettings({fase:v}))toast('Fase impostata: '+(FASI.find(f=>f[0]===v)||[])[1]);
@@ -1314,7 +1347,6 @@ function sugFlag(x){
   if(x.st==='proposta')return badge(['menu','cucina'].includes(S.settings.fase)?'Proposta · non selezionata':'Già proposta','info');
   return badge('Da proporre','muted');
 }
-const REG_SHORT={'Veneto':'Veneto','Friuli-Venezia Giulia':'Friuli-V.G.','Trentino-Alto Adige':'Trentino-A.A.'};
 function sugCard(x,grouped){
   const s=x.s,r=x.r,c=catOf(s.c);
   const mates=x.st==='libera'?famMates(s).map(m=>({m,st:sugState(m)})).filter(y=>y.st!=='libera'):[];
@@ -1324,7 +1356,7 @@ function sugCard(x,grouped){
     ?`<button class="btn sm primary" data-act="sug-propose" data-id="${esc(s.id)}" ${canPropose()?'':'disabled'}>Proponi questo piatto</button>`
     :`<span class="small muted">Proposta da ${esc(pname(r.proposerId))}</span><button class="btn sm" data-act="sug-open" data-id="${esc(s.id)}">${r.slot?'Apri la scheda':'Vedi la proposta'}</button>`;
   return `<article class="card sg ${x.st}">
-    <div class="row spread"><div class="row" style="gap:6px">${grouped?'':chipCat(s.c)}<span class="chip plain">${esc(REG_SHORT[s.r]||s.r)}</span></div>${sugFlag(x)}</div>
+    <div class="row spread"><div class="row" style="gap:6px">${grouped?'':chipCat(s.c)}<span class="chip reg" style="--h:${REG_H[s.r]||0}">${esc(REG_SHORT[s.r]||s.r)}</span></div>${sugFlag(x)}</div>
     <h3>${esc(s.t)}</h3>${(showLn||s.rl)?`<p class="small muted" style="margin-top:-4px">${showLn?`<i>${esc(s.ln)}</i>`:''}${showLn&&s.rl?' · ':''}${esc(s.rl||'')}</p>`:''}
     <p class="small">${esc(s.d)}</p>
     <dl class="kv"><dt>Ingredienti</dt><dd>${esc(s.i)}</dd>
@@ -1350,19 +1382,18 @@ function vSugg(){
   let body;
   if(!list.length)body=`<div class="empty"><h3>Nessun piatto con questi filtri</h3><button class="btn" data-act="sclear">Azzera filtri</button></div>`;
   else if(UI.ssort==='cat')body=CATS.map(c=>[c,list.filter(x=>x.s.c===c.key)]).filter(g=>g[1].length)
-    .map(([c,xs])=>`<div><h3 class="grp">${esc(c.label)} <span class="muted small num">${xs.length}</span></h3><div class="cards">${xs.map(x=>sugCard(x,true)).join('')}</div></div>`).join('');
+    .map(([c,xs])=>`<div><h3 class="grp" style="--h:${c.h}">${esc(c.label)} <span class="muted small num">${xs.length}</span></h3><div class="cards">${xs.map(x=>sugCard(x,true)).join('')}</div></div>`).join('');
   else body=`<div class="cards">${list.map(x=>sugCard(x,false)).join('')}</div>`;
   const weakN=SUG.filter(s=>s.weak).length;
   return `<section class="view">
-    <div class="vhead"><div><h2>Suggerimenti</h2>
-      <p class="lede">${SUG.length} piatti tradizionali del Triveneto, con fonte, vino in abbinamento e note di esecuzione. Il segnalino dice se il piatto è già stato proposto o approvato; con un tocco lo proponi con link, vino e tempi già inseriti.</p></div></div>
-    <div class="panel totals"><div><div class="big num">${SUG.length}</div><div class="small muted">piatti nel catalogo</div></div>
-      <div><div class="big num">${n.libera}</div><div class="small muted">da proporre</div></div>
-      <div><div class="big num">${n.proposta}</div><div class="small muted">già proposti</div></div>
-      <div><div class="big num">${n.menu}</div><div class="small muted">approvati (in menu)</div></div></div>
+    <div class="hero-sug">
+      <div class="hs-l"><h2><span class="hs-num" aria-hidden="true">${SUG.length}</span><span><span class="sr">${SUG.length} </span>ricette già pronte da cui attingere</span></h2>
+        <p>Piatti tradizionali del Triveneto con fonte, vino in abbinamento e note di esecuzione. Ne scegli uno e lo proponi con un tocco: link, vino e tempi sono già compilati.</p></div>
+      <div class="hs-r"><div class="hs-meta"><span><b class="num">${n.libera}</b> da proporre</span><span><b class="num">${n.proposta}</b> già proposti</span><span><b class="num">${n.menu}</b> approvati in menu</span></div>
+        <div class="hs-regs" role="group" aria-label="Filtra per regione">${REGIONI.map(r=>`<button class="chip reg" style="--h:${REG_H[r]}" aria-pressed="${UI.sreg===r}" data-act="sreg" data-v="${esc(r)}">${esc(REG_SHORT[r])} <span class="num">${SUG.filter(x=>x.r===r).length}</span></button>`).join('')}</div></div>
+    </div>
     <div class="filters">
       <div class="field wide"><label for="sq">Cerca piatto, ingrediente o vino</label><input type="search" id="sq" data-in="sq" value="${esc(UI.sq)}" placeholder="es. polenta, Soave, anatra…"></div>
-      <div class="field"><label for="sreg">Regione</label><select id="sreg" data-chg="sreg"><option value="">Tutte</option>${REGIONI.map(r=>opt(r,UI.sreg,r)).join('')}</select></div>
       <div class="field"><label for="swt">Tipo di vino</label><select id="swt" data-chg="swt"><option value="">Tutti</option>${WTYPES.map(w=>opt(w,UI.swt,w)).join('')}</select></div>
       <div class="field"><label for="sst">Stato</label><select id="sst" data-chg="sst"><option value="">Tutti</option>${opt('libera',UI.sst,'Da proporre')}${opt('proposta',UI.sst,'Già proposti')}${opt('menu',UI.sst,'Approvati')}</select></div>
       <div class="field"><label for="slv">Livello fonte</label><select id="slv" data-chg="slv"><option value="">Tutti</option>${['A','B','C'].map(l=>opt(l,UI.slv,LIVELLI[l].t)).join('')}${opt('-',UI.slv,'Da assegnare')}</select></div>
@@ -1391,14 +1422,15 @@ A['sug-propose']=t=>{
 };
 A['sug-open']=t=>{
   const s=sugById(t.dataset.id),r=s&&sugRecipe(s);if(!r)return;
-  if(r.slot){UI.dish=r.id;UI.tab='menu';setHash('piatto-'+r.id);}
-  else{UI.dish=null;UI.tab='proposte';UI.q=r.title;UI.cat='';UI.reg='';UI.ver='';UI.mine=false;setHash('proposte');}
+  if(r.slot){UI.navigated=true;UI.dish=r.id;UI.tab='menu';setHash('piatto-'+r.id);}
+  else{UI.navigated=true;UI.dish=null;UI.tab='proposte';UI.q=r.title;UI.cat='';UI.reg='';UI.ver='';UI.mine=false;setHash('proposte');}
   render();window.scrollTo(0,0);
 };
 A.scat=t=>{UI.scat=t.dataset.v;render();};
 A.sclear=()=>{UI.sq='';UI.scat='';UI.sreg='';UI.swt='';UI.slv='';UI.sst='';render();};
 IN.sq=t=>{UI.sq=t.value;render();};
-['sreg','swt','sst','slv','ssort'].forEach(k=>{CH[k]=t=>{UI[k]=t.value;render();};});
+A.sreg=t=>{UI.sreg=UI.sreg===t.dataset.v?'':t.dataset.v;render();};
+['swt','sst','slv','ssort'].forEach(k=>{CH[k]=t=>{UI[k]=t.value;render();};});
 
 /* ============ viste: scheda piatto, spesa, programma, persone ============ */
 function absLabel(t){
@@ -1965,8 +1997,8 @@ const SUB={};
 function setHash(h){try{history.replaceState(null,'','#'+h);}catch(e){try{location.hash=h;}catch(e2){}}}
 function routeFromHash(){
   let h='';try{h=location.hash.slice(1);}catch(e){}
-  if(h.startsWith('piatto-')){UI.dish=h.slice(7);UI.tab='menu';}
-  else if(['proposte','suggerimenti','voto','menu','spesa','programma','persone'].includes(h)){UI.tab=h;UI.dish=null;}
+  if(h.startsWith('piatto-')){UI.dish=h.slice(7);UI.tab='menu';UI.navigated=true;}
+  else if(['proposte','suggerimenti','voto','menu','spesa','programma','persone'].includes(h)){UI.tab=h;UI.dish=null;UI.navigated=true;}
 }
 function doLogout(){S.meId=null;store.set('gb.me','');render();}
 
@@ -1983,6 +2015,7 @@ function build(){
   if(S.dbOk===false)return noDb();
   if(!S.loaded.p||!S.loaded.r||!S.loaded.s)return `<p class="boot">Carico i dati del weekend…</p>`;
   if(!me())return vLogin();
+  if(!UI.homed){UI.homed=true;if(!UI.navigated)UI.tab=homeTab();}
   const views={proposte:vProposte,suggerimenti:vSugg,voto:vVoto,menu:vMenu,spesa:vSpesa,programma:vProgramma,persone:vPersone};
   const view=UI.dish?vPiatto():(views[UI.tab]||vProposte)();
   return vHeader()+vNav()+`<main class="wrap">${S.offline?`<div class="note warn" style="margin-top:16px"><b>Sei offline.</b> Puoi continuare: le modifiche restano in coda e si salvano appena torna la connessione. Non chiudere la pagina.</div>`:''}${S.readOnly?`<div class="note bad" style="margin-top:16px"><b>Sola lettura.</b> Puoi guardare tutto ma non modificare: chiedi a Marco di darti accesso come collaboratore.</div>`:''}${view}</main>`;
@@ -2002,7 +2035,7 @@ let raf=0;
 function schedule(){if(raf)return;raf=requestAnimationFrame(()=>{raf=0;render();});}
 
 /* --- accesso e partecipanti --- */
-A.login=t=>{S.meId=t.dataset.id;store.set('gb.me',S.meId);UI.tab='proposte';UI.dish=null;routeFromHash();render();window.scrollTo(0,0);};
+A.login=t=>{S.meId=t.dataset.id;store.set('gb.me',S.meId);UI.homed=true;UI.navigated=false;UI.tab=homeTab();UI.dish=null;routeFromHash();render();window.scrollTo(0,0);};
 A.logout=()=>doLogout();
 async function addParticipant(name,confirmed){
   name=name.trim().replace(/\s+/g,' ');
@@ -2025,7 +2058,7 @@ SUB.addself=async()=>{
   const r=await addParticipant($('#ln').value,$('#lc').checked);
   UI.login.conf=$('#lc').checked;
   if(r.err){const e=$('#lerr');e.textContent=r.err;e.hidden=false;return;}
-  S.meId=r.id;store.set('gb.me',r.id);UI.tab='proposte';render();
+  S.meId=r.id;store.set('gb.me',r.id);UI.homed=true;UI.navigated=false;UI.tab=homeTab();render();
 };
 SUB.addperson=async()=>{
   const r=await addParticipant($('#np').value,$('#npc').checked);

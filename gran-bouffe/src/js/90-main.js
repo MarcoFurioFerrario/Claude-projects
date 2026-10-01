@@ -3,8 +3,8 @@ const SUB={};
 function setHash(h){try{history.replaceState(null,'','#'+h);}catch(e){try{location.hash=h;}catch(e2){}}}
 function routeFromHash(){
   let h='';try{h=location.hash.slice(1);}catch(e){}
-  if(h.startsWith('piatto-')){UI.dish=h.slice(7);UI.tab='menu';}
-  else if(['proposte','suggerimenti','voto','menu','spesa','programma','persone'].includes(h)){UI.tab=h;UI.dish=null;}
+  if(h.startsWith('piatto-')){UI.dish=h.slice(7);UI.tab='menu';UI.navigated=true;}
+  else if(['proposte','suggerimenti','voto','menu','spesa','programma','persone'].includes(h)){UI.tab=h;UI.dish=null;UI.navigated=true;}
 }
 function doLogout(){S.meId=null;store.set('gb.me','');render();}
 
@@ -21,6 +21,7 @@ function build(){
   if(S.dbOk===false)return noDb();
   if(!S.loaded.p||!S.loaded.r||!S.loaded.s)return `<p class="boot">Carico i dati del weekend…</p>`;
   if(!me())return vLogin();
+  if(!UI.homed){UI.homed=true;if(!UI.navigated)UI.tab=homeTab();}
   const views={proposte:vProposte,suggerimenti:vSugg,voto:vVoto,menu:vMenu,spesa:vSpesa,programma:vProgramma,persone:vPersone};
   const view=UI.dish?vPiatto():(views[UI.tab]||vProposte)();
   return vHeader()+vNav()+`<main class="wrap">${S.offline?`<div class="note warn" style="margin-top:16px"><b>Sei offline.</b> Puoi continuare: le modifiche restano in coda e si salvano appena torna la connessione. Non chiudere la pagina.</div>`:''}${S.readOnly?`<div class="note bad" style="margin-top:16px"><b>Sola lettura.</b> Puoi guardare tutto ma non modificare: chiedi a Marco di darti accesso come collaboratore.</div>`:''}${view}</main>`;
@@ -40,7 +41,7 @@ let raf=0;
 function schedule(){if(raf)return;raf=requestAnimationFrame(()=>{raf=0;render();});}
 
 /* --- accesso e partecipanti --- */
-A.login=t=>{S.meId=t.dataset.id;store.set('gb.me',S.meId);UI.tab='proposte';UI.dish=null;routeFromHash();render();window.scrollTo(0,0);};
+A.login=t=>{S.meId=t.dataset.id;store.set('gb.me',S.meId);UI.homed=true;UI.navigated=false;UI.tab=homeTab();UI.dish=null;routeFromHash();render();window.scrollTo(0,0);};
 A.logout=()=>doLogout();
 async function addParticipant(name,confirmed){
   name=name.trim().replace(/\s+/g,' ');
@@ -63,7 +64,7 @@ SUB.addself=async()=>{
   const r=await addParticipant($('#ln').value,$('#lc').checked);
   UI.login.conf=$('#lc').checked;
   if(r.err){const e=$('#lerr');e.textContent=r.err;e.hidden=false;return;}
-  S.meId=r.id;store.set('gb.me',r.id);UI.tab='proposte';render();
+  S.meId=r.id;store.set('gb.me',r.id);UI.homed=true;UI.navigated=false;UI.tab=homeTab();render();
 };
 SUB.addperson=async()=>{
   const r=await addParticipant($('#np').value,$('#npc').checked);

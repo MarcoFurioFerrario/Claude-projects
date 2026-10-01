@@ -40,7 +40,6 @@ function sugFlag(x){
   if(x.st==='proposta')return badge(['menu','cucina'].includes(S.settings.fase)?'Proposta · non selezionata':'Già proposta','info');
   return badge('Da proporre','muted');
 }
-const REG_SHORT={'Veneto':'Veneto','Friuli-Venezia Giulia':'Friuli-V.G.','Trentino-Alto Adige':'Trentino-A.A.'};
 function sugCard(x,grouped){
   const s=x.s,r=x.r,c=catOf(s.c);
   const mates=x.st==='libera'?famMates(s).map(m=>({m,st:sugState(m)})).filter(y=>y.st!=='libera'):[];
@@ -50,7 +49,7 @@ function sugCard(x,grouped){
     ?`<button class="btn sm primary" data-act="sug-propose" data-id="${esc(s.id)}" ${canPropose()?'':'disabled'}>Proponi questo piatto</button>`
     :`<span class="small muted">Proposta da ${esc(pname(r.proposerId))}</span><button class="btn sm" data-act="sug-open" data-id="${esc(s.id)}">${r.slot?'Apri la scheda':'Vedi la proposta'}</button>`;
   return `<article class="card sg ${x.st}">
-    <div class="row spread"><div class="row" style="gap:6px">${grouped?'':chipCat(s.c)}<span class="chip plain">${esc(REG_SHORT[s.r]||s.r)}</span></div>${sugFlag(x)}</div>
+    <div class="row spread"><div class="row" style="gap:6px">${grouped?'':chipCat(s.c)}<span class="chip reg" style="--h:${REG_H[s.r]||0}">${esc(REG_SHORT[s.r]||s.r)}</span></div>${sugFlag(x)}</div>
     <h3>${esc(s.t)}</h3>${(showLn||s.rl)?`<p class="small muted" style="margin-top:-4px">${showLn?`<i>${esc(s.ln)}</i>`:''}${showLn&&s.rl?' · ':''}${esc(s.rl||'')}</p>`:''}
     <p class="small">${esc(s.d)}</p>
     <dl class="kv"><dt>Ingredienti</dt><dd>${esc(s.i)}</dd>
@@ -76,19 +75,18 @@ function vSugg(){
   let body;
   if(!list.length)body=`<div class="empty"><h3>Nessun piatto con questi filtri</h3><button class="btn" data-act="sclear">Azzera filtri</button></div>`;
   else if(UI.ssort==='cat')body=CATS.map(c=>[c,list.filter(x=>x.s.c===c.key)]).filter(g=>g[1].length)
-    .map(([c,xs])=>`<div><h3 class="grp">${esc(c.label)} <span class="muted small num">${xs.length}</span></h3><div class="cards">${xs.map(x=>sugCard(x,true)).join('')}</div></div>`).join('');
+    .map(([c,xs])=>`<div><h3 class="grp" style="--h:${c.h}">${esc(c.label)} <span class="muted small num">${xs.length}</span></h3><div class="cards">${xs.map(x=>sugCard(x,true)).join('')}</div></div>`).join('');
   else body=`<div class="cards">${list.map(x=>sugCard(x,false)).join('')}</div>`;
   const weakN=SUG.filter(s=>s.weak).length;
   return `<section class="view">
-    <div class="vhead"><div><h2>Suggerimenti</h2>
-      <p class="lede">${SUG.length} piatti tradizionali del Triveneto, con fonte, vino in abbinamento e note di esecuzione. Il segnalino dice se il piatto è già stato proposto o approvato; con un tocco lo proponi con link, vino e tempi già inseriti.</p></div></div>
-    <div class="panel totals"><div><div class="big num">${SUG.length}</div><div class="small muted">piatti nel catalogo</div></div>
-      <div><div class="big num">${n.libera}</div><div class="small muted">da proporre</div></div>
-      <div><div class="big num">${n.proposta}</div><div class="small muted">già proposti</div></div>
-      <div><div class="big num">${n.menu}</div><div class="small muted">approvati (in menu)</div></div></div>
+    <div class="hero-sug">
+      <div class="hs-l"><h2><span class="hs-num" aria-hidden="true">${SUG.length}</span><span><span class="sr">${SUG.length} </span>ricette già pronte da cui attingere</span></h2>
+        <p>Piatti tradizionali del Triveneto con fonte, vino in abbinamento e note di esecuzione. Ne scegli uno e lo proponi con un tocco: link, vino e tempi sono già compilati.</p></div>
+      <div class="hs-r"><div class="hs-meta"><span><b class="num">${n.libera}</b> da proporre</span><span><b class="num">${n.proposta}</b> già proposti</span><span><b class="num">${n.menu}</b> approvati in menu</span></div>
+        <div class="hs-regs" role="group" aria-label="Filtra per regione">${REGIONI.map(r=>`<button class="chip reg" style="--h:${REG_H[r]}" aria-pressed="${UI.sreg===r}" data-act="sreg" data-v="${esc(r)}">${esc(REG_SHORT[r])} <span class="num">${SUG.filter(x=>x.r===r).length}</span></button>`).join('')}</div></div>
+    </div>
     <div class="filters">
       <div class="field wide"><label for="sq">Cerca piatto, ingrediente o vino</label><input type="search" id="sq" data-in="sq" value="${esc(UI.sq)}" placeholder="es. polenta, Soave, anatra…"></div>
-      <div class="field"><label for="sreg">Regione</label><select id="sreg" data-chg="sreg"><option value="">Tutte</option>${REGIONI.map(r=>opt(r,UI.sreg,r)).join('')}</select></div>
       <div class="field"><label for="swt">Tipo di vino</label><select id="swt" data-chg="swt"><option value="">Tutti</option>${WTYPES.map(w=>opt(w,UI.swt,w)).join('')}</select></div>
       <div class="field"><label for="sst">Stato</label><select id="sst" data-chg="sst"><option value="">Tutti</option>${opt('libera',UI.sst,'Da proporre')}${opt('proposta',UI.sst,'Già proposti')}${opt('menu',UI.sst,'Approvati')}</select></div>
       <div class="field"><label for="slv">Livello fonte</label><select id="slv" data-chg="slv"><option value="">Tutti</option>${['A','B','C'].map(l=>opt(l,UI.slv,LIVELLI[l].t)).join('')}${opt('-',UI.slv,'Da assegnare')}</select></div>
@@ -117,11 +115,12 @@ A['sug-propose']=t=>{
 };
 A['sug-open']=t=>{
   const s=sugById(t.dataset.id),r=s&&sugRecipe(s);if(!r)return;
-  if(r.slot){UI.dish=r.id;UI.tab='menu';setHash('piatto-'+r.id);}
-  else{UI.dish=null;UI.tab='proposte';UI.q=r.title;UI.cat='';UI.reg='';UI.ver='';UI.mine=false;setHash('proposte');}
+  if(r.slot){UI.navigated=true;UI.dish=r.id;UI.tab='menu';setHash('piatto-'+r.id);}
+  else{UI.navigated=true;UI.dish=null;UI.tab='proposte';UI.q=r.title;UI.cat='';UI.reg='';UI.ver='';UI.mine=false;setHash('proposte');}
   render();window.scrollTo(0,0);
 };
 A.scat=t=>{UI.scat=t.dataset.v;render();};
 A.sclear=()=>{UI.sq='';UI.scat='';UI.sreg='';UI.swt='';UI.slv='';UI.sst='';render();};
 IN.sq=t=>{UI.sq=t.value;render();};
-['sreg','swt','sst','slv','ssort'].forEach(k=>{CH[k]=t=>{UI[k]=t.value;render();};});
+A.sreg=t=>{UI.sreg=UI.sreg===t.dataset.v?'':t.dataset.v;render();};
+['swt','sst','slv','ssort'].forEach(k=>{CH[k]=t=>{UI[k]=t.value;render();};});
