@@ -14,6 +14,32 @@ Pubblicata come artifact di claude.ai: <https://claude.ai/artifact/WFrai8Hzx76Go
 6. **Spesa**: lista unica, somma gli ingredienti uguali tra piatti (anche con unità diverse), arrotonda per eccesso, calcola le confezioni, assegna chi compra, copia per WhatsApp o scarica CSV.
 7. **Programma**: finestre di tempo utili per pasto (arrivo, orari) e cronoprogramma. Un piatto che richiede più ore di anticipo di quelle disponibili non può stare in quel pasto, a meno che la parte lunga si prepari a casa.
 
+## Versione pubblica, aperta a chiunque (cartella `docs/`)
+
+L'artifact di claude.ai richiede un account e l'accesso in modifica: chi apre il link senza account non vede né scrive dati. Per un link che funziona per tutti c'è `docs/index.html`, la stessa app con i dati su Firestore (gratuito) e il nome ricordato con un cookie (un anno, solo il nome scelto).
+
+Serve una configurazione una tantum:
+
+1. **Firebase**: <https://console.firebase.google.com> → *Aggiungi progetto* (senza Analytics) → *Build → Firestore Database → Crea database* (modalità produzione, regione europea).
+2. **Regole**: in *Firestore → Regole* incolla e pubblica (la data chiude da sola l'accesso dopo il weekend; cambiala):
+
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if request.time < timestamp.date(2027, 2, 1);
+    }
+  }
+}
+```
+
+3. **Config**: *Impostazioni progetto → Le tue app → Web (</>)* → registra l'app e copia l'oggetto `firebaseConfig`. Incollalo in `docs/config.js` al posto di `null` (le chiavi web di Firebase sono pubbliche per progettazione; la protezione sono le regole).
+4. **Hosting statico** della cartella `docs/` (nessuna build). Con repo pubblico: *Settings → Pages → Deploy from a branch → cartella `/docs`*. Con repo privato su piano gratuito GitHub Pages non è disponibile: usa Cloudflare Pages, Netlify o Vercel collegando il repo, senza comando di build e con cartella di output `gran-bouffe/docs`.
+5. Alla prima apertura, sulla schermata di accesso premi *Carica i 15 confermati*.
+
+Limiti: l'identità è solo il nome scelto; chi ha il link può scrivere nel database (le regole a tempo limitano il periodo) e l'organizzatore è chi sceglie "Marco Furio". Nella versione pubblica non c'è "Genera bozza con Claude".
+
 ## Verifica dei link (la fa Claude)
 
 Dentro la pagina non è possibile aprire altri siti, quindi i link restano `da_verificare` finché una sessione Claude Code con accesso di rete li controlla. Procedura:
@@ -52,8 +78,9 @@ Seed iniziale: `seed/seed.json` (partecipanti confermati e impostazioni).
 ## Sviluppo
 
 ```
-node build.js          # assembla src/ in index.html (il file pubblicato)
-node test/flow.js      # prova end-to-end in Chromium con un db finto in memoria
+node build.js          # assembla src/ in index.html (artifact) e docs/index.html (versione pubblica)
+node test/flow.js      # artifact: prova end-to-end in Chromium con un db finto in memoria
+node test/standalone.js # versione pubblica: Firestore finto, cookie, merge dei voti
 ```
 
 `test/flow.js` usa dati inventati solo in memoria: non scrive nulla nell'artifact.

@@ -8,14 +8,15 @@ function vLogin(){
     <div><p class="film">dal film di Marco Ferreri · 1973</p><h1>Gran Bouffe <span style="color:var(--accent)">Triveneto</span></h1></div>
     <p class="lede">Scegli il tuo nome per entrare: da qui proponi i piatti, voti, ti iscrivi alle squadre di cucina e vedi la lista della spesa.</p>
     ${ps.length?`<div class="names">${ps.map(p=>`<button class="btn" data-act="login" data-id="${esc(p.id)}">${esc(p.name)}</button>`).join('')}</div>`
-      :`<div class="note">L’elenco partecipanti è vuoto. Aggiungi il tuo nome: il primo che entra diventa organizzatore.</div>`}
+      :`<div class="note">L’elenco partecipanti è vuoto.${S.standalone?` <button class="btn sm primary" data-act="seed-preset" style="margin-left:6px">Carica i ${PRESET.length} confermati</button>`:' Aggiungi il tuo nome: il primo che entra diventa organizzatore.'}</div>`}
     <form data-sub="addself" class="panel" style="display:flex;flex-direction:column;gap:10px">
       <h4>Non ci sei? Aggiungi un partecipante</h4>
       <div class="row"><input type="text" id="ln" placeholder="Nome (come lo chiamano gli amici)" autocomplete="off" style="flex:1;min-width:180px">
       <button class="btn primary" type="submit">Aggiungi ed entra</button></div>
       <label class="checkline"><input type="checkbox" id="lc" ${UI.login.conf?'checked':''}> Confermo la mia presenza al weekend</label>
       <p class="err" id="lerr" hidden></p>
-    </form></div></div>`;
+    </form>
+    <p class="hint">Il tuo nome viene ricordato su questo dispositivo con un cookie (dura un anno). Non raccogliamo altri dati personali.</p></div></div>`;
 }
 
 function vHeader(){

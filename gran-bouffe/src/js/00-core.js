@@ -11,7 +11,20 @@ const num=v=>{if(typeof v==='number')return isFinite(v)?v:0;const n=parseFloat(S
 const fmtN=(n,d)=>Number(n).toLocaleString('it-IT',{maximumFractionDigits:d==null?2:d});
 const cap1=s=>{s=String(s||'').trim();return s?s[0].toUpperCase()+s.slice(1):s;};
 const byTitle=(a,b)=>String(a.title).localeCompare(String(b.title),'it');
-const store={get(k){try{return localStorage.getItem(k);}catch(e){return null;}},set(k,v){try{localStorage.setItem(k,v);}catch(e){}}};
+/* Il nome scelto si ricorda con un cookie (un anno) e, in più, con localStorage. */
+const cookieDir=()=>{try{return location.pathname.replace(/[^/]*$/,'')||'/';}catch(e){return '/';}};
+const store={
+  get(k){
+    const ck=k.replace(/\W/g,'_');
+    try{const m=document.cookie.split('; ').find(c=>c.indexOf(ck+'=')===0);if(m){const v=decodeURIComponent(m.slice(ck.length+1));if(v)return v;}}catch(e){}
+    try{return localStorage.getItem(k);}catch(e){return null;}
+  },
+  set(k,v){
+    const ck=k.replace(/\W/g,'_');
+    try{document.cookie=ck+'='+encodeURIComponent(v||'')+'; Path='+cookieDir()+'; Max-Age='+(v?31536000:0)+'; SameSite=Lax'+(location.protocol==='https:'?'; Secure':'');}catch(e){}
+    try{if(v)localStorage.setItem(k,v);else localStorage.removeItem(k);}catch(e){}
+  }
+};
 const hm=s=>{const m=/^(\d{1,2}):(\d{2})$/.exec(String(s||''));return m?(+m[1]+(+m[2])/60):0;};
 const fmtT=h=>{h=((h%24)+24)%24;let H=Math.floor(h+1e-9),M=Math.round((h-H)*60);if(M>=60){H=(H+1)%24;M=0;}return String(H).padStart(2,'0')+':'+String(M).padStart(2,'0');};
 const isUrl=s=>{try{const u=new URL(String(s).trim());return u.protocol==='http:'||u.protocol==='https:';}catch(e){return false;}};
@@ -73,6 +86,7 @@ const IDEE=[
   {t:'Kaiserschmarrn',c:'dolci',r:'Trentino-Alto Adige'}
 ];
 
+const PRESET=['Marco Furio','Marco Terracina','Teo','Tia','Melo','Jaki','Mazzetti','Fantoni','Murro','Fede','Umbe','Jack','Gesù Pippia','Turi','Lollo'];
 const DEF={fase:'proposte',edizione:'XI',tema:'Triveneto',dataVen:'',arrivo:'16:00',riservaOre:1,margine:0,
   orari:{'ven-cena':'20:30','sab-pranzo':'13:30','sab-cena':'20:30','dom-pranzo':'13:30'},cap:{ven:5,sab:12,dom:5}};
 function mergeSettings(d){
@@ -110,6 +124,8 @@ function toast(msg,kind){
 }
 function errMsg(e){
   const c=e&&e.code;
+  if(c==='permission-denied')return 'Il database ha rifiutato la scrittura: le regole di Firestore non permettono di modificare i dati.';
+  if(c==='unavailable')return 'Connessione assente: riprova tra poco.';
   if(c==='invalid_argument')return 'Salvataggio rifiutato: probabilmente non hai i permessi di modifica. Chiedi a Marco di darti accesso come collaboratore.';
   if(c==='quota_exceeded')return 'Spazio del database esaurito.';
   if(c==='resource_exhausted')return 'Troppe operazioni ravvicinate: riprova tra qualche secondo.';

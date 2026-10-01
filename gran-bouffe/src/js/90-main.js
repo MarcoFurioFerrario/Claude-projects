@@ -9,8 +9,13 @@ function routeFromHash(){
 function doLogout(){S.meId=null;store.set('gb.me','');render();}
 
 function noDb(){
+  let msg;
+  if(S.noConfig)msg=`<b>Il sito non è ancora collegato a un database.</b> Manca la configurazione Firebase in <code>config.js</code>: vedi le istruzioni nel README.`;
+  else if(S.permDenied)msg=`<b>Il database rifiuta la lettura.</b> Le regole di Firestore devono consentire lettura e scrittura (vedi il README). Se le hai appena cambiate, ricarica la pagina.`;
+  else if(S.standalone)msg=`<b>Non riesco a collegarmi al database.</b> Controlla la connessione e ricarica la pagina. Se il problema continua, avvisa Marco.`;
+  else msg=`<b>Non riesco a collegarmi ai dati condivisi.</b> Apri la pagina da claude.ai con il tuo account e controlla di avere accesso come collaboratore. Se il problema continua, avvisa Marco.`;
   return `<div class="wrap"><div class="login"><div><p class="film">dal film di Marco Ferreri · 1973</p><h1>Gran Bouffe <span style="color:var(--accent)">Triveneto</span></h1></div>
-    <div class="note bad"><b>Non riesco a collegarmi ai dati condivisi.</b> Apri la pagina da claude.ai con il tuo account e controlla di avere accesso alla pagina come collaboratore. Se il problema continua, avvisa Marco.</div></div></div>`;
+    <div class="note bad">${msg}</div></div></div>`;
 }
 function build(){
   if(S.dbOk===false)return noDb();
@@ -46,6 +51,13 @@ async function addParticipant(name,confirmed){
   const ok=await write('set','participants/'+id,{name,confirmed:!!confirmed,organizer:first,ord,createdAt:Date.now()});
   return ok?{id}:{err:'Non sono riuscito a salvare il nome.'};
 }
+A['seed-preset']=async()=>{
+  if(S.participants.length)return;
+  const now=Date.now();let ok=true;
+  for(let i=0;i<PRESET.length;i++)ok=(await write('set','participants/p_'+slug(PRESET[i]),{name:PRESET[i],confirmed:true,organizer:i===0,ord:i+1,createdAt:now}))&&ok;
+  if(!S.settingsExists)ok=(await write('set','settings/main',mergeSettings()))&&ok;
+  toast(ok?'Elenco caricato':'Caricamento incompleto: riprova.',ok?'':'err');
+};
 SUB.addself=async()=>{
   const r=await addParticipant($('#ln').value,$('#lc').checked);
   UI.login.conf=$('#lc').checked;
@@ -80,21 +92,16 @@ window.addEventListener('hashchange',()=>{routeFromHash();render();});
 
 /* --- avvio --- */
 function subscribe(){
-  const onErr=k=>e=>{console.error('snapshot',k,e);S.loaded[k]=true;schedule();};
+  const onErr=k=>e=>{console.error('snapshot',k,e);S.loaded[k]=true;if(e&&e.code==='permission-denied'){S.permDenied=true;S.dbOk=false;}schedule();};
   db.collection('participants').onSnapshot(s=>{S.participants=s.docs.map(d=>Object.assign({},d.data(),{id:d.id}));S.loaded.p=true;schedule();},onErr('p'));
   db.collection('recipes').onSnapshot(s=>{S.recipes=s.docs.map(d=>Object.assign({},d.data(),{id:d.id}));S.loaded.r=true;schedule();},onErr('r'));
   db.collection('votes').onSnapshot(s=>{const v={};s.docs.forEach(d=>{v[d.id]=d.data();});S.votes=v;S.loaded.v=true;schedule();},onErr('v'));
   db.collection('spesa').onSnapshot(s=>{const v={};s.docs.forEach(d=>{v[d.id]=d.data();});S.spesa=v;S.loaded.sp=true;schedule();},onErr('sp'));
   db.doc('settings/main').onSnapshot(d=>{S.settingsExists=!!d.exists;S.settings=mergeSettings(d.exists?d.data():null);S.loaded.s=true;schedule();},onErr('s'));
 }
-async function init(){
-  S.meId=store.get('gb.me')||null;
-  routeFromHash();
-  render();
-  const c=window.claude;
-  if(!c||typeof c.use!=='function'){S.dbOk=false;render();return;}
+async function initArtifact(c){
   const ask=n=>Promise.resolve().then(()=>c.use(n)).catch(()=>null);
-  c.use&&ask('sample').then(v=>{sampleCap=v;});
+  ask('sample').then(v=>{sampleCap=v;});
   ask('downloads').then(v=>{dlCap=v;schedule();});
   ask('user').then(async v=>{
     userCap=v;if(!v)return;
@@ -106,5 +113,38 @@ async function init(){
   if(!db){S.dbOk=false;render();return;}
   S.dbOk=true;
   subscribe();
+}
+
+/* Versione pubblica (fuori da claude.ai): dati su Firestore, nessun account richiesto. */
+function fsAdapter(fs){
+  return{
+    doc:p=>{const r=fs.doc(p);return{
+      set:d=>r.set(d),
+      update:async d=>{const s=await r.get();if(!s.exists)throw{code:'invalid_argument',message:'documento inesistente'};return r.set(d,{merge:true});},
+      delete:()=>r.delete(),
+      onSnapshot:(n,e)=>r.onSnapshot(n,e)};},
+    collection:p=>{const c=fs.collection(p);return{onSnapshot:(n,e)=>c.onSnapshot(n,e)};}
+  };
+}
+function initStandalone(){
+  S.standalone=true;
+  const cfg=window.GB_FIREBASE;
+  if(!cfg||!cfg.projectId){S.noConfig=true;S.dbOk=false;render();return;}
+  if(!window.firebase||!window.firebase.firestore){S.dbOk=false;render();return;}
+  try{window.firebase.initializeApp(cfg);db=fsAdapter(window.firebase.firestore());}
+  catch(e){console.error(e);S.dbOk=false;render();return;}
+  dlCap={save:async({filename,data})=>{
+    const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type:'text/csv;charset=utf-8'}));a.download=filename;
+    document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1500);return{status:'saved'};}};
+  S.dbOk=true;
+  subscribe();
+}
+async function init(){
+  S.meId=store.get('gb.me')||null;
+  routeFromHash();
+  render();
+  const c=window.claude;
+  if(c&&typeof c.use==='function')return initArtifact(c);
+  initStandalone();
 }
 init();

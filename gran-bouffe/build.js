@@ -1,7 +1,19 @@
-// Assembla src/ in index.html (il file che viene pubblicato come artifact).
+// Assembla src/ in due file:
+//   index.html       -> versione per l'artifact di claude.ai (senza skeleton: lo aggiunge la piattaforma)
+//   docs/index.html  -> versione pubblica (qualsiasi hosting statico) con database Firestore
 const fs=require('fs'),path=require('path');
 const src=p=>fs.readFileSync(path.join(__dirname,'src',p),'utf8');
 const js=fs.readdirSync(path.join(__dirname,'src','js')).filter(f=>f.endsWith('.js')).sort().map(f=>src('js/'+f)).join('\n');
-const out=src('head.html').replace('/*CSS*/',()=>src('style.css')).replace('/*JS*/',()=>js);
-fs.writeFileSync(path.join(__dirname,'index.html'),out);
-console.log('index.html',out.length,'byte');
+const head=src('head.html').replace('/*CSS*/',()=>src('style.css'));
+// artifact
+fs.writeFileSync(path.join(__dirname,'index.html'),head+src('body.html').replace('/*JS*/',()=>js));
+// pubblica
+fs.mkdirSync(path.join(__dirname,'docs'),{recursive:true});
+fs.writeFileSync(path.join(__dirname,'docs','index.html'),src('standalone.html').replace('/*HEAD*/',()=>head).replace('/*JS*/',()=>js));
+fs.writeFileSync(path.join(__dirname,'docs','.nojekyll'),'');
+const cfg=path.join(__dirname,'docs','config.js');
+if(!fs.existsSync(cfg))fs.writeFileSync(cfg,`// Configurazione Firebase del progetto (le chiavi web di Firebase sono pubbliche per progettazione).
+// Sostituisci null con l'oggetto firebaseConfig copiato dalla console Firebase (vedi README).
+window.GB_FIREBASE = null;
+`);
+console.log('ok: index.html + docs/index.html');
