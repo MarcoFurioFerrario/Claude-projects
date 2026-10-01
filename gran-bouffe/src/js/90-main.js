@@ -32,6 +32,7 @@ function render(){
   const sel=fid&&ae.selectionStart!=null?[ae.selectionStart,ae.selectionEnd]:null;
   let html;
   try{html=build();}catch(e){console.error(e);html=`<div class="wrap"><div class="note bad" style="margin-top:24px">Errore di visualizzazione: ${esc(e.message)}</div></div>`;}
+  if(S.newVersion)html=`<div class="upd" role="status"><span><b>Nuova versione disponibile.</b> Aggiorna per vedere le novità.</span> <button class="btn sm primary" data-act="reload-new">Aggiorna ora</button></div>`+html;
   root.innerHTML=html;
   if(fid){const n=document.getElementById(fid);if(n){n.focus();try{if(sel)n.setSelectionRange(sel[0],sel[1]);}catch(e){}}}
 }
@@ -156,6 +157,20 @@ setInterval(()=>{ // copia di sicurezza periodica, solo se ci sono state modific
   const last=(S.backups[0]&&S.backups[0].at)||0;
   if(Date.now()-last>=BACKUP_EVERY)makeBackup('automatico',true);
 },window.GB_TICK||60000);
+/* Avviso di nuova versione: la pagina pubblica confronta il proprio id di build con docs/version.json. */
+async function checkVersion(){
+  if(!S.standalone)return;
+  try{
+    const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});
+    if(!r.ok)return;
+    const v=await r.json();
+    if(v&&v.build&&v.build!==BUILD&&S.newVersion!==v.build){S.newVersion=v.build;schedule();}
+  }catch(e){}
+}
+A['reload-new']=()=>{
+  try{location.href=location.pathname+'?v='+encodeURIComponent(S.newVersion||Date.now())+location.hash;}catch(e){location.reload();}
+};
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')checkVersion();});
 async function init(){
   S.offline=typeof navigator!=='undefined'&&navigator.onLine===false;
   S.meId=store.get('gb.me')||null;
@@ -164,5 +179,7 @@ async function init(){
   const c=window.claude;
   if(c&&typeof c.use==='function')return initArtifact(c);
   initStandalone();
+  checkVersion();
+  setInterval(checkVersion,window.GB_VER_TICK||5*60*1000);
 }
 init();

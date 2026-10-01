@@ -34,9 +34,11 @@ const mockFirebase=`
   page.on('pageerror',e=>errors.push('pageerror: '+e.message));
   await page.addInitScript('window.GB_BACKUP_EVERY=3000;window.GB_TICK=1000;');
   let cfg='window.GB_FIREBASE=null;';
+  const realBuild=(html.match(/const BUILD='([^']+)'/)||[])[1];let served=realBuild;const window_build=()=>served;
   await page.route('**/*',r=>{
     const u=r.request().url();
-    if(u==='https://gb.test/')return r.fulfill({status:200,contentType:'text/html; charset=utf-8',body:html});
+    if(u==='https://gb.test/version.json'||u.startsWith('https://gb.test/version.json?'))return r.fulfill({status:200,contentType:'application/json',body:JSON.stringify({build:window_build()})});
+    if(u==='https://gb.test/'||u.startsWith('https://gb.test/?'))return r.fulfill({status:200,contentType:'text/html; charset=utf-8',body:html});
     if(u==='https://gb.test/config.js')return r.fulfill({status:200,contentType:'application/javascript',body:cfg});
     if(u.includes('firebase-app-compat'))return r.fulfill({status:200,contentType:'application/javascript',body:mockFirebase});
     if(u.includes('firebase-firestore-compat'))return r.fulfill({status:200,contentType:'application/javascript',body:''});
@@ -129,6 +131,16 @@ const mockFirebase=`
   await page.evaluate(()=>{window.__hang=false;});pass('al ritorno del server: Tutto salvato');
   await ctx.setOffline(true);await page.waitForSelector('.note.warn:has-text("offline")');pass('offline: avviso visibile');
   await ctx.setOffline(false);await page.waitForFunction(()=>!document.querySelector('.note.warn')||!document.body.textContent.includes('Sei offline'));pass('online: avviso rimosso');
+
+
+  // 10) avviso di nuova versione
+  (await page.$('.upd'))===null?pass('nessun avviso se la versione è la stessa ('+realBuild+')'):fail('avviso senza motivo');
+  served='nuova-versione';
+  await page.evaluate(()=>document.dispatchEvent(new Event('visibilitychange')));
+  await page.waitForSelector('.upd',{timeout:5000});pass('avviso "Nuova versione disponibile" quando il file version.json cambia');
+  await page.click('.upd [data-act=reload-new]');
+  await page.waitForFunction(()=>location.search==='?v=nuova-versione',null,{timeout:8000});await page.waitForSelector('.rail');
+  pass('"Aggiorna ora" ricarica con ?v=… e resta collegato come '+(await page.textContent('.who')).replace(/\s+/g,' ').trim().slice(0,30));
 
   // 8) un secondo visitatore anonimo (nuovo contesto) vede gli stessi dati? (stato condiviso simulato via localStorage: stesso origin)
   const dbSnap=await page.evaluate(()=>Object.keys(JSON.parse(localStorage.getItem('mockfs'))).length);
