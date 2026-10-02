@@ -8,8 +8,7 @@ function vPiatto(){
   const back=`<button class="btn sm" data-act="tab" data-v="menu">← Torna al menu</button>`;
   if(!r)return `<section class="view">${back}<div class="empty"><h3>Piatto non trovato</h3><p>Potrebbe essere stato eliminato.</p></div></section>`;
   const f=scaleF(r),n=nConf(),por=PORZ[r.porzione]||PORZ.normale;
-  const owners=(r.ownerIds||[]),team=(r.teamIds||[]).filter(id=>!owners.includes(id));
-  const mine=S.meId&&(owners.includes(S.meId)||team.includes(S.meId));
+  const owners=ownersOf(r),mine=!!S.meId&&owners.includes(S.meId);
   const ings=(r.ingredients||[]).map(i=>{
     const u=normUnit(i.unit),q=num(i.qty);
     const txt=(u.base==='qb'||!q)?'q.b.':fmtQty(u.base,niceQty(u.base,q*u.mult*f));
@@ -41,10 +40,10 @@ function vPiatto(){
     ${verdict}
     <div class="cols">
       <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
-        <div class="panel"><h3>Squadra di preparazione</h3>
-          <div class="people" style="margin-top:10px">${owners.map(id=>`<span class="pill own" title="Responsabile della produzione">${esc(pname(id))}</span>`).join('')}${team.map(id=>`<span class="pill">${esc(pname(id))}</span>`).join('')}</div>
-          <p class="hint" style="margin-top:8px">In rosa i responsabili della produzione, in grigio chi li aiuta.</p>
-          ${S.meId&&!owners.includes(S.meId)?`<div style="margin-top:10px"><button class="btn sm" data-act="join" data-id="${esc(r.id)}">${mine?'Esci dalla squadra':'Mi unisco alla squadra'}</button></div>`:''}</div>
+        <div class="panel"><h3>Team responsabili</h3>
+          <div class="people" style="margin-top:10px">${owners.map(id=>`<span class="pill own">${esc(pname(id))}${id===S.meId?' (tu)':''}</span>`).join('')||'<span class="muted small">Nessuno</span>'}</div>
+          <p class="hint" style="margin-top:8px">Chiunque può aggiungersi o togliersi. Il team lo gestisce per intero, insieme ai dati del piatto, solo chi l’ha proposto (${esc(pname(r.proposerId))}).</p>
+          ${S.meId?`<div class="row" style="margin-top:10px">${canEditRecipe(r)?`<button class="btn sm" data-act="team-edit" data-id="${esc(r.id)}">Gestisci team</button>`:''}<button class="btn sm join ${mine?'on':''}" data-act="owner-toggle" data-id="${esc(r.id)}" aria-pressed="${mine}">${mine?'Esco dai responsabili':'Mi aggiungo ai responsabili'}</button></div>`:''}</div>
         <div class="panel"><h3>Ricetta di riferimento</h3><div style="margin-top:10px">${srcBlock(r)}</div>
           <div style="margin-top:8px">${badge((VSTATI[vstato(r)]||VSTATI.da_verificare).label,(VSTATI[vstato(r)]||VSTATI.da_verificare).cls)}</div></div>
         <div class="panel"><h3>Vini in abbinamento</h3>${vini?`<ul class="steps" style="margin-top:10px;padding-left:18px">${vini}</ul>`:`<p class="muted small" style="margin-top:8px">Nessun vino indicato.</p>`}</div>
@@ -52,7 +51,7 @@ function vPiatto(){
       <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
         <div class="panel"><div class="row spread"><h3>Ingredienti</h3><span class="small muted">per <b class="num">${n}</b> persone · porzione ${esc(por.label.toLowerCase())}</span></div>
           ${ings?`<table class="ing" style="margin-top:8px"><tbody>${ings}</tbody></table><p class="hint" style="margin-top:8px">Ricetta base per ${fmtN(num(r.serves)||4,0)} persone, scalata sui confermati. Le quantità si aggiornano da sole se cambia il numero dei partecipanti.</p>`
-            :`<div class="empty" style="margin-top:10px"><p>Ingredienti non ancora inseriti.</p>${canEditRecipe(r)?`<button class="btn primary sm" data-act="edit-dish" data-id="${esc(r.id)}">Compila la scheda</button>`:'<p class="small">Li inseriscono i responsabili del piatto.</p>'}</div>`}</div>
+            :`<div class="empty" style="margin-top:10px"><p>Ingredienti non ancora inseriti.</p>${canEditRecipe(r)?`<button class="btn primary sm" data-act="edit-dish" data-id="${esc(r.id)}">Compila la scheda</button>`:'<p class="small">Li inserisce chi ha proposto il piatto.</p>'}</div>`}</div>
         <div class="panel"><h3>Procedimento</h3>${(r.steps||[]).length?`<ol class="steps" style="margin-top:10px">${r.steps.map(s=>`<li>${esc(s)}</li>`).join('')}</ol>`:`<p class="muted small" style="margin-top:8px">${empty?'Il procedimento sarà inserito insieme agli ingredienti.':'Nessun passaggio inserito.'}</p>`}
           <p class="hint" style="margin-top:8px">Per dosi e dettagli fa fede la ricetta di riferimento.</p></div>
         <div class="panel"><h3>Tempi e consigli</h3><div style="margin-top:8px">${hasFasi}</div>
@@ -60,12 +59,6 @@ function vPiatto(){
       </div></div></section>`;
 }
 A['move-slot']=async t=>{if(await write('update','recipes/'+t.dataset.id,{slot:t.dataset.v}))toast('Piatto spostato');};
-A.join=async t=>{
-  const r=R(t.dataset.id);if(!r||!S.meId)return;
-  const set=new Set(r.teamIds||[]);
-  if(set.has(S.meId))set.delete(S.meId);else set.add(S.meId);
-  if(await write('update','recipes/'+r.id,{teamIds:[...set]}))toast(set.has(S.meId)?'Sei nella squadra di '+r.title:'Sei uscito dalla squadra');
-};
 
 /* --- spesa --- */
 async function upSpesa(id,patch){
@@ -151,7 +144,7 @@ function vProgramma(){
   for(const it of items){
     const di=Math.floor(it.t/24+1e-9);
     if(di!==curDay){curDay=di;tl+=`<div class="tlday">${esc(dayLabel(di))}</div>`;}
-    const who=it.r?(it.r.ownerIds||[]).map(pname).join(', '):'';
+    const who=it.r?ownersOf(it.r).map(pname).join(', '):'';
     tl+=`<div class="ti ${it.kind}"><div class="tm">${fmtT(it.t-di*24)}</div><div class="dot"></div><div class="what">${it.kind==='meal'?esc(it.what):`${esc(it.what)} — <button class="link" data-act="open-dish" data-id="${esc(it.r.id)}">${esc(it.r.title)}</button> ${it.kind==='pre'?badge('prima della partenza','warn'):''}<div class="small muted">${esc(who)}</div>`}</div></div>`;
   }
   const tips=[];
@@ -172,7 +165,7 @@ function vProgramma(){
 function vPersone(){
   const org=isOrg(),st=S.settings,ps=sortedPeople();
   const people=ps.map(p=>{
-    const own=S.recipes.filter(r=>r.proposerId===p.id||(r.ownerIds||[]).includes(p.id)).length;
+    const own=S.recipes.filter(r=>r.proposerId===p.id||ownersOf(r).includes(p.id)).length;
     const cr=UI.confirm==='rm:'+p.id;
     return `<div class="person ${p.confirmed?'':'off'}"><div style="min-width:0"><div class="nm">${esc(p.name)}</div>
       <div class="small muted">${p.organizer?'organizzatore · ':''}${S.votes[p.id]?'ha votato':'non ha votato'}${own?' · '+own+' piatt'+(own===1?'o':'i'):''}</div></div>
@@ -208,7 +201,7 @@ CH.orgflag=async t=>{
 A['rm-person']=async t=>{
   const id=t.dataset.id;
   if(UI.confirm!=='rm:'+id){
-    const used=S.recipes.filter(r=>r.proposerId===id||(r.ownerIds||[]).includes(id)).length;
+    const used=S.recipes.filter(r=>r.proposerId===id||ownersOf(r).includes(id)).length;
     if(used){toast(`${pname(id)} è proponente o responsabile di ${used} piatti: riassegnali prima di rimuoverlo.`,'err');return;}
     UI.confirm='rm:'+id;render();return;
   }

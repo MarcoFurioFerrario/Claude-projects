@@ -45,7 +45,7 @@ function openRecipeEditor(id,pre){
   const r=id?R(id):null;
   if(!S.meId){toast('Scegli prima il tuo nome.','err');return;}
   DR={id:id||null,title:r?r.title:'',category:r?r.category:(UI.cat||'primi'),region:r?r.region||'':'',link:r?r.link:'',note:r?r.note||'':'',
-    ownerIds:r?[...(r.ownerIds||[])]:[S.meId],ver:Object.assign({stato:'da_verificare',linkAutorevole:'',fonte:'',nota:''},r&&r.verifica||{}),sugId:'',fasi:[],vini:[],verStato:'da_verificare',verNota:''};
+    ownerIds:r?ownersOf(r):[S.meId],ver:Object.assign({stato:'da_verificare',linkAutorevole:'',fonte:'',nota:''},r&&r.verifica||{}),sugId:'',fasi:[],vini:[],verStato:'da_verificare',verNota:''};
   if(pre&&!id)Object.assign(DR,pre);
   const org=isOrg();
   openModal(`<header><div><h3>${id?'Modifica proposta':'Proponi un piatto'}</h3><p class="hint">${id?'Proposto da '+esc(pname(r.proposerId)):'Proponente: '+esc(me().name)}</p></div><button class="btn sm" data-act="modal-close">Annulla</button></header>
@@ -55,7 +55,7 @@ function openRecipeEditor(id,pre){
     <div class="field"><label for="ed-reg">Regione</label><select id="ed-reg" data-chg="dr" data-f="region"><option value="">Non specificata</option>${REGIONI.map(x=>`<option ${DR.region===x?'selected':''}>${esc(x)}</option>`).join('')}</select></div></div>
     <div class="field"><label for="ed-link">Link alla ricetta *</label><input type="url" id="ed-link" data-in="dr" data-f="link" value="${esc(DR.link)}" placeholder="https://…" inputmode="url" autocomplete="off">
       <span class="hint">Meglio una fonte autorevole. Il link viene controllato e affiancato da una fonte di riferimento.</span></div>
-    <div class="field"><span class="lbl">Chi lo cucina (almeno uno) *</span><div class="pickrow" id="ed-owners">${ownersHtml()}</div></div>
+    ${id?'':`<div class="field"><span class="lbl">Chi lo cucina (almeno uno) *</span><div class="pickrow" id="ed-owners">${ownersHtml()}</div></div>`}
     <div class="field"><label for="ed-note">Note (facoltative)</label><textarea id="ed-note" data-in="dr" data-f="note" placeholder="Perché lo proponi, varianti, difficoltà…">${esc(DR.note)}</textarea></div>
     ${org&&id?`<div class="panel" style="display:flex;flex-direction:column;gap:10px"><h4>Verifica del link (organizzatore)</h4>
       <div class="formgrid"><div class="field"><label for="ed-vs">Stato</label><select id="ed-vs" data-chg="dr" data-f="ver.stato">${Object.keys(VSTATI).map(k=>`<option value="${k}" ${DR.ver.stato===k?'selected':''}>${esc(VSTATI[k].label)}</option>`).join('')}</select></div>
@@ -75,11 +75,11 @@ A['save-recipe']=async()=>{
   if(!DR.category)return err('Scegli la categoria.');
   if(!link)return err('Aggiungi il link alla ricetta.');
   if(!isUrl(link))return err('Il link deve cominciare con http:// o https://.');
-  if(!DR.ownerIds.length)return err('Indica almeno una persona che cucinerà il piatto.');
+  if(!DR.id&&!DR.ownerIds.length)return err('Indica almeno una persona che cucinerà il piatto.');
   let ok;
   if(DR.id){
     const r=R(DR.id);
-    const patch={title,category:DR.category,region:DR.region,link,note:DR.note.trim(),ownerIds:DR.ownerIds};
+    const patch={title,category:DR.category,region:DR.region,link,note:DR.note.trim()};
     if(link!==r.link)patch.verifica={stato:'da_verificare'};
     else if(isOrg())patch.verifica={stato:DR.ver.stato,fonte:DR.ver.fonte||'',linkAutorevole:DR.ver.linkAutorevole||'',nota:DR.ver.nota||''};
     if(isOrg()&&DR.ver.linkAutorevole&&!isUrl(DR.ver.linkAutorevole))return err('Il link alla fonte autorevole non è valido.');
@@ -105,8 +105,6 @@ const rowFase=(g,i)=>`<div class="erow f"><input type="text" data-in="row" data-
   <button type="button" class="btn sm ico danger" data-act="row-del" data-l="fasi" data-i="${i}" aria-label="Rimuovi">✕</button></div>`;
 const ROWS={ing:rowIng,vini:rowVino,fasi:rowFase};
 function renderRows(l){const e=$('#rows-'+l);if(e)e.innerHTML=DR[l].map((g,i)=>ROWS[l](g,i)).join('')||`<p class="hint">Nessuna riga.</p>`;}
-function renderTeam(){const e=$('#ed-team');if(e)e.innerHTML=sortedPeople().filter(p=>!DR.ownerIds.includes(p.id)).map(p=>`<button type="button" class="pick" aria-pressed="${DR.teamIds.includes(p.id)}" data-act="dr-team" data-id="${esc(p.id)}">${esc(p.name)}</button>`).join('');}
-A['dr-team']=t=>{const id=t.dataset.id,i=DR.teamIds.indexOf(id);if(i<0)DR.teamIds.push(id);else DR.teamIds.splice(i,1);renderTeam();};
 A['row-add']=t=>{
   const l=t.dataset.l;
   DR[l].push(l==='ing'?{name:'',qty:'',unit:'g',shop:'dispensa'}:l==='vini'?{nome:'',bottiglie:1}:{label:'',ore:''});
@@ -120,7 +118,7 @@ function openDishEditor(id){
     ing:(r.ingredients||[]).map(i=>({name:i.name,qty:i.qty==null?'':i.qty,unit:i.unit||'g',shop:i.shop||'dispensa'})),
     vini:(r.vini||[]).map(v=>({nome:v.nome,bottiglie:v.bottiglie})),
     fasi:(r.fasi||[]).map(f=>({label:f.label,ore:f.ore})),
-    stepsText:(r.steps||[]).join('\n'),consigli:r.consigli||'',teamIds:[...(r.teamIds||[])],ownerIds:[...(r.ownerIds||[])]};
+    stepsText:(r.steps||[]).join('\n'),consigli:r.consigli||''};
   const names=[...new Set(S.recipes.flatMap(x=>(x.ingredients||[]).map(i=>cap1(i.name))))].sort((a,b)=>a.localeCompare(b,'it'));
   openModal(`<header><div><h3>Scheda: ${esc(r.title)}</h3><p class="hint">Le quantità sono per il numero di persone indicato qui sotto. La spesa le scala sui confermati.</p></div><button class="btn sm" data-act="modal-close">Annulla</button></header>
     ${sampleCap?`<div class="panel" style="display:flex;flex-direction:column;gap:8px"><div class="row spread"><div><h4>Bozza con Claude</h4><p class="hint">Propone ingredienti, procedimento, tempi e vini. Claude non apre il link: scrive dalla ricetta tradizionale, quindi controlla sempre le dosi sulla fonte.</p></div>
@@ -138,10 +136,9 @@ function openDishEditor(id){
     <div class="field"><span class="lbl">Vini in abbinamento (bottiglie per le persone indicate sopra; 0 = solo abbinamento)</span>
       <div id="rows-vini" style="display:flex;flex-direction:column;gap:6px"></div><div><button type="button" class="btn sm" data-act="row-add" data-l="vini">+ Vino</button></div></div>
     <div class="field"><label for="d-cons">Consigli</label><textarea id="d-cons" rows="3" data-in="dr" data-f="consigli">${esc(DR.consigli)}</textarea></div>
-    <div class="field"><span class="lbl">Squadra di preparazione (oltre ai responsabili)</span><div class="pickrow" id="ed-team"></div></div>
     <p class="err" id="ed-err" hidden></p>
     <div class="foot"><button class="btn" data-act="modal-close">Annulla</button><button class="btn primary" data-act="save-dish">Salva scheda</button></div>`,
-    ()=>{renderRows('ing');renderRows('fasi');renderRows('vini');renderTeam();});
+    ()=>{renderRows('ing');renderRows('fasi');renderRows('vini');});
 }
 A['edit-dish']=t=>openDishEditor(t.dataset.id);
 A['save-dish']=async()=>{
@@ -158,7 +155,7 @@ A['save-dish']=async()=>{
   const vini=DR.vini.filter(v=>String(v.nome||'').trim()).map(v=>({nome:String(v.nome).trim(),bottiglie:Math.max(0,num(v.bottiglie))}));
   const fasi=DR.fasi.filter(f=>String(f.label||'').trim()).map(f=>({label:String(f.label).trim(),ore:Math.max(0,num(f.ore))}));
   const steps=String(DR.stepsText||'').split('\n').map(s=>s.trim()).filter(Boolean);
-  const ok=await write('update','recipes/'+DR.id,{serves,porzione:DR.porzione,preparabileACasa:!!DR.casa,ingredients,vini,fasi,steps,consigli:String(DR.consigli||'').trim(),teamIds:DR.teamIds,updatedAt:Date.now()});
+  const ok=await write('update','recipes/'+DR.id,{serves,porzione:DR.porzione,preparabileACasa:!!DR.casa,ingredients,vini,fasi,steps,consigli:String(DR.consigli||'').trim(),updatedAt:Date.now()});
   if(ok){closeModal();toast('Scheda salvata');DR=null;}
 };
 A['ai-draft']=async()=>{
@@ -220,4 +217,38 @@ A['save-settings']=async()=>{
   for(const s of SLOTS)if(!/^\d{1,2}:\d{2}$/.test(DR.orari[s.key]))return err('Inserisci tutti gli orari dei pasti.');
   const patch={dataVen:DR.dataVen||'',arrivo:DR.arrivo,riservaOre:Math.max(0,num(DR.riservaOre)),margine:Math.max(0,num(DR.margine)),orari:DR.orari,cap:{ven:Math.max(0,Math.round(num(DR.cap.ven))),sab:Math.max(0,Math.round(num(DR.cap.sab))),dom:Math.max(0,Math.round(num(DR.cap.dom)))}};
   if(await saveSettings(patch)){closeModal();toast('Impostazioni salvate');DR=null;}
+};
+
+/* ---------- team responsabili: lo gestisce chi ha proposto il piatto ---------- */
+const teamChips=()=>sortedPeople().map(p=>`<button type="button" class="pick" aria-pressed="${DR.team.sel.includes(p.id)}" data-act="tm-toggle" data-id="${esc(p.id)}">${esc(p.name)}</button>`).join('');
+function openTeamEditor(id){
+  const r=R(id);if(!r||!canEditRecipe(r))return;
+  const cur=ownersOf(r);
+  DR={team:{id,orig:[...cur],sel:[...cur]}};
+  openModal(`<header><div><h3>Team responsabili</h3><p class="hint">${esc(r.title)}: scegli chi cucina questo piatto. Ognuno può comunque aggiungersi o togliersi da solo.</p></div><button class="btn sm" data-act="modal-close">Annulla</button></header>
+    <div class="pickrow" id="tm-pick">${teamChips()}</div>
+    <p class="err" id="ed-err" hidden></p>
+    <div class="foot"><button class="btn" data-act="modal-close">Annulla</button><button class="btn primary" data-act="team-save">Salva team</button></div>`);
+}
+A['team-edit']=t=>openTeamEditor(t.dataset.id);
+A['tm-toggle']=t=>{
+  const sel=DR.team.sel,id=t.dataset.id,i=sel.indexOf(id);
+  if(i<0)sel.push(id);else sel.splice(i,1);
+  $('#tm-pick').innerHTML=teamChips();
+};
+A['team-save']=async()=>{
+  const {id,orig,sel}=DR.team,err=m=>{const e=$('#ed-err');e.textContent=m;e.hidden=false;};
+  if(!sel.length)return err('Serve almeno un responsabile.');
+  const added=sel.filter(x=>!orig.includes(x)),removed=orig.filter(x=>!sel.includes(x));
+  if(!added.length&&!removed.length){closeModal();DR=null;return;}
+  /* si applicano solo le differenze a un documento riletto: chi si è aggiunto da solo nel frattempo resta */
+  let fresh=ownersOf(R(id)||{});
+  try{
+    const sn=await db.doc('recipes/'+id).get();
+    if(!sn.exists||sn.data().eliminata)return err('La proposta non esiste più.');
+    fresh=ownersOf(sn.data());
+  }catch(e){}
+  const next=[...new Set(fresh.filter(x=>!removed.includes(x)).concat(added))];
+  if(!next.length)return err('Serve almeno un responsabile.');
+  if(await write('update','recipes/'+id,{ownerIds:next,teamIds:[]})){closeModal();DR=null;toast('Team aggiornato');}
 };

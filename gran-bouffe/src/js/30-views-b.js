@@ -83,7 +83,7 @@ function dishWarn(r,slotKey){
 function dishRow(r,slotKey){
   const org=isOrg();
   return `<div class="dish"><div><button class="nm" data-act="open-dish" data-id="${esc(r.id)}">${esc(r.title)}</button>
-    <div class="small muted">${chipCat(r.category)} ${esc((r.ownerIds||[]).map(pname).join(', '))}</div>${dishWarn(r,slotKey)}</div>
+    <div class="small muted">${chipCat(r.category)} ${esc(ownersOf(r).map(pname).join(', '))}</div>${dishWarn(r,slotKey)}</div>
     ${org?`<select aria-label="Sposta ${esc(r.title)}" data-chg="setslot" data-id="${esc(r.id)}"><option value="">Togli dal menu</option>${SLOTS.map(s=>`<option value="${s.key}" ${s.key===slotKey?'selected':''}>${s.label}</option>`).join('')}</select>`:''}</div>`;
 }
 function vMenu(){

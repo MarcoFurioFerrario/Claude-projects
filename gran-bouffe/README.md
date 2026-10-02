@@ -8,10 +8,10 @@ Pubblicata come artifact di claude.ai: <https://claude.ai/artifact/WFrai8Hzx76Go
 
 1. **Persone**: accesso con il nome (nessuna password). I 15 confermati sono precaricati; si possono aggiungere altri e spuntare chi è presente.
 2. **Suggerimenti** (prima scheda, colorata, e pagina d'ingresso durante la fase *Proposte*; nelle altre fasi l'ingresso è Voto o Menu): catalogo di 44 piatti del Triveneto (due rassegne del gruppo), con fonte e livello di affidabilità (A/B/C), vino in abbinamento (con tipo), ingredienti, note di esecuzione e tempi. Ogni piatto ha un segnalino *Da proporre / Già proposta / Approvata (in menu)*, calcolato in tempo reale dalle proposte; "Proponi questo piatto" apre il modulo già compilato (link, regione, vino, tempi). Una banda in alto ricorda che ci sono già 44 ricette da cui attingere e fa da filtro per regione (stesso avviso nella scheda Proposte e in una pillola in testata). Filtri per testo (piatto, ingrediente, vino), tipo di vino, stato, livello; un riquadro mostra l'equilibrio tra regioni, portate e vini. I piatti della stessa *famiglia* (per esempio i dolci a spirale gubana, presnitz e putizza) vengono segnalati come simili, anche nel Menu, per evitare ripetizioni.
-3. **Proposte** (fase *Proposte*): ogni proposta richiede proponente (chi è loggato), almeno un responsabile della produzione, categoria e link alla ricetta.
+3. **Proposte** (fase *Proposte*): ogni proposta richiede proponente (chi è loggato), almeno un responsabile della produzione, categoria e link alla ricetta. Categorie: antipasti e snack, primi e zuppe, secondi e griglia, contorni, dolci (zuppe e griglia sono state unite a primi e secondi; i vecchi valori `zuppe` e `griglia` restano riconosciuti e un organizzatore li sistema nel database all'apertura). **Team responsabili**: chiunque può aggiungersi o togliersi dai responsabili di un piatto (pulsante sulla card e nella scheda; resta sempre almeno un responsabile); chi ha proposto il piatto, o un organizzatore, gestisce l'intero team con *Gestisci team* e modifica tutti gli altri dati. Le modifiche al team rileggono il documento e applicano solo le differenze, così le aggiunte simultanee non si perdono.
 4. **Votazioni** (fase *Voto*): ognuno ordina le proposte di ogni categoria dalla migliore alla peggiore. Il punteggio è il piazzamento medio normalizzato (100 = sempre primo).
 5. **Menu** (fase *Menu*): gli organizzatori assegnano i piatti ai pasti (5 venerdì sera, 12 sabato, 5 domenica; modificabile). "Suggerisci dai voti" propone una selezione bilanciata per categoria e tempi. Sotto i giorni c'è la *carta dei vini* con i vini in abbinamento dei piatti scelti e il pulsante per copiare la carta del banchetto.
-6. **Scheda piatto**: proponente, responsabili, squadra (ci si può unire), ingredienti scalati sui confermati, procedimento, vini, tempi. "Genera bozza con Claude" compila una bozza da controllare.
+6. **Scheda piatto**: proponente, team responsabili, ingredienti scalati sui confermati, procedimento, vini, tempi. "Genera bozza con Claude" compila una bozza da controllare.
 7. **Spesa**: lista unica, somma gli ingredienti uguali tra piatti (anche con unità diverse), arrotonda per eccesso, calcola le confezioni, assegna chi compra, copia per WhatsApp o scarica CSV.
 8. **Programma**: finestre di tempo utili per pasto (arrivo, orari) e cronoprogramma. Un piatto che richiede più ore di anticipo di quelle disponibili non può stare in quel pasto, a meno che la parte lunga si prepari a casa.
 
@@ -56,7 +56,7 @@ Quando un piatto entra in menu si possono compilare le sue schede dalla fonte ve
 | Collezione | Documento | Contenuto |
 |---|---|---|
 | `participants` | `p_<nome>` | `name`, `confirmed`, `organizer`, `ord` |
-| `recipes` | `r_…` | `sugId` (piatto del catalogo da cui nasce), `title`, `category`, `region`, `link`, `note`, `proposerId`, `ownerIds[]`, `teamIds[]`, `slot` (`ven-cena`, `sab-pranzo`, `sab-cena`, `dom-pranzo` o `""`), `verifica{}`, `serves`, `porzione`, `ingredients[{name,qty,unit,shop}]`, `steps[]`, `fasi[{label,ore}]`, `preparabileACasa`, `vini[{nome,bottiglie}]`, `consigli` |
+| `recipes` | `r_…` | `ownerIds` (team responsabili; `teamIds` è il vecchio campo delle squadre, svuotato alla prima modifica), `sugId` (piatto del catalogo da cui nasce), `title`, `category`, `region`, `link`, `note`, `proposerId`, `ownerIds[]`, `teamIds[]`, `slot` (`ven-cena`, `sab-pranzo`, `sab-cena`, `dom-pranzo` o `""`), `verifica{}`, `serves`, `porzione`, `ingredients[{name,qty,unit,shop}]`, `steps[]`, `fasi[{label,ore}]`, `preparabileACasa`, `vini[{nome,bottiglie}]`, `consigli` |
 | `votes` | `<participantId>` | `rank{<categoria>: [recipeId…]}` (dal migliore) |
 | `spesa` | slug dell'ingrediente | `comprato`, `chi`, `pack{base,size}` |
 | `meta` | `backups` | indice delle copie: `items[{id,at,motivo,by,n}]` |
@@ -71,6 +71,8 @@ Seed iniziale (artifact): `seed/seed.json`; nella versione pubblica il pulsante 
 node build.js          # assembla src/ in index.html (artifact) e docs/index.html (versione pubblica)
 node test/flow.js      # artifact: prova end-to-end in Chromium con un db finto in memoria
 node test/sugg.js      # sezione Suggerimenti: segnalini, filtri, proposta precompilata, carta dei vini
+node test/owners.js     # team responsabili: aggiungersi/togliersi, permessi, gestione del team
+node test/cats.js       # zuppe unite ai primi, griglia ai secondi, dati e voti già esistenti
 node test/standalone.js # versione pubblica: Firestore finto, cookie, merge dei voti
 ```
 

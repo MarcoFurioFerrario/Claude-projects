@@ -67,15 +67,15 @@ const mockFirebase=`
   // 6) scritture: proposta, voto su due categorie (merge), verifica
   await page.click('[data-act=new-recipe]');await page.fill('#ed-title','Frico');await page.selectOption('#ed-cat','antipasti');await page.fill('#ed-link','https://example.org/frico');
   await page.click('[data-act=save-recipe]');await page.waitForSelector('.card');
-  await page.click('[data-act=new-recipe]');await page.fill('#ed-title','Jota');await page.selectOption('#ed-cat','zuppe');await page.fill('#ed-link','https://example.org/jota');
+  await page.click('[data-act=new-recipe]');await page.fill('#ed-title','Jota');await page.selectOption('#ed-cat','primi');await page.fill('#ed-link','https://example.org/jota');
   await page.click('[data-act=save-recipe]');await page.waitForFunction(()=>document.querySelectorAll('.card').length===2);
   pass('2 proposte salvate (nessun valore undefined verso Firestore)');
   await page.click('.fchip:has-text("Tutte")');
   await page.click('.rail button:has-text("Voto")');await page.waitForFunction(()=>document.querySelector('.rail .now')&&document.querySelector('.rail .now').textContent.includes('Voto'));
   await page.click('.tab:has-text("Votazioni")');await page.click('[data-act=vcat][data-v=antipasti]');await page.click('[data-act=save-rank]');
   await page.waitForFunction(()=>JSON.parse(localStorage.getItem('mockfs'))['votes/p_marco-furio']);
-  await page.click('[data-act=vcat][data-v=zuppe]');await page.waitForSelector('[data-act=save-rank]:not([disabled])');await page.click('[data-act=save-rank]');
-  await page.waitForFunction(()=>{const v=JSON.parse(localStorage.getItem('mockfs'))['votes/p_marco-furio'];return v&&v.rank.antipasti&&v.rank.zuppe;});
+  await page.click('[data-act=vcat][data-v=primi]');await page.waitForSelector('[data-act=save-rank]:not([disabled])');await page.click('[data-act=save-rank]');
+  await page.waitForFunction(()=>{const v=JSON.parse(localStorage.getItem('mockfs'))['votes/p_marco-furio'];return v&&v.rank.antipasti&&v.rank.primi;});
   pass('voto salvato su due categorie senza perdere la prima (merge)');
   // 7) niente blocco AI, CSV attivo
   await page.click('.tab:has-text("Menu")');

@@ -182,7 +182,7 @@ const voters=()=>S.participants.filter(p=>S.votes[p.id]&&Object.values(S.votes[p
 
 /* --- selezione automatica dai voti --- */
 function quotas(total){
-  const w={antipasti:4,primi:5,zuppe:2,secondi:4,griglia:2,contorni:2,dolci:3};
+  const w={antipasti:4,primi:7,secondi:6,contorni:2,dolci:3};
   const sw=Object.values(w).reduce((a,b)=>a+b,0);
   const q={},rem=[];let used=0;
   for(const k in w){const x=w[k]*total/sw;q[k]=Math.floor(x);used+=q[k];rem.push([k,x-q[k]]);}

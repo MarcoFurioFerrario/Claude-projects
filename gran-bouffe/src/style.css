@@ -323,3 +323,7 @@ button.chip.reg[aria-pressed="true"]{outline:3px solid var(--polenta);outline-of
 .grp[style]::before{content:"";width:12px;height:12px;border-radius:50%;background:hsl(var(--h) 50% var(--grp-l));align-self:center}
 .promo{display:flex;gap:12px 20px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:14px 18px;border-radius:12px;background:var(--polenta);color:var(--polenta-ink)}
 .promo .btn.primary{background:var(--polenta-ink);border-color:var(--polenta-ink);color:var(--polenta)}
+
+.btn.sm.join{border-color:var(--accent);color:var(--accent)}
+.btn.sm.join:hover{background:var(--accent-soft)}
+.btn.sm.join.on{background:var(--accent-soft)}

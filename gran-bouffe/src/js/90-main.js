@@ -22,6 +22,7 @@ function build(){
   if(!S.loaded.p||!S.loaded.r||!S.loaded.s)return `<p class="boot">Carico i dati del weekend…</p>`;
   if(!me())return vLogin();
   if(!UI.homed){UI.homed=true;if(!UI.navigated)UI.tab=homeTab();}
+  if(!UI.migrated&&isOrg()&&!S.readOnly&&S.legacyCats&&Object.keys(S.legacyCats).length){UI.migrated=true;migrateCats();}
   const views={proposte:vProposte,suggerimenti:vSugg,voto:vVoto,menu:vMenu,spesa:vSpesa,programma:vProgramma,persone:vPersone};
   const view=UI.dish?vPiatto():(views[UI.tab]||vProposte)();
   return vHeader()+vNav()+`<main class="wrap">${S.offline?`<div class="note warn" style="margin-top:16px"><b>Sei offline.</b> Puoi continuare: le modifiche restano in coda e si salvano appena torna la connessione. Non chiudere la pagina.</div>`:''}${S.readOnly?`<div class="note bad" style="margin-top:16px"><b>Sola lettura.</b> Puoi guardare tutto ma non modificare: chiedi a Marco di darti accesso come collaboratore.</div>`:''}${view}</main>`;
@@ -39,6 +40,11 @@ function render(){
 }
 let raf=0;
 function schedule(){if(raf)return;raf=requestAnimationFrame(()=>{raf=0;render();});}
+
+/* Sistema nel database le proposte con le vecchie categorie (le vede già bene chiunque, anche senza questa scrittura). */
+async function migrateCats(){
+  for(const id of Object.keys(S.legacyCats))await write('update','recipes/'+id,{category:S.legacyCats[id]});
+}
 
 /* --- accesso e partecipanti --- */
 A.login=t=>{S.meId=t.dataset.id;store.set('gb.me',S.meId);UI.homed=true;UI.navigated=false;UI.tab=homeTab();UI.dish=null;routeFromHash();render();window.scrollTo(0,0);};
@@ -96,7 +102,7 @@ window.addEventListener('hashchange',()=>{routeFromHash();render();});
 function subscribe(){
   const onErr=k=>e=>{console.error('snapshot',k,e);S.loaded[k]=true;if(e&&e.code==='permission-denied'){S.permDenied=true;S.dbOk=false;}schedule();};
   db.collection('participants').onSnapshot(s=>{S.participants=s.docs.map(d=>Object.assign({},d.data(),{id:d.id}));S.loaded.p=true;schedule();},onErr('p'));
-  db.collection('recipes').onSnapshot(s=>{S.allRecipes=s.docs.map(d=>Object.assign({},d.data(),{id:d.id}));S.recipes=S.allRecipes.filter(r=>!r.eliminata);S.trash=S.allRecipes.filter(r=>r.eliminata);S.loaded.r=true;schedule();},onErr('r'));
+  db.collection('recipes').onSnapshot(s=>{S.legacyCats={};S.allRecipes=s.docs.map(d=>{const raw=d.data(),o=Object.assign({},raw,{id:d.id}),a=CAT_ALIAS[raw.category];if(a){S.legacyCats[d.id]=a;o.category=a;}return o;});S.recipes=S.allRecipes.filter(r=>!r.eliminata);S.trash=S.allRecipes.filter(r=>r.eliminata);S.loaded.r=true;schedule();},onErr('r'));
   db.doc('meta/backups').onSnapshot(d=>{S.metaExists=!!d.exists;S.backups=d.exists?(d.data().items||[]):[];schedule();},onErr('meta'));
   db.collection('votes').onSnapshot(s=>{const v={};s.docs.forEach(d=>{v[d.id]=d.data();});S.votes=v;S.loaded.v=true;schedule();},onErr('v'));
   db.collection('spesa').onSnapshot(s=>{const v={};s.docs.forEach(d=>{v[d.id]=d.data();});S.spesa=v;S.loaded.sp=true;schedule();},onErr('sp'));

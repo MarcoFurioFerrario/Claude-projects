@@ -31,17 +31,19 @@ const isUrl=s=>{try{const u=new URL(String(s).trim());return u.protocol==='http:
 const domain=s=>{try{return new URL(s).hostname.replace(/^www\./,'');}catch(e){return '';}};
 
 /* ============ costanti del dominio ============ */
+/* Zuppe e griglia sono state unite a primi e secondi (poche proposte per categoria rendevano il voto poco utile):
+   i vecchi valori restano riconosciuti tramite CAT_ALIAS. */
 const CATS=[
   {key:'antipasti',label:'Antipasti e snack',h:42},
-  {key:'primi',label:'Primi',h:18},
-  {key:'zuppe',label:'Zuppe e minestre',h:165},
-  {key:'secondi',label:'Secondi',h:345},
-  {key:'griglia',label:'Griglia',h:215},
+  {key:'primi',label:'Primi e zuppe',h:18},
+  {key:'secondi',label:'Secondi e griglia',h:345},
   {key:'contorni',label:'Contorni',h:100},
   {key:'dolci',label:'Dolci',h:290}
 ];
-const catOf=k=>CATS.find(c=>c.key===k)||{key:k,label:k||'—',h:0};
-const catIdx=k=>{const i=CATS.findIndex(c=>c.key===k);return i<0?99:i;};
+const CAT_ALIAS={zuppe:'primi',griglia:'secondi'};
+const catKey=k=>CAT_ALIAS[k]||k;
+const catOf=k=>CATS.find(c=>c.key===catKey(k))||{key:k,label:k||'—',h:0};
+const catIdx=k=>{const i=CATS.findIndex(c=>c.key===catKey(k));return i<0?99:i;};
 const REGIONI=['Veneto','Friuli-Venezia Giulia','Trentino-Alto Adige'];
 const SHOPS=[
   {key:'carne',label:'Carne, pesce e salumi',short:'Carne e pesce'},
@@ -92,7 +94,10 @@ const nConf=()=>S.participants.filter(p=>p.confirmed).length;
 const isOrg=()=>!!(S.owner||(me()&&me().organizer));
 const canPropose=()=>S.settings.fase==='proposte'||isOrg();
 const canVote=()=>S.settings.fase==='voto';
-const canEditRecipe=r=>isOrg()||(!!S.meId&&(r.proposerId===S.meId||(r.ownerIds||[]).includes(S.meId)||(r.teamIds||[]).includes(S.meId)));
+/* I responsabili sono ownerIds (le vecchie squadre, teamIds, contano come responsabili). Chiunque può aggiungersi o togliersi;
+   i dati del piatto li modifica solo chi l'ha proposto (o un organizzatore). */
+const ownersOf=r=>[...new Set([...(r.ownerIds||[]),...(r.teamIds||[])])];
+const canEditRecipe=r=>isOrg()||(!!S.meId&&r.proposerId===S.meId);
 const canDelRecipe=r=>isOrg()||r.proposerId===S.meId;
 const vstato=r=>((r.verifica||{}).stato)||'da_verificare';
 

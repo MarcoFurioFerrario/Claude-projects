@@ -46,7 +46,7 @@ function vNav(){
 function filterRecipes(){
   const q=norm(UI.q);
   return S.recipes.filter(r=>(!UI.cat||r.category===UI.cat)&&(!UI.reg||r.region===UI.reg)&&(!UI.ver||vstato(r)===UI.ver)
-    &&(!UI.mine||r.proposerId===S.meId||(r.ownerIds||[]).includes(S.meId))
+    &&(!UI.mine||r.proposerId===S.meId||ownersOf(r).includes(S.meId))
     &&(!q||norm(r.title+' '+(r.note||'')+' '+pname(r.proposerId)).includes(q)))
     .sort((a,b)=>catIdx(a.category)-catIdx(b.category)||byTitle(a,b));
 }
@@ -59,7 +59,8 @@ function srcBlock(r){
 }
 function cardRecipe(r){
   const st=VSTATI[vstato(r)]||VSTATI.da_verificare;
-  const owners=(r.ownerIds||[]).map(pname).join(', ')||'—';
+  const own=ownersOf(r),mineOwn=own.includes(S.meId);
+  const owners=own.map(id=>pname(id)+(id===S.meId?' (tu)':'')).join(', ')||'—';
   const confirmDel=UI.confirm==='del:'+r.id;
   return `<article class="card ${r.slot?'sel':''}">
     <div class="row spread"><div class="row" style="gap:6px">${chipCat(r.category)}${r.region?`<span class="chip plain">${esc(r.region)}</span>`:''}</div>${badge(st.label,st.cls)}</div>
@@ -70,12 +71,32 @@ function cardRecipe(r){
     ${r.slot?`<div>${badge('In menu: '+slotLabel(r.slot),'ok')}</div>`:''}
     <div class="row">
       ${r.slot?`<button class="btn sm primary" data-act="open-dish" data-id="${esc(r.id)}">Scheda piatto</button>`:''}
-      ${canEditRecipe(r)?`<button class="btn sm" data-act="edit-recipe" data-id="${esc(r.id)}">Modifica</button>`:''}
+      ${S.meId?`<button class="btn sm join ${mineOwn?'on':''}" data-act="owner-toggle" data-id="${esc(r.id)}" aria-pressed="${mineOwn}">${mineOwn?'Esco dai responsabili':'Mi aggiungo ai responsabili'}</button>`:''}
+      ${canEditRecipe(r)?`<button class="btn sm" data-act="team-edit" data-id="${esc(r.id)}">Gestisci team</button><button class="btn sm" data-act="edit-recipe" data-id="${esc(r.id)}">Modifica</button>`:''}
       ${canDelRecipe(r)?(confirmDel
         ?`<span class="small">Eliminare?</span><button class="btn sm danger" data-act="del-recipe" data-id="${esc(r.id)}">Sì, elimina</button><button class="btn sm" data-act="del-cancel">No</button>`
         :`<button class="btn sm" data-act="del-recipe" data-id="${esc(r.id)}">Elimina</button>`):''}
     </div></article>`;
 }
+/* Aggiunge o toglie la persona che ha fatto l'accesso dai responsabili: rilegge il documento prima di scrivere,
+   così non si perdono le aggiunte fatte da altri nello stesso momento. Non tocca nessun altro campo. */
+async function ownerToggle(id){
+  if(!S.meId||!db||UI.ownBusy)return;
+  UI.ownBusy=true;
+  try{
+    let r=R(id);
+    try{
+      const sn=await db.doc('recipes/'+id).get();
+      if(!sn.exists||sn.data().eliminata){toast('La proposta non esiste più.','err');return;}
+      r=Object.assign({},sn.data(),{id});
+    }catch(e){if(!r)return;}
+    const cur=ownersOf(r),has=cur.includes(S.meId);
+    if(has&&cur.length<=1){toast('Serve almeno un responsabile: aggiungine un altro prima di uscire.','err');return;}
+    const next=has?cur.filter(x=>x!==S.meId):cur.concat(S.meId);
+    if(await write('update','recipes/'+id,{ownerIds:next,teamIds:[]}))toast(has?'Non sei più tra i responsabili di '+r.title:'Sei tra i responsabili di '+r.title);
+  }finally{UI.ownBusy=false;}
+}
+A['owner-toggle']=t=>ownerToggle(t.dataset.id);
 function vProposte(){
   const list=filterRecipes();
   const pend=S.recipes.filter(r=>vstato(r)==='da_verificare').length;
