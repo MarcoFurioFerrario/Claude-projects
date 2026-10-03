@@ -25,6 +25,7 @@ const mock=`
       onSnapshot(next){const f=()=>next(snapDoc(path));ls.push(f);setTimeout(f,0);return()=>{};}};},
     collection(c){return{onSnapshot(next){const f=()=>{const docs=collDocs(c);next({docs,size:docs.length,empty:!docs.length});};ls.push(f);setTimeout(f,0);return()=>{};},doc(id){return db.doc(c+'/'+id);}};}
   };
+  window.GB_NOW=()=>window.__now||Date.parse('2026-10-03T12:00:00+02:00'); // orologio fisso: i test non dipendono dal giorno in cui girano
   window.__db={data,notify};
   const sample=async()=>({text:''});
   sample.json=async()=>({ingredienti:[{nome:'Riso Vialone Nano',qta:320,unita:'g',negozio:'dispensa'},{nome:'Piselli freschi sgranati',qta:600,unita:'g',negozio:'ortolano'},{nome:'Burro',qta:50,unita:'g',negozio:'latticini'},{nome:'Sale',qta:0,unita:'q.b.',negozio:'dispensa'}],procedimento:['Fai un brodo con i baccelli.','Soffriggi la cipolla.','Aggiungi riso e piselli e porta a cottura.'],fasi:[{descrizione:'Brodo di baccelli',oreAnticipo:2}],preparabileACasa:false,vini:[{nome:'Soave Classico',bottiglie:1}],consigli:'Il risotto deve restare all onda.'});

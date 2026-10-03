@@ -37,7 +37,7 @@ function eqRows(all,labels,key){
 }
 function sugFlag(x){
   if(x.st==='menu')return badge('Approvata · '+slotLabel(x.r.slot),'ok');
-  if(x.st==='proposta')return badge(['menu','cucina'].includes(S.settings.fase)?'Proposta · non selezionata':'Già proposta','info');
+  if(x.st==='proposta')return badge(['menu','cucina'].includes(faseEff())?'Proposta · non selezionata':'Già proposta','info');
   return badge('Da proporre','muted');
 }
 function sugCard(x,grouped){

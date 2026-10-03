@@ -168,7 +168,7 @@ function vPersone(){
     const own=S.recipes.filter(r=>r.proposerId===p.id||ownersOf(r).includes(p.id)).length;
     const cr=UI.confirm==='rm:'+p.id;
     return `<div class="person ${p.confirmed?'':'off'}"><div style="min-width:0"><div class="nm">${esc(p.name)}</div>
-      <div class="small muted">${p.organizer?'organizzatore · ':''}${S.votes[p.id]?'ha votato':'non ha votato'}${own?' · '+own+' piatt'+(own===1?'o':'i'):''}</div></div>
+      <div class="small muted">${p.organizer?'organizzatore · ':''}${voters().some(v=>v.id===p.id)?'ha votato i piatti':'non ha votato i piatti'}${S.votes[p.id]&&FMT(S.votes[p.id].formato)?' · formato '+esc(FMT(S.votes[p.id].formato).nome):''}${own?' · '+own+' piatt'+(own===1?'o':'i'):''}</div></div>
       <div class="row" style="gap:8px;flex-wrap:nowrap"><label class="switch"><input type="checkbox" data-chg="confirm" data-id="${esc(p.id)}" ${p.confirmed?'checked':''} ${S.readOnly?'disabled':''}> Presente</label>
       ${org?(cr?`<button class="btn sm danger" data-act="rm-person" data-id="${esc(p.id)}">Conferma</button><button class="btn sm" data-act="del-cancel">No</button>`
         :`<button class="btn sm ico" data-act="rm-person" data-id="${esc(p.id)}" aria-label="Rimuovi ${esc(p.name)}">✕</button>`):''}</div></div>`;
@@ -188,7 +188,8 @@ function vPersone(){
       <dl class="kv" style="margin-top:10px"><dt>Data del venerdì</dt><dd>${st.dataVen?esc(dayLabel(0)):'<span class="muted">da definire</span>'}</dd>
       <dt>Arrivo</dt><dd>venerdì alle ${esc(st.arrivo)}</dd>
       ${SLOTS.map(s=>`<dt>${esc(s.label)}</dt><dd>${esc(st.orari[s.key])}</dd>`).join('')}
-      <dt>Piatti</dt><dd>${num(st.cap.ven)} venerdì · ${num(st.cap.sab)} sabato · ${num(st.cap.dom)} domenica</dd>
+      <dt>Formato del menu</dt><dd>${esc(fmtNow().nome)} · ${fmtNow().tot} piatti${fmtNow().libero?'':' ('+num(fmtNow().cap.ven)+' ven · '+num(fmtNow().cap.sab)+' sab · '+num(fmtNow().cap.dom)+' dom)'} <span class="muted small">${esc({fissato:'scelto dall’organizzatore',voto:'deciso dal voto',provvisorio:'provvisorio, decide il voto'}[fmtEff().how])}</span></dd>
+      <dt>Scadenze</dt><dd>${scadOn()?`proposte e voto sul formato fino a ${esc(fmtDT(scadMs('propFine')))}<br>voto sui piatti da ${esc(fmtDT(scadMs('votoIni')))} a ${esc(fmtEnd(scadMs('votoFine')))}`:'<span class="muted">fasi manuali (le decide l’organizzatore)</span>'}</dd>
       <dt>Margine spesa</dt><dd>${fmtN(num(st.margine),0)}%</dd></dl></div>
   </section>`;
 }

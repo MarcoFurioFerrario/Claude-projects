@@ -15,6 +15,7 @@
   --font-display:"Young Serif",Georgia,"Times New Roman",serif;
   --font-ui:"Instrument Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   --hero-a:#45102C; --hero-b:#7A1D4C; --hero-ink:#FFFFFF; --reg-l:34%; --grp-l:42%;
+  --btn-line:#7B8A86; --btn-shadow:0 2px 0 rgba(26,33,36,.2);
   --r:10px; --shadow:0 1px 2px rgba(20,30,30,.08),0 6px 18px rgba(20,30,30,.06);
 }
 @media (prefers-color-scheme:dark){
@@ -25,6 +26,7 @@
     --ok:#5BC796; --ok-soft:#17332A; --warn:#E5A74F; --warn-soft:#3A2C13;
     --bad:#F08A72; --bad-soft:#3D1D17; --info:#6DB7DA; --info-soft:#15303D;
     --chip-s:30%; --chip-l:22%; --chip-fg:80%;
+    --btn-line:#71838A; --btn-shadow:0 2px 0 rgba(0,0,0,.55);
     --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 18px rgba(0,0,0,.25);
     --hero-a:#2A1220; --hero-b:#55223F; --hero-ink:#F6E7EE; --reg-l:38%; --grp-l:62%;
     color-scheme:dark;
@@ -37,6 +39,7 @@
   --ok:#5BC796; --ok-soft:#17332A; --warn:#E5A74F; --warn-soft:#3A2C13;
   --bad:#F08A72; --bad-soft:#3D1D17; --info:#6DB7DA; --info-soft:#15303D;
   --chip-s:30%; --chip-l:22%; --chip-fg:80%;
+  --btn-line:#71838A; --btn-shadow:0 2px 0 rgba(0,0,0,.55);
   --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 18px rgba(0,0,0,.25);
   --hero-a:#2A1220; --hero-b:#55223F; --hero-ink:#F6E7EE; --reg-l:38%; --grp-l:62%;
   color-scheme:dark;
@@ -74,8 +77,10 @@ button,input,select,textarea{font:inherit;color:inherit}
 .rail li+li{border-left:1px solid var(--line)}
 .rail li>*{display:block;width:100%;padding:8px 4px;background:none;border:0;color:var(--ink-2);white-space:nowrap;font-size:12.5px}
 @media (min-width:560px){.rail li>*{padding:8px 6px;font-size:13px}}
-.rail button{cursor:pointer}
+.rail button{cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px}
 .rail button:hover{background:var(--surface-2)}
+.rail li.next{background:color-mix(in srgb,var(--polenta) 35%,transparent)}
+.rail li.next>*{color:var(--ink)}
 .rail li.done>*{color:var(--ok)}
 .rail li.done>*::before{content:"✓ ";font-weight:700}
 .rail li.now{background:var(--polenta)}
@@ -87,23 +92,25 @@ button,input,select,textarea{font:inherit;color:inherit}
 .tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);margin-inline:-16px;padding-inline:16px;border-bottom:1px solid var(--line);margin-top:12px}
 .tabs .in{max-width:1120px;margin-inline:auto;display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
 .tabs .in::-webkit-scrollbar{display:none}
-.tab{background:none;border:0;border-bottom:3px solid transparent;padding:12px 12px 9px;font-weight:600;color:var(--ink-2);cursor:pointer;white-space:nowrap}
-.tab:hover{color:var(--ink)}
+.tab{background:none;border:0;border-bottom:3px solid transparent;padding:12px 12px 9px;font-weight:700;color:var(--ink);cursor:pointer;white-space:nowrap;border-radius:8px 8px 0 0}
+.tab:hover{background:var(--surface-2);border-bottom-color:var(--btn-line)}
 .tab[aria-current="page"]{color:var(--accent);border-bottom-color:var(--accent)}
 .tab .n{margin-left:6px;font-size:12px;font-weight:600;background:var(--surface-2);color:var(--ink-2);border-radius:999px;padding:1px 7px}
 .view{padding-block:22px 12px;display:flex;flex-direction:column;gap:18px;min-width:0}
 .vhead{display:flex;gap:12px;justify-content:space-between;align-items:flex-end;flex-wrap:wrap}
 .lede{color:var(--ink-2);max-width:68ch;margin-top:6px}
 
-/* pulsanti */
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;padding:8px 16px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-weight:600;cursor:pointer;text-decoration:none;color:var(--ink)}
-.btn:hover{background:var(--surface-2)}
-.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
-.btn.primary:hover{filter:brightness(1.1)}
-.btn.sm{min-height:32px;padding:4px 12px;font-size:13px}
+/* pulsanti: bordo marcato, rilievo e movimento al tocco, così si capisce subito cosa è cliccabile */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;padding:8px 16px;border-radius:999px;border:1.5px solid var(--btn-line);background:var(--surface);font-weight:700;cursor:pointer;text-decoration:none;color:var(--ink);box-shadow:var(--btn-shadow)}
+.btn:hover{background:var(--surface-2);border-color:var(--ink-2);transform:translateY(-1px)}
+.btn:active{transform:translateY(1px);box-shadow:none}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);box-shadow:0 2px 0 rgba(0,0,0,.3)}
+.btn.primary:hover{filter:brightness(1.12);background:var(--accent)}
+.btn.sm{min-height:34px;padding:4px 13px;font-size:13px}
+.btn.big{min-height:48px;padding:10px 22px;font-size:16px}
 .btn.danger{color:var(--bad);border-color:var(--bad)}
-.btn[disabled]{opacity:.45;cursor:not-allowed}
-.btn.ico{min-width:32px;padding:4px 8px}
+.btn[disabled]{opacity:.45;cursor:not-allowed;box-shadow:none;transform:none}
+.btn.ico{min-width:34px;padding:4px 8px}
 .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .spread{justify-content:space-between}
 
@@ -117,7 +124,9 @@ button,input,select,textarea{font:inherit;color:inherit}
 .badge.bad{background:var(--bad-soft);color:var(--bad)}
 .badge.info{background:var(--info-soft);color:var(--info)}
 .filterchips{display:flex;gap:6px;flex-wrap:wrap}
-.fchip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 12px;font-size:13px;font-weight:600;cursor:pointer;color:var(--ink-2)}
+.fchip{border:1.5px solid var(--btn-line);background:var(--surface);border-radius:999px;padding:5px 13px;font-size:13px;font-weight:700;cursor:pointer;color:var(--ink);box-shadow:var(--btn-shadow)}
+.fchip:hover{background:var(--surface-2)}
+.fchip:active{transform:translateY(1px);box-shadow:none}
 .fchip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 
 /* campi */
@@ -175,8 +184,9 @@ input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent)}
 .slot h4{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
 .dish{display:flex;gap:10px;justify-content:space-between;align-items:flex-start;padding:8px 0;border-top:1px dashed var(--line)}
 .dish:first-of-type{border-top:0}
-.dish .nm{font-weight:600;background:none;border:0;padding:0;text-align:left;cursor:pointer;color:var(--ink);overflow-wrap:anywhere}
-.dish .nm:hover{color:var(--accent)}
+.dish .nm{font-weight:700;background:none;border:0;padding:0;text-align:left;cursor:pointer;color:var(--accent);overflow-wrap:anywhere;text-decoration:underline;text-decoration-thickness:1.5px;text-underline-offset:3px}
+.dish .nm::after{content:" ›";font-weight:700}
+.dish .nm:hover{filter:brightness(1.2)}
 .dish>div{min-width:0;flex:1}
 .dish select{flex:0 0 150px;width:150px;padding:5px 8px;font-size:13px}
 .capbar{height:6px;border-radius:99px;background:var(--surface);overflow:hidden;margin-top:6px}
@@ -270,9 +280,11 @@ body.modal-open{overflow:hidden}
   .brand .mark{font-size:30px}
 }
 .pickrow{display:flex;gap:6px;flex-wrap:wrap}
-.pick{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 12px;font-weight:600;font-size:13.5px;cursor:pointer}
+.pick{border:1.5px solid var(--btn-line);background:var(--surface);border-radius:999px;padding:5px 12px;font-weight:700;font-size:13.5px;cursor:pointer;box-shadow:var(--btn-shadow)}
+.pick:hover{background:var(--surface-2)}
 .pick[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
-.idea{border:1px dashed var(--line);background:none;border-radius:999px;padding:3px 10px;font-size:13px;cursor:pointer;color:var(--ink-2)}
+.idea{border:1.5px dashed var(--btn-line);background:var(--surface);border-radius:999px;padding:3px 11px;font-size:13px;font-weight:600;cursor:pointer;color:var(--ink)}
+.idea::before{content:"+ ";color:var(--accent);font-weight:700}
 .idea:hover{border-color:var(--accent);color:var(--accent)}
 
 #toast{position:fixed;left:0;right:0;bottom:calc(16px + env(safe-area-inset-bottom,0px));display:flex;justify-content:center;z-index:80;pointer-events:none;padding-inline:16px}
@@ -286,7 +298,8 @@ body.modal-open{overflow:hidden}
 .sv.ok{color:var(--ok);font-weight:600}
 .sv.warn{color:var(--warn);font-weight:600}
 .btn:focus-within{outline:2px solid var(--accent);outline-offset:2px}
-details>summary{list-style-position:inside}
+details>summary{list-style-position:inside;cursor:pointer;font-weight:700;color:var(--accent)}
+details>summary:hover{text-decoration:underline}
 
 .card.sg.proposta{background:color-mix(in srgb,var(--info-soft) 40%,var(--surface))}
 .card.sg.menu{background:color-mix(in srgb,var(--ok-soft) 45%,var(--surface));border-color:var(--ok)}
@@ -308,7 +321,7 @@ details>summary{list-style-position:inside}
 .tab-sug:hover{color:var(--accent-ink);filter:brightness(1.1)}
 .tab-sug .n{background:var(--polenta);color:var(--polenta-ink)}
 .tab.tab-sug[aria-current="page"]{color:var(--accent-ink);box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--accent)}
-.pill-sug{background:var(--polenta);color:var(--polenta-ink);border:0;border-radius:999px;padding:5px 14px;font-weight:700;font-size:13px;cursor:pointer}
+.pill-sug{background:var(--polenta);color:var(--polenta-ink);border:1.5px solid var(--polenta-ink);border-radius:999px;padding:5px 14px;font-weight:700;font-size:13px;cursor:pointer;box-shadow:0 2px 0 rgba(0,0,0,.25)}
 .pill-sug:hover{filter:brightness(1.06)}
 .pill-sug b{font-family:var(--font-display);font-weight:400;font-size:16px}
 .hero-sug{background:linear-gradient(135deg,var(--hero-a),var(--hero-b));color:var(--hero-ink);border-radius:16px;padding:24px clamp(16px,3vw,32px);display:grid;grid-template-columns:minmax(0,1fr);gap:18px 36px;box-shadow:var(--shadow);min-width:0}
@@ -330,8 +343,56 @@ button.chip.reg[aria-pressed="true"]{outline:3px solid var(--polenta);outline-of
 .promo .btn.primary{background:var(--polenta-ink);border-color:var(--polenta-ink);color:var(--polenta)}
 
 .btn.sm.join{border-color:var(--accent);color:var(--accent)}
+.btn.sm.join:not(.on)::before{content:"+";font-weight:800}
 .btn.sm.join:hover{background:var(--accent-soft)}
 .btn.sm.join.on{background:var(--accent-soft)}
+
+.num.bad{color:var(--bad);font-weight:700}
+.wl{display:inline-block;margin-left:6px;padding:0 6px;border-radius:5px;background:var(--ok-soft);color:var(--ok);font-size:11.5px;font-weight:700;white-space:nowrap}
+
+/* Proposte: le due strade */
+.choose{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:14px;align-items:stretch}
+.opt{border:2px solid var(--line);border-radius:14px;padding:20px 16px 16px;display:flex;flex-direction:column;gap:10px;background:var(--surface);position:relative;min-width:0}
+.opt.a{border-color:var(--accent);background:color-mix(in srgb,var(--accent-soft) 55%,var(--surface))}
+.opt.b{border-color:var(--btn-line)}
+.optn{position:absolute;top:-13px;left:14px;width:26px;height:26px;border-radius:50%;background:var(--ink);color:var(--bg);display:grid;place-items:center;font-weight:800;font-size:13px}
+.opt p{color:var(--ink-2)}
+.opt .btn{align-self:flex-start;margin-top:auto}
+.or{display:flex;align-items:center;justify-content:center;font-family:var(--font-display);color:var(--ink-2);font-size:18px}
+@media (max-width:760px){.choose{grid-template-columns:minmax(0,1fr)}.or{padding:2px 0}}
+
+/* banda in alto: scadenze e formato del menu */
+.band{margin-top:14px;display:flex;flex-direction:column;gap:12px;padding:14px clamp(12px,2.4vw,20px);border-radius:16px;background:var(--surface);border:2px solid var(--accent);box-shadow:var(--shadow)}
+.cd{display:flex;flex-wrap:wrap;gap:8px 20px;align-items:center;justify-content:space-between;background:linear-gradient(135deg,var(--hero-a),var(--hero-b));color:var(--hero-ink);border-radius:12px;padding:12px 16px}
+.cd-t{display:flex;flex-direction:column;gap:2px;min-width:0}
+.cd-t b{font-family:var(--font-display);font-weight:400;font-size:clamp(18px,3vw,22px)}
+.cd-n{display:flex;flex-direction:column;align-items:flex-end}
+.cd-n .lbl{color:inherit;opacity:.8;font-size:11px}
+.cd-n .num{font-family:var(--font-display);font-size:clamp(22px,4.4vw,34px);line-height:1.05;color:var(--polenta);white-space:nowrap}
+.steps3{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:8px}
+.steps3 li{border:1.5px solid var(--line);border-radius:10px;padding:8px 12px;display:flex;flex-direction:column;gap:1px;font-size:13px;color:var(--ink-2);min-width:0}
+.steps3 li b{color:var(--ink);font-size:13.5px}
+.steps3 li.now{background:var(--polenta);border-color:var(--polenta-ink);color:var(--polenta-ink)}
+.steps3 li.now b{color:var(--polenta-ink)}
+.steps3 li.done{opacity:.7}
+.steps3 li.done b::before{content:"✓ ";color:var(--ok)}
+.steps3 li.next{border-style:dashed;border-color:var(--polenta-ink)}
+.fm-wrap{display:flex;flex-direction:column;gap:8px}
+.fm-wrap h3{font-size:19px}
+.fm-sum{display:flex;gap:8px 14px;align-items:center;justify-content:space-between;flex-wrap:wrap;font-size:14px}
+.fmgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:10px;margin-block:10px}
+.fmo{display:flex;flex-direction:column;gap:8px;text-align:left;padding:12px 14px;border:2px solid var(--btn-line);border-radius:12px;background:var(--surface);cursor:pointer;box-shadow:var(--btn-shadow);color:var(--ink);min-width:0}
+.fmo:hover:not([disabled]){border-color:var(--accent);background:var(--accent-soft);transform:translateY(-1px)}
+.fmo:active:not([disabled]){transform:translateY(1px);box-shadow:none}
+.fmo.on{border-color:var(--accent);background:var(--accent-soft)}
+.fmo[disabled]{cursor:default;box-shadow:none}
+.fmo-h{display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap}
+.fmo-n{font-family:var(--font-display);font-size:19px;line-height:1.15}
+.fmo-t b{font-family:var(--font-display);font-weight:400;font-size:26px;color:var(--accent)}
+.fmo-l{margin:0;padding-left:18px;font-size:13.5px;color:var(--ink-2)}
+.fmo-b{display:flex;gap:10px;align-items:center}
+.fmo-b .bar{flex:1}
+.fmo-go{font-weight:800;color:var(--accent);font-size:13px;min-height:18px}
 
 </style>
 <div id="app"><p class="boot">Carico Gran Bouffe…</p></div>
@@ -414,13 +475,43 @@ const VSTATI={
   non_valido:{label:'Link non valido',cls:'bad'}
 };
 const PRESET=['Marco Furio','Marco Terracina','Teo','Tia','Melo','Jaki','Mazzetti','Fantoni','Murro','Fede','Umbe','Jack','Gesù Pippia','Turi','Lollo'];
+/* Scadenze (ora italiana, UTC+2 in ottobre): le proposte e il voto sul formato chiudono insieme; il voto sui piatti dura 24 ore. */
+const SCAD_DEF={propFine:'2026-10-04T21:00:00+02:00',votoIni:'2026-10-05T00:00:00+02:00',votoFine:'2026-10-06T00:00:00+02:00'};
 const DEF={fase:'proposte',edizione:'XI',tema:'Triveneto',dataVen:'',arrivo:'16:00',riservaOre:1,margine:0,
-  orari:{'ven-cena':'20:30','sab-pranzo':'13:30','sab-cena':'20:30','dom-pranzo':'13:30'},cap:{ven:5,sab:12,dom:5}};
+  orari:{'ven-cena':'20:30','sab-pranzo':'13:30','sab-cena':'20:30','dom-pranzo':'13:30'},scad:Object.assign({},SCAD_DEF),scadAuto:true,formato:''};
 function mergeSettings(d){
   const o=JSON.parse(JSON.stringify(DEF));if(!d)return o;
-  for(const k of Object.keys(d)){if(k==='orari'||k==='cap')Object.assign(o[k],d[k]||{});else o[k]=d[k];}
+  for(const k of Object.keys(d)){if(k==='orari'||k==='scad')Object.assign(o[k],d[k]||{});else o[k]=d[k];}
   return o;
 }
+/* Formati del menu tra cui si vota. cap = piatti per giorno, slot = piatti per pasto, comp = portate obbligatorie in un pasto. */
+const FORMATI=[
+  {key:'dieta',nome:'Dieta',tot:15,cap:{ven:3,sab:8,dom:4},slot:{'ven-cena':3,'sab-pranzo':4,'sab-cena':4,'dom-pranzo':4},
+    righe:['Venerdì 3 piatti','Sabato 4 a pranzo + 4 a cena','Domenica 4 a pranzo']},
+  {key:'bouffetta',nome:'Bouffetta',tot:18,cap:{ven:4,sab:10,dom:4},slot:{'ven-cena':4,'sab-pranzo':5,'sab-cena':5,'dom-pranzo':4},comp:{'ven-cena':['antipasti','primi','secondi','dolci']},
+    righe:['Venerdì 4 piatti: antipasto, primo, secondo, dolce','Sabato 5 + 5','Domenica 4']},
+  {key:'esagerare',nome:'L’importante è esagerare',tot:22,cap:{ven:5,sab:12,dom:5},libero:true,
+    righe:['22 piatti','Nessun vincolo su cosa, quando e come']}
+];
+const FMT=k=>FORMATI.find(f=>f.key===k)||null;
+/* Fonti ritenute affidabili (whitelist). lv A = riferimento culturale o istituzionale, B = editoria di cucina o ente del territorio. */
+const FONTI=[
+  {d:'accademiaitalianadellacucina.it',n:'Accademia Italiana della Cucina',lv:'A'},
+  {d:'it.wikisource.org',n:'Wikisource (Artusi, La scienza in cucina)',lv:'A'},
+  {d:'taccuinigastrosofici.it',n:'Taccuini Gastrosofici',lv:'B',nota:'affidabile se contiene la ricetta cercata'},
+  {d:'cucchiaio.it',n:'Cucchiaio d’Argento',lv:'B'},
+  {d:'lacucinaitaliana.it',n:'La Cucina Italiana',lv:'B'},
+  {d:'aifb.it',n:'AIFB · Calendario del cibo italiano',lv:'B'},
+  {d:'turismofvg.it',n:'Turismo FVG',lv:'B'},
+  {d:'docfriuli.eu',n:'Consorzio DOC Friuli',lv:'B'},
+  {d:'trentinoqualita.it',n:'Qualità Trentino',lv:'B'},
+  {d:'visittrentino.it',n:'Visit Trentino',lv:'B'},
+  {d:'alto-adige.com',n:'Alto Adige (promozione del territorio)',lv:'B'},
+  {d:'suedtirol.info',n:'Alto Adige · Südtirol Info',lv:'B'},
+  {d:'genusslandsuedtirol.it',n:'Il gusto dell’Alto Adige',lv:'B'},
+  {d:'tirol.at',n:'Tirol (turismo)',lv:'B'}
+];
+const fonteOk=u=>{const h=domain(u);return h?FONTI.find(f=>h===f.d||h.endsWith('.'+f.d))||null:null;};
 
 /* ============ stato ============ */
 const S={meId:null,participants:[],recipes:[],allRecipes:[],trash:[],backups:[],metaExists:false,pending:0,dirty:false,offline:false,lastOk:0,votes:{},spesa:{},settings:mergeSettings(),settingsExists:false,loaded:{},dbOk:null,readOnly:false,owner:false};
@@ -433,8 +524,42 @@ const R=id=>S.recipes.find(r=>r.id===id);
 const me=()=>P(S.meId);
 const nConf=()=>S.participants.filter(p=>p.confirmed).length;
 const isOrg=()=>!!(S.owner||(me()&&me().organizer));
-const canPropose=()=>S.settings.fase==='proposte'||isOrg();
-const canVote=()=>S.settings.fase==='voto';
+/* ---- scadenze e fasi ----
+   La fase effettiva è la più avanzata tra quella scelta dall'organizzatore e quella che dicono le scadenze (se automatiche).
+   stage() distingue anche "attesa": proposte chiuse, voto dei piatti non ancora aperto. */
+const nowMs=()=>(typeof window!=='undefined'&&typeof window.GB_NOW==='function'?window.GB_NOW():Date.now());
+const scadOn=()=>S.settings.scadAuto!==false;
+const scadMs=k=>{const t=Date.parse((S.settings.scad||{})[k]);return isFinite(t)?t:Date.parse(SCAD_DEF[k]);};
+const faseIdx=k=>Math.max(0,FASI.findIndex(f=>f[0]===k));
+const autoIdx=()=>{if(!scadOn())return 0;const n=nowMs();return n>=scadMs('votoFine')?2:n>=scadMs('votoIni')?1:0;};
+const faseEff=()=>FASI[Math.max(faseIdx(S.settings.fase),autoIdx())][0];
+const stage=()=>{const f=faseEff();return f==='proposte'&&scadOn()&&nowMs()>=scadMs('propFine')?'attesa':f;};
+const propOpen=()=>stage()==='proposte';
+const fmtOpen=propOpen; // il voto sul formato chiude insieme alle proposte
+const canPropose=()=>propOpen()||isOrg();
+const canVote=()=>stage()==='voto';
+const TZ='Europe/Rome';
+function romeParts(ms){
+  const o={};new Intl.DateTimeFormat('en-GB',{timeZone:TZ,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(new Date(ms)).forEach(p=>{o[p.type]=p.value;});
+  return o;
+}
+const toLocalInput=ms=>{const o=romeParts(ms);return `${o.year}-${o.month}-${o.day}T${o.hour}:${o.minute}`;};
+/* 'AAAA-MM-GGTHH:MM' in ora italiana -> testo ISO con l'offset giusto (+02:00 d'estate, +01:00 d'inverno) */
+function fromLocalInput(s){
+  const m=/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/.exec(String(s||''));if(!m)return null;
+  const guess=Date.UTC(+m[1],+m[2]-1,+m[3],+m[4],+m[5]);
+  for(const off of [2,1])if(toLocalInput(guess-off*3600000)===s)return s+':00'+(off===2?'+02:00':'+01:00');
+  return null;
+}
+const fmtDay=ms=>new Date(ms).toLocaleDateString('it-IT',{timeZone:TZ,weekday:'long',day:'numeric',month:'long'});
+const fmtHour=ms=>new Date(ms).toLocaleTimeString('it-IT',{timeZone:TZ,hour:'2-digit',minute:'2-digit'});
+const fmtDT=ms=>fmtDay(ms)+', ore '+fmtHour(ms);
+/* una scadenza a mezzanotte si legge meglio come "mezzanotte di lunedì 5 ottobre" */
+const fmtEnd=ms=>fmtHour(ms)==='00:00'?'mezzanotte di '+fmtDay(ms-60000):fmtDT(ms);
+function fmtCd(ms){
+  const s=Math.max(0,Math.floor(ms/1000)),d=Math.floor(s/86400),h=Math.floor(s%86400/3600),m=Math.floor(s%3600/60),x=s%60,p=n=>String(n).padStart(2,'0');
+  return d>0?`${d} g ${p(h)} h ${p(m)} min ${p(x)} s`:`${p(h)}:${p(m)}:${p(x)}`;
+}
 /* I responsabili sono ownerIds (le vecchie squadre, teamIds, contano come responsabili). Chiunque può aggiungersi o togliersi;
    i dati del piatto li modifica solo chi l'ha proposto (o un organizzatore). */
 const ownersOf=r=>[...new Set([...(r.ownerIds||[]),...(r.teamIds||[])])];
@@ -446,7 +571,7 @@ const vstato=r=>((r.verifica||{}).stato)||'da_verificare';
 const chipCat=k=>{const c=catOf(k);return `<span class="chip" style="--h:${c.h}">${esc(c.label)}</span>`;};
 const badge=(t,cls)=>`<span class="badge ${cls||''}">${esc(t)}</span>`;
 const A={},CH={},IN={};
-const homeTab=()=>({voto:'voto',menu:'menu',cucina:'menu'}[S.settings.fase])||'suggerimenti';
+const homeTab=()=>({voto:'voto',menu:'menu',cucina:'menu',attesa:'proposte'}[stage()])||'suggerimenti';
 const isOpen=id=>(UI.open&&UI.open[id])?'open':'';
 let toastT;
 function toast(msg,kind){
@@ -464,7 +589,7 @@ function errMsg(e){
   if(c==='revoked')return 'Accesso alla pagina revocato.';
   return 'Salvataggio non riuscito'+(e&&e.message?': '+e.message:'.');
 }
-const BUILD='murjalun';
+const BUILD='musm5uap';
 const BACKUP_EVERY=window.GB_BACKUP_EVERY||15*60*1000,BACKUP_KEEP=60;
 function saveHtml(){
   if(S.offline)return '<span class="sv warn">Offline: le modifiche restano in coda</span>';
@@ -704,7 +829,27 @@ const sugById=id=>SUG.find(s=>s.id===id);
 const slotDef=k=>SLOTS.find(s=>s.key===k);
 const slotDay=k=>(slotDef(k)||{}).day||'';
 const slotLabel=k=>(slotDef(k)||{}).label||'';
-const totalCap=()=>{const c=S.settings.cap;return num(c.ven)+num(c.sab)+num(c.dom);};
+/* --- formato del menu: voto di ognuno in votes/<id>.formato; vale quello fissato dall'organizzatore, altrimenti
+   (a voto chiuso) il più votato, a parità il più abbondante; senza voti resta "esagerare" (22 piatti, come prima). --- */
+function fmtVotes(){
+  const t={};FORMATI.forEach(f=>{t[f.key]=[];});
+  for(const p of S.participants){const v=S.votes[p.id];if(v&&t[v.formato])t[v.formato].push(p);}
+  return t;
+}
+function fmtWinner(){
+  const t=fmtVotes();let best=null,bn=0;
+  for(const f of [...FORMATI].reverse()){const n=t[f.key].length;if(n>bn){bn=n;best=f.key;}}
+  return best;
+}
+function fmtEff(){
+  const fx=S.settings.formato;
+  if(FMT(fx))return{key:fx,how:'fissato'};
+  if(!fmtOpen()){const w=fmtWinner();if(w)return{key:w,how:'voto'};}
+  return{key:'esagerare',how:'provvisorio'};
+}
+const fmtNow=()=>FMT(fmtEff().key);
+const capNow=()=>fmtNow().cap;
+const totalCap=()=>{const c=capNow();return num(c.ven)+num(c.sab)+num(c.dom);};
 const slotted=()=>S.recipes.filter(r=>r.slot&&slotDef(r.slot));
 
 /* --- tempi e fattibilità --- */
@@ -881,6 +1026,7 @@ function voteStats(){
   return res;
 }
 const voters=()=>S.participants.filter(p=>S.votes[p.id]&&Object.values(S.votes[p.id].rank||{}).some(l=>Array.isArray(l)&&l.length));
+const myFmt=()=>{const v=S.votes[S.meId];return v&&FMT(v.formato)?v.formato:'';};
 
 /* --- selezione automatica dai voti --- */
 function quotas(total){
@@ -892,25 +1038,49 @@ function quotas(total){
   for(let i=0;used<total;i++,used++)q[rem[i%rem.length][0]]++;
   return q;
 }
+const byScore=(a,b)=>((b.score==null?-1:b.score)-(a.score==null?-1:a.score))||byTitle(a.r,b.r);
 function suggest(){
-  const st=voteStats(),total=totalCap(),q=quotas(total);
+  const st=voteStats(),fm=fmtNow(),total=totalCap(),q=quotas(total);
   const chosen=[],left=[];
-  for(const c of CATS){
-    const list=st[c.key],k=q[c.key]||0;
-    list.slice(0,k).forEach(x=>chosen.push(x));
-    list.slice(k).forEach(x=>left.push(x));
+  if(fm.libero){ // nessuna quota per portata: i più votati in assoluto
+    const all=[].concat(...CATS.map(c=>st[c.key])).sort(byScore);
+    all.slice(0,total).forEach(x=>chosen.push(x));
+  }else{
+    for(const c of CATS){
+      const list=st[c.key],k=q[c.key]||0;
+      list.slice(0,k).forEach(x=>chosen.push(x));
+      list.slice(k).forEach(x=>left.push(x));
+    }
+    left.sort(byScore);
+    while(chosen.length<total&&left.length)chosen.push(left.shift());
   }
-  left.sort((a,b)=>((b.score==null?-1:b.score)-(a.score==null?-1:a.score))||byTitle(a.r,b.r));
-  while(chosen.length<total&&left.length)chosen.push(left.shift());
-  const caps={ven:num(S.settings.cap.ven),sab:num(S.settings.cap.sab),dom:num(S.settings.cap.dom)};
+  const caps={ven:num(fm.cap.ven),sab:num(fm.cap.sab),dom:num(fm.cap.dom)};
   const cnt={ven:0,sab:0,dom:0},catCnt={ven:{},sab:{},dom:{}},slotCnt={};
   const out={};
-  const arr=[...chosen].sort((a,b)=>lead(b.r)-lead(a.r)||(b.score||0)-(a.score||0));
+  /* pasto con portate obbligatorie (venerdì della Bouffetta): prima una per portata, la meglio votata tra quelle che stanno nei tempi */
+  const fixedIds=new Set(),venMissing=new Set();
+  for(const [sk,cats] of Object.entries(fm.comp||{})){
+    const day=slotDay(sk);
+    for(const cat of cats){
+      const pool=st[cat].filter(x=>!fixedIds.has(x.r.id)&&feasible(x.r,sk));
+      const pick=pool.find(x=>chosen.includes(x))||pool[0];
+      if(!pick){venMissing.add(cat);continue;}
+      if(!chosen.includes(pick)){
+        const same=chosen.filter(x=>x.r.category===cat&&!fixedIds.has(x.r.id)).pop()||chosen.filter(x=>!fixedIds.has(x.r.id)).pop();
+        if(same&&chosen.length>=total)chosen.splice(chosen.indexOf(same),1);
+        chosen.push(pick);
+      }
+      fixedIds.add(pick.r.id);out[pick.r.id]=sk;cnt[day]++;catCnt[day][cat]=(catCnt[day][cat]||0)+1;slotCnt[sk]=(slotCnt[sk]||0)+1;
+    }
+  }
+  const comp=fm.comp&&fm.comp['ven-cena'];
+  const arr=chosen.filter(x=>!fixedIds.has(x.r.id)).sort((a,b)=>lead(b.r)-lead(a.r)||(b.score||0)-(a.score||0));
   for(const x of arr){
     const r=x.r;
     let best=null,bs=-1e9;
     for(const d of DAYS){
       if(cnt[d.key]>=caps[d.key])continue;
+      if(comp&&d.key==='ven'&&!venMissing.has(r.category))continue;
       if(!SLOTS.some(s=>s.day===d.key&&feasible(r,s.key)))continue;
       const sc=(caps[d.key]-cnt[d.key])/Math.max(1,caps[d.key])-0.25*(catCnt[d.key][r.category]||0);
       if(sc>bs){bs=sc;best=d.key;}
@@ -991,10 +1161,11 @@ function vLogin(){
 }
 
 function vHeader(){
-  const st=S.settings,f=st.fase,idx=FASI.findIndex(x=>x[0]===f);
+  const st=S.settings,sg=stage(),idx=faseIdx(faseEff());
   const rail=FASI.map((s,i)=>{
-    const cls=i<idx?'done':i===idx?'now':'';
-    return `<li class="${cls}">${isOrg()?`<button data-act="fase" data-v="${s[0]}" ${i===idx?'aria-current="step"':''}>${s[1]}</button>`:`<span ${i===idx?'aria-current="step"':''}>${s[1]}</span>`}</li>`;
+    const cls=sg==='attesa'?(i===0?'done':i===1?'next':''):(i<idx?'done':i===idx?'now':'');
+    const cur=cls==='now'||cls==='next'?'aria-current="step"':'';
+    return `<li class="${cls}">${isOrg()?`<button data-act="fase" data-v="${s[0]}" ${cur}>${s[1]}</button>`:`<span ${cur}>${s[1]}</span>`}</li>`;
   }).join('');
   const sel=slotted().length,tot=totalCap(),nv=voters().length;
   return `<header class="wrap top">
@@ -1021,11 +1192,13 @@ function filterRecipes(){
     &&(!q||norm(r.title+' '+(r.note||'')+' '+pname(r.proposerId)).includes(q)))
     .sort((a,b)=>catIdx(a.category)-catIdx(b.category)||byTitle(a,b));
 }
+/* segnalino per i link che puntano a una fonte della whitelist */
+const wlMark=u=>{const f=fonteOk(u);return f?` <span class="wl" title="Fonte nella lista di quelle affidabili: ${esc(f.n)}${f.nota?' ('+esc(f.nota)+')':''}">✓ affidabile</span>`:'';};
 function srcBlock(r){
   const v=r.verifica||{};
   const auth=v.linkAutorevole&&isUrl(v.linkAutorevole);
-  return `<div class="src"><span><span class="lbl">Link del proponente</span><br><a href="${esc(safeHref(r.link))}" target="_blank" rel="noopener noreferrer">${esc(domain(r.link)||r.link)} ↗</a></span>
-    ${auth?`<span><span class="lbl">Fonte di riferimento</span><br><a href="${esc(safeHref(v.linkAutorevole))}" target="_blank" rel="noopener noreferrer">${esc(v.fonte||domain(v.linkAutorevole))} ↗</a></span>`:''}
+  return `<div class="src"><span><span class="lbl">Link del proponente</span><br><a href="${esc(safeHref(r.link))}" target="_blank" rel="noopener noreferrer">${esc(domain(r.link)||r.link)} ↗</a>${wlMark(r.link)}</span>
+    ${auth?`<span><span class="lbl">Fonte di riferimento</span><br><a href="${esc(safeHref(v.linkAutorevole))}" target="_blank" rel="noopener noreferrer">${esc(v.fonte||domain(v.linkAutorevole))} ↗</a>${wlMark(v.linkAutorevole)}</span>`:''}
     ${v.nota?`<span class="hint">${esc(v.nota)}</span>`:''}</div>`;
 }
 function cardRecipe(r){
@@ -1068,14 +1241,29 @@ async function ownerToggle(id){
   }finally{UI.ownBusy=false;}
 }
 A['owner-toggle']=t=>ownerToggle(t.dataset.id);
+/* Le due strade per proporre un piatto, una accanto all'altra: dal catalogo oppure fuori elenco. */
+function vChoose(){
+  const libere=SUG.filter(x=>sugState(x)==='libera').length,open=canPropose();
+  const sg=stage(),motivo={attesa:'la scadenza è passata',voto:'sono aperte le votazioni'}[sg]||'il menu è in definizione';
+  const why=!open?`<div class="note"><b>Le proposte sono chiuse:</b> ${motivo}. Un organizzatore può ancora aggiungere piatti o spostare la scadenza.</div>`:'';
+  return `${why}<div class="choose" role="group" aria-label="Come proporre un piatto">
+    <div class="opt a"><span class="optn" aria-hidden="true">A</span>
+      <h3>Scegli tra i Suggerimenti</h3>
+      <p>${SUG.length} piatti del Triveneto già pronti, con link, vino e tempi. <b class="num">${libere}</b> sono ancora da proporre: il modulo si compila da solo.</p>
+      <button class="btn primary big" data-act="tab" data-v="suggerimenti">Sfoglia i Suggerimenti <span aria-hidden="true">→</span></button></div>
+    <div class="or" aria-hidden="true"><span>oppure</span></div>
+    <div class="opt b"><span class="optn" aria-hidden="true">B</span>
+      <h3>Proponi un piatto fuori elenco</h3>
+      <p>Hai in mente una ricetta che non c’è? Servono nome, categoria, link e almeno una persona che lo cucina.</p>
+      <button class="btn big" data-act="new-recipe" ${open?'':'disabled'}>+ Proponi un piatto fuori elenco</button></div></div>`;
+}
 function vProposte(){
   const list=filterRecipes();
   const pend=S.recipes.filter(r=>vstato(r)==='da_verificare').length;
   const chips=[['','Tutte']].concat(CATS.map(c=>[c.key,c.label])).map(c=>`<button class="fchip" aria-pressed="${UI.cat===c[0]}" data-act="fcat" data-v="${c[0]}">${esc(c[1])}</button>`).join('');
   let body='';
   if(!S.recipes.length){
-    body=`<div class="empty"><h3>Nessuna proposta, per ora</h3><p>Scegli un piatto del Triveneto, indica chi lo cucinerà e incolla il link della ricetta.</p>
-      ${canPropose()?`<button class="btn primary" data-act="new-recipe">+ Proponi il primo piatto</button>`:''}</div>`;
+    body=`<div class="empty"><h3>Nessuna proposta, per ora</h3><p>Scegli una delle due strade qui sopra: un piatto dei Suggerimenti oppure uno tuo.</p></div>`;
   }else if(!list.length){
     body=`<div class="empty"><h3>Nessun risultato</h3><p>Cambia o azzera i filtri.</p><button class="btn" data-act="fclear">Azzera filtri</button></div>`;
   }else{
@@ -1085,9 +1273,8 @@ function vProposte(){
   return `<section class="view">
     <div class="vhead"><div><h2>Proposte</h2>
       <p class="lede">Ogni proposta ha un proponente, almeno un responsabile della produzione, una categoria e il link a una ricetta. Il link viene controllato e affiancato da una fonte di riferimento autorevole. <b class="num">${S.recipes.length}</b> proposte finora, obiettivo 40–50.</p></div>
-      <button class="btn primary" data-act="new-recipe" ${canPropose()?'':'disabled'}>+ Proponi un piatto</button></div>
-    ${canPropose()&&SUG.some(x=>sugState(x)==='libera')?`<div class="promo"><div><b>Hai già ${SUG.length} ricette da cui attingere.</b> ${SUG.filter(x=>sugState(x)==='libera').length} sono ancora da proporre: scegli dai Suggerimenti e il modulo si compila da solo.</div><button class="btn primary" data-act="tab" data-v="suggerimenti">Vai ai Suggerimenti</button></div>`:''}
-    ${!canPropose()?`<div class="note">Le proposte sono chiuse perché sono aperte le votazioni. L’organizzatore può riaprirle dalla barra delle fasi.</div>`:''}
+    </div>
+    ${vChoose()}
     ${isOrg()&&pend?`<div class="note warn"><b>${pend} ${pend===1?'link da verificare':'link da verificare'}.</b> Chiedi a Claude di controllarli: verifica che il link funzioni e corrisponda al piatto, poi aggiunge una fonte autorevole (Accademia Italiana della Cucina, La Cucina Italiana, Cucchiaio d’Argento, Artusi, enti del territorio). Lo stato compare su ogni scheda.</div>`:''}
     <div class="filters">
       <div class="field wide"><label for="q">Cerca</label><input type="search" id="q" data-in="q" value="${esc(UI.q)}" placeholder="Piatto, proponente…"></div>
@@ -1129,7 +1316,10 @@ A['purge-recipe']=async t=>{
 };
 A['open-dish']=t=>{UI.navigated=true;UI.dish=t.dataset.id;UI.tab='menu';setHash('piatto-'+t.dataset.id);render();window.scrollTo(0,0);};
 A.fase=async t=>{
-  const v=t.dataset.v;if(S.settings.fase===v)return;
+  const v=t.dataset.v;
+  if(faseIdx(v)<autoIdx()){toast('Le scadenze automatiche hanno già chiuso questa fase. Per riaprirla sposta la scadenza o disattiva le fasi automatiche (Persone → Il weekend → Modifica).','err');return;}
+  if(v==='proposte'&&scadOn()&&nowMs()>=scadMs('propFine')){toast('La scadenza delle proposte è passata. Per riaprirle spostala (Persone → Il weekend → Modifica).','err');return;}
+  if(S.settings.fase===v)return;
   if(await saveSettings({fase:v}))toast('Fase impostata: '+(FASI.find(f=>f[0]===v)||[])[1]);
 };
 IN.q=t=>{UI.q=t.value;render();};
@@ -1137,9 +1327,76 @@ CH.freg=t=>{UI.reg=t.value;render();};
 CH.fver=t=>{UI.ver=t.value;render();};
 CH.fmine=t=>{UI.mine=t.checked;render();};
 
+/* ============ banda in alto: scadenze con countdown e voto sul formato del menu ============ */
+/* Tre tappe: proposte (+ voto sul formato) fino alla scadenza, voto dei piatti per 24 ore, poi menu e spesa. */
+function vSteps(sg){
+  const pf=scadMs('propFine'),vi=scadMs('votoIni'),vf=scadMs('votoFine'),auto=scadOn();
+  const cls=i=>{
+    const cur={proposte:0,attesa:0,voto:1,menu:2,cucina:2}[sg];
+    if(sg==='attesa')return i===0?'done':i===1?'next':'';
+    return i<cur?'done':i===cur?'now':'';
+  };
+  const items=[
+    ['Proposte e voto sul formato',auto?'fino a '+fmtDay(pf)+', ore '+fmtHour(pf):'chiude l’organizzatore'],
+    ['Voto sui piatti',auto?fmtDay(vi)+', da '+fmtHour(vi)+' a '+(fmtHour(vf)==='00:00'?'mezzanotte':fmtHour(vf)):'quando lo apre l’organizzatore'],
+    ['Menu, spesa, cucina','dopo il voto']
+  ];
+  return `<ol class="steps3">${items.map((x,i)=>`<li class="${cls(i)}"><b>${x[0]}</b><span>${esc(x[1])}</span></li>`).join('')}</ol>`;
+}
+function vCountdown(){
+  const sg=stage(),auto=scadOn();
+  let title,sub,target=0;
+  if(sg==='proposte'){title='Proposte e voto sul formato aperti';sub='Chiudono '+fmtDT(scadMs('propFine'));target=auto?scadMs('propFine'):0;}
+  else if(sg==='attesa'){title='Proposte chiuse';sub='Il voto sui piatti apre '+fmtDT(scadMs('votoIni'));target=scadMs('votoIni');}
+  else if(sg==='voto'){title='Voto sui piatti aperto';sub='Chiude '+fmtEnd(scadMs('votoFine'));target=auto?scadMs('votoFine'):0;}
+  else{title='Votazioni chiuse';sub='Il menu è in definizione';}
+  if(!auto&&sg==='proposte')sub='Le fasi le decide l’organizzatore';
+  if(!auto&&sg==='voto')sub='Le fasi le decide l’organizzatore';
+  return `<div class="cd"><div class="cd-t"><b>${esc(title)}</b><span class="small">${esc(sub)}</span></div>
+    ${target?`<div class="cd-n" role="timer" aria-label="Tempo rimasto"><span class="lbl">mancano</span><span class="num" data-cd="${target}">${fmtCd(target-nowMs())}</span></div>`:''}</div>`;
+}
+/* Il voto sul formato: tre opzioni accanto, con voti in tempo reale. Ridotto a una riga una volta votato. */
+const fmtExpanded=()=>UI.fmtX!=null?UI.fmtX:(fmtOpen()&&!myFmt());
+function vFormato(){
+  const open=fmtOpen(),mine=myFmt(),t=fmtVotes(),nv=Object.values(t).reduce((a,l)=>a+l.length,0),eff=fmtEff(),en=FMT(eff.key);
+  const how={fissato:'scelto dall’organizzatore',voto:'deciso dal voto',provvisorio:'provvisorio: decide il voto alla chiusura'}[eff.how];
+  const expanded=fmtExpanded();
+  const summary=`<div class="fm-sum"><span>${mine?`Hai scelto <b>${esc(FMT(mine).nome)}</b> (${FMT(mine).tot} piatti). `:(open?'<b>Non hai ancora votato il formato.</b> ':'')}In uso per il menu: <b>${esc(en.nome)}</b>, ${en.tot} piatti <span class="muted">(${esc(how)})</span>.</span>
+    <button class="btn sm" data-act="fmt-x" aria-expanded="${expanded}">${expanded?'Chiudi':(open?(mine?'Cambia voto':'Vota ora'):'Vedi risultati')}</button></div>`;
+  if(!expanded)return `<div class="fm">${summary}</div>`;
+  const cards=FORMATI.map(f=>{
+    const n=t[f.key].length,pct=nv?Math.round(n/nv*100):0,on=mine===f.key;
+    return `<button class="fmo ${on?'on':''}" data-act="vote-fmt" data-v="${f.key}" aria-pressed="${on}" ${open?'':'disabled'}>
+      <span class="fmo-h"><span class="fmo-n">${esc(f.nome)}</span><span class="fmo-t num"><b>${f.tot}</b> piatti</span></span>
+      <ul class="fmo-l">${f.righe.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>
+      <span class="fmo-b"><span class="bar"><i style="width:${pct}%"></i></span><span class="small num"><b>${n}</b> vot${n===1?'o':'i'}</span></span>
+      <span class="fmo-go">${on?'✓ Il tuo voto':(open?'Voto questo':'')}</span></button>`;
+  }).join('');
+  const org=isOrg()?`<div class="row" style="gap:8px"><label class="small" for="fx-set">Formato in uso (organizzatore)</label>
+    <select id="fx-set" data-chg="setfmt" style="width:auto"><option value="">Decide il voto</option>${FORMATI.map(f=>`<option value="${f.key}" ${S.settings.formato===f.key?'selected':''}>${esc(f.nome)} · ${f.tot}</option>`).join('')}</select></div>`:'';
+  return `<div class="fm open">${summary}
+    <div class="fmgrid" role="group" aria-label="Formato del menu">${cards}</div>
+    <p class="small muted">${open?'Un voto a testa, modificabile fino alla chiusura delle proposte.':'Il voto è chiuso.'} Hanno votato <b class="num">${nv}</b> su <b class="num">${S.participants.length}</b>. A parità vince il formato più abbondante.</p>${org}</div>`;
+}
+function vBand(){
+  const sg=stage();
+  return `<section class="wrap band" aria-label="Scadenze e formato del menu">${vCountdown()}${vSteps(sg)}<div class="fm-wrap"><h3>Quanti piatti prepariamo?</h3>${vFormato()}</div></section>`;
+}
+A['fmt-x']=()=>{UI.fmtX=!fmtExpanded();render();};
+A['vote-fmt']=async t=>{
+  if(!S.meId)return;
+  if(!fmtOpen()){toast('Il voto sul formato è chiuso.','err');return;}
+  const k=t.dataset.v;if(!FMT(k))return;
+  const ex=S.votes[S.meId];
+  const ok=ex?await write('update','votes/'+S.meId,{formato:k,updatedAt:Date.now()}):await write('set','votes/'+S.meId,{formato:k,rank:{},updatedAt:Date.now()});
+  if(ok){UI.fmtX=false;toast('Voto registrato: '+FMT(k).nome+' ('+FMT(k).tot+' piatti)');}
+  render();
+};
+CH.setfmt=async t=>{if(isOrg()&&await saveSettings({formato:t.value}))toast(t.value?'Formato fissato: '+FMT(t.value).nome:'Il formato lo decide il voto');};
+
 /* ============ viste: votazioni e menu ============ */
 function vVoto(){
-  const cat=UI.vcat;
+  const cat=UI.vcat,sg=stage();
   const tabs=CATS.map(x=>{
     const done=!!myRank(x.key);
     return `<button class="fchip" aria-pressed="${x.key===cat}" data-act="vcat" data-v="${x.key}">${done?'✓ ':''}${esc(x.label)} <span class="num">${catRecipes(x.key).length}</span></button>`;
@@ -1150,8 +1407,9 @@ function vVoto(){
     <div class="vhead"><div><h2>Votazioni</h2>
       <p class="lede">Per ogni categoria ordina le proposte dalla migliore (1) alla peggiore: vince chi ha il piazzamento medio più alto. Come nell’edizione scorsa, ma con il conteggio automatico.</p></div>
       <div class="filterchips"><button class="fchip" aria-pressed="${mine}" data-act="vmode" data-v="mia">La mia classifica</button><button class="fchip" aria-pressed="${!mine}" data-act="vmode" data-v="ris">Risultati</button></div></div>
-    ${S.settings.fase==='proposte'?`<div class="note">Le votazioni non sono ancora aperte: puoi già guardare le proposte. L’organizzatore le apre dalla barra delle fasi.</div>`:''}
-    ${S.settings.fase==='menu'||S.settings.fase==='cucina'?`<div class="note">Le votazioni sono chiuse. Restano visibili i risultati.</div>`:''}
+    ${sg==='proposte'||sg==='attesa'?`<div class="note"><b>Il voto sui piatti non è ancora aperto.</b> ${scadOn()?`Si apre ${esc(fmtDT(scadMs('votoIni')))} e dura fino a ${esc(fmtEnd(scadMs('votoFine')))}.`:'Lo apre l’organizzatore dalla barra delle fasi.'} Intanto puoi guardare le proposte e votare il formato del menu (banda in alto).</div>`:''}
+    ${sg==='voto'&&scadOn()?`<div class="note ok">Votazione aperta fino a ${esc(fmtEnd(scadMs('votoFine')))}.</div>`:''}
+    ${sg==='menu'||sg==='cucina'?`<div class="note">Le votazioni sono chiuse. Restano visibili i risultati.</div>`:''}
     <div class="filterchips">${tabs}</div>
     ${mine?`<p class="small muted">Hai ordinato <b class="num">${doneN}</b> categorie su <b class="num">${needN}</b>.</p>`+vRank(cat):vRes(cat)}
   </section>`;
@@ -1177,7 +1435,7 @@ function vRank(cat){
     <button class="btn primary" data-act="save-rank" ${(!open||(!d.dirty&&d.saved&&!d.fresh.length))?'disabled':''}>${d.saved&&!d.dirty&&!d.fresh.length?'Salvata':(d.dirty||d.saved?'Salva classifica':'Conferma questo ordine')}</button></div>`;
 }
 function vRes(cat){
-  const st=voteStats()[cat],q=quotas(totalCap())[cat]||0;
+  const st=voteStats()[cat],libero=!!fmtNow().libero,q=libero?0:(quotas(totalCap())[cat]||0);
   const done=voters().length,conf=S.participants.filter(p=>p.confirmed);
   const missing=conf.filter(p=>!voters().some(v=>v.id===p.id)).map(p=>p.name);
   if(!st.length)return `<div class="empty"><h3>Nessuna proposta in questa categoria</h3></div>`;
@@ -1189,7 +1447,7 @@ function vRes(cat){
       <div class="small num" style="text-align:right">${x.score==null?'<span class="muted">nessun voto</span>':`<b>${x.score}</b>/100<br><span class="muted">pos. media ${fmtN(x.avg,1)} · ${x.n} vot${x.n===1?'o':'i'}</span>`}</div></div>`;
   }).join('');
   return `<div class="note">Hanno votato <b class="num">${done}</b> su <b class="num">${S.participants.length}</b>.${missing.length?` Mancano i confermati: ${esc(missing.join(', '))}.`:''}
-    Le righe evidenziate rientrano nella quota suggerita per “${esc(catOf(cat).label)}” (<b class="num">${q}</b> su ${totalCap()} piatti).</div>
+    ${libero?`Formato «${esc(fmtNow().nome)}»: nessuna quota per portata, entrano i più votati in assoluto.`:`Le righe evidenziate rientrano nella quota suggerita per “${esc(catOf(cat).label)}” (<b class="num">${q}</b> su ${totalCap()} piatti, formato ${esc(fmtNow().nome)}).`}</div>
     <div class="panel" style="padding:0;overflow:hidden">${rows}</div>
     <p class="hint">Punteggio 100 = sempre primo; 0 = sempre ultimo. Conta solo chi ha ordinato la categoria.</p>`;
 }
@@ -1226,16 +1484,17 @@ function dishRow(r,slotKey){
     ${org?`<select aria-label="Sposta ${esc(r.title)}" data-chg="setslot" data-id="${esc(r.id)}"><option value="">Togli dal menu</option>${SLOTS.map(s=>`<option value="${s.key}" ${s.key===slotKey?'selected':''}>${s.label}</option>`).join('')}</select>`:''}</div>`;
 }
 function vMenu(){
-  const org=isOrg(),capv=S.settings.cap,sl=slotted();
+  const org=isOrg(),fm=fmtNow(),capv=fm.cap,sl=slotted(),tot=totalCap(),overTot=sl.length>tot;
   const days=DAYS.map(d=>{
-    const rs=sl.filter(r=>slotDay(r.slot)===d.key),cap=num(capv[d.key]),over=rs.length>cap;
+    const rs=sl.filter(r=>slotDay(r.slot)===d.key),cap=num(capv[d.key]),over=fm.libero?false:rs.length>cap;
     const mix={};rs.forEach(r=>mix[r.category]=(mix[r.category]||0)+1);
     const slots=SLOTS.filter(s=>s.day===d.key).map(s=>{
       const list=rs.filter(r=>r.slot===s.key).sort((a,b)=>catIdx(a.category)-catIdx(b.category)||byTitle(a,b));
-      return `<div class="slot"><h4>${s.label}</h4>${list.map(r=>dishRow(r,s.key)).join('')||'<p class="small muted">Nessun piatto assegnato.</p>'}</div>`;
+      const sc=fm.slot&&fm.slot[s.key];
+      return `<div class="slot"><h4>${s.label}${sc?` <span class="num ${list.length>sc?'bad':''}">${list.length} / ${sc}</span>`:''}</h4>${list.map(r=>dishRow(r,s.key)).join('')||'<p class="small muted">Nessun piatto assegnato.</p>'}</div>`;
     }).join('');
-    return `<section class="day ${over?'over':''}"><header><h3>${d.label}</h3><span class="num"><b>${rs.length}</b> / ${cap}${over?' · troppi':''}</span></header>
-      <div class="slot"><div class="capbar"><i style="width:${cap?Math.min(100,rs.length/cap*100):0}%"></i></div>
+    return `<section class="day ${over?'over':''}"><header><h3>${d.label}</h3><span class="num">${fm.libero?`<b>${rs.length}</b> piatt${rs.length===1?'o':'i'}`:`<b>${rs.length}</b> / ${cap}${over?' · troppi':''}`}</span></header>
+      <div class="slot">${fm.libero?'':`<div class="capbar"><i style="width:${cap?Math.min(100,rs.length/cap*100):0}%"></i></div>`}
       <div class="mix">${CATS.filter(c=>mix[c.key]).map(c=>`<span class="chip" style="--h:${c.h}">${esc(c.label)} ${mix[c.key]}</span>`).join('')||'<span class="small muted">Nessun piatto</span>'}</div></div>
       ${slots}</section>`;
   }).join('');
@@ -1249,20 +1508,21 @@ function vMenu(){
   const noIng=sl.filter(r=>!(r.ingredients||[]).length).length;
   return `<section class="view">
     <div class="vhead"><div><h2>Menu</h2>
-      <p class="lede">Selezione finale: ${num(capv.ven)} piatti per venerdì sera, ${num(capv.sab)} per sabato, ${num(capv.dom)} per domenica. Tocca un piatto per aprire la sua scheda con squadra, ingredienti e tempi.</p></div>
+      <p class="lede">Formato <b>${esc(fm.nome)}</b>, ${fm.tot} piatti${fm.libero?', senza vincoli su portata e pasto':': '+num(capv.ven)+' per venerdì sera, '+num(capv.sab)+' per sabato, '+num(capv.dom)+' per domenica'}. In menu: <b class="num ${overTot?'bad':''}">${sl.length}</b> / ${tot}. Tocca un piatto per aprire la sua scheda con squadra, ingredienti e tempi.</p></div>
       ${org?`<div class="row">${UI.sugg
         ?`<span class="small">Sostituisce la selezione attuale.</span><button class="btn primary sm" data-act="suggest-go">Applica suggerimento</button><button class="btn sm" data-act="suggest-cancel">Annulla</button>`
         :`<button class="btn" data-act="suggest">Suggerisci dai voti</button><button class="btn" data-act="clear-menu" ${sl.length?'':'disabled'}>Svuota</button>`}</div>`:''}</div>
     ${!org?`<div class="note">Solo gli organizzatori assegnano i piatti ai pasti. Qui puoi vedere il menu e aprire le schede.</div>`:''}
     ${noIng?`<div class="note warn"><b>${noIng}</b> piatt${noIng===1?'o':'i'} del menu senza ingredienti: la lista della spesa è incompleta finché i responsabili non compilano le schede.</div>`:''}
     ${famNote()}
+    ${compNote(fm,sl)}
     <div class="days">${days}</div>
     ${vCarta()}
     <h3>Candidati</h3>${candHtml}</section>`;
 }
 A.suggest=()=>{
   if(!S.recipes.length){toast('Nessuna proposta da selezionare.','err');return;}
-  if(!Object.keys(S.votes).length){toast('Nessun voto ancora: non c’è nulla da suggerire.','err');return;}
+  if(!voters().length){toast('Nessun voto sui piatti ancora: non c’è nulla da suggerire.','err');return;}
   UI.sugg=true;render();
 };
 A['suggest-cancel']=()=>{UI.sugg=false;render();};
@@ -1286,6 +1546,18 @@ CH.setslot=async t=>{
   const id=t.dataset.id,v=t.value;
   if(await write('update','recipes/'+id,{slot:v})){const r=R(id);if(v&&r&&!feasible(r,v))toast('Attenzione: i tempi di preparazione non stanno in questo pasto.','err');}
 };
+
+/* pasto con portate obbligatorie (venerdì della Bouffetta): avvisa se manca o avanza qualcosa */
+function compNote(fm,sl){
+  const out=[];
+  for(const [sk,cats] of Object.entries(fm.comp||{})){
+    const rs=sl.filter(r=>r.slot===sk);if(!rs.length)continue;
+    const miss=cats.filter(c=>!rs.some(r=>r.category===c)).map(c=>catOf(c).label);
+    const extra=rs.filter(r=>!cats.includes(r.category)).map(r=>r.title);
+    if(miss.length||extra.length)out.push(`<b>${esc(slotLabel(sk))}</b> (${esc(fm.nome)}): ${miss.length?'manca '+esc(miss.join(', ')):''}${miss.length&&extra.length?'; ':''}${extra.length?'fuori schema: '+esc(extra.join(', ')):''}`);
+  }
+  return out.length?`<div class="note warn">${out.join('<br>')}</div>`:'';
+}
 
 /* --- carta dei vini e piatti simili --- */
 function famNote(){
@@ -1360,7 +1632,7 @@ function eqRows(all,labels,key){
 }
 function sugFlag(x){
   if(x.st==='menu')return badge('Approvata · '+slotLabel(x.r.slot),'ok');
-  if(x.st==='proposta')return badge(['menu','cucina'].includes(S.settings.fase)?'Proposta · non selezionata':'Già proposta','info');
+  if(x.st==='proposta')return badge(['menu','cucina'].includes(faseEff())?'Proposta · non selezionata':'Già proposta','info');
   return badge('Da proporre','muted');
 }
 function sugCard(x,grouped){
@@ -1618,7 +1890,7 @@ function vPersone(){
     const own=S.recipes.filter(r=>r.proposerId===p.id||ownersOf(r).includes(p.id)).length;
     const cr=UI.confirm==='rm:'+p.id;
     return `<div class="person ${p.confirmed?'':'off'}"><div style="min-width:0"><div class="nm">${esc(p.name)}</div>
-      <div class="small muted">${p.organizer?'organizzatore · ':''}${S.votes[p.id]?'ha votato':'non ha votato'}${own?' · '+own+' piatt'+(own===1?'o':'i'):''}</div></div>
+      <div class="small muted">${p.organizer?'organizzatore · ':''}${voters().some(v=>v.id===p.id)?'ha votato i piatti':'non ha votato i piatti'}${S.votes[p.id]&&FMT(S.votes[p.id].formato)?' · formato '+esc(FMT(S.votes[p.id].formato).nome):''}${own?' · '+own+' piatt'+(own===1?'o':'i'):''}</div></div>
       <div class="row" style="gap:8px;flex-wrap:nowrap"><label class="switch"><input type="checkbox" data-chg="confirm" data-id="${esc(p.id)}" ${p.confirmed?'checked':''} ${S.readOnly?'disabled':''}> Presente</label>
       ${org?(cr?`<button class="btn sm danger" data-act="rm-person" data-id="${esc(p.id)}">Conferma</button><button class="btn sm" data-act="del-cancel">No</button>`
         :`<button class="btn sm ico" data-act="rm-person" data-id="${esc(p.id)}" aria-label="Rimuovi ${esc(p.name)}">✕</button>`):''}</div></div>`;
@@ -1638,7 +1910,8 @@ function vPersone(){
       <dl class="kv" style="margin-top:10px"><dt>Data del venerdì</dt><dd>${st.dataVen?esc(dayLabel(0)):'<span class="muted">da definire</span>'}</dd>
       <dt>Arrivo</dt><dd>venerdì alle ${esc(st.arrivo)}</dd>
       ${SLOTS.map(s=>`<dt>${esc(s.label)}</dt><dd>${esc(st.orari[s.key])}</dd>`).join('')}
-      <dt>Piatti</dt><dd>${num(st.cap.ven)} venerdì · ${num(st.cap.sab)} sabato · ${num(st.cap.dom)} domenica</dd>
+      <dt>Formato del menu</dt><dd>${esc(fmtNow().nome)} · ${fmtNow().tot} piatti${fmtNow().libero?'':' ('+num(fmtNow().cap.ven)+' ven · '+num(fmtNow().cap.sab)+' sab · '+num(fmtNow().cap.dom)+' dom)'} <span class="muted small">${esc({fissato:'scelto dall’organizzatore',voto:'deciso dal voto',provvisorio:'provvisorio, decide il voto'}[fmtEff().how])}</span></dd>
+      <dt>Scadenze</dt><dd>${scadOn()?`proposte e voto sul formato fino a ${esc(fmtDT(scadMs('propFine')))}<br>voto sui piatti da ${esc(fmtDT(scadMs('votoIni')))} a ${esc(fmtEnd(scadMs('votoFine')))}`:'<span class="muted">fasi manuali (le decide l’organizzatore)</span>'}</dd>
       <dt>Margine spesa</dt><dd>${fmtN(num(st.margine),0)}%</dd></dl></div>
   </section>`;
 }
@@ -1717,7 +1990,7 @@ function openRecipeEditor(id,pre){
     <div class="formgrid"><div class="field"><label for="ed-cat">Categoria *</label><select id="ed-cat" data-chg="dr" data-f="category">${CATS.map(c=>`<option value="${c.key}" ${DR.category===c.key?'selected':''}>${esc(c.label)}</option>`).join('')}</select></div>
     <div class="field"><label for="ed-reg">Regione</label><select id="ed-reg" data-chg="dr" data-f="region"><option value="">Non specificata</option>${REGIONI.map(x=>`<option ${DR.region===x?'selected':''}>${esc(x)}</option>`).join('')}</select></div></div>
     <div class="field"><label for="ed-link">Link alla ricetta *</label><input type="url" id="ed-link" data-in="dr" data-f="link" value="${esc(DR.link)}" placeholder="https://…" inputmode="url" autocomplete="off">
-      <span class="hint">Meglio una fonte autorevole. Il link viene controllato e affiancato da una fonte di riferimento.</span></div>
+      <span class="hint">Meglio una fonte autorevole. Il link viene controllato e affiancato da una fonte di riferimento. Fonti già considerate affidabili: ${esc(FONTI.slice(0,6).map(f=>f.n).join(', '))} e gli enti del territorio.</span></div>
     ${id?'':`<div class="field"><span class="lbl">Chi lo cucina (almeno uno) *</span><div class="pickrow" id="ed-owners">${ownersHtml()}</div></div>`}
     <div class="field"><label for="ed-note">Note (facoltative)</label><textarea id="ed-note" data-in="dr" data-f="note" placeholder="Perché lo proponi, varianti, difficoltà…">${esc(DR.note)}</textarea></div>
     ${org&&id?`<div class="panel" style="display:flex;flex-direction:column;gap:10px"><h4>Verifica del link (organizzatore)</h4>
@@ -1858,27 +2131,37 @@ Regole:
 /* ---------- impostazioni del weekend ---------- */
 function openSettingsEditor(){
   const st=S.settings;
-  DR={dataVen:st.dataVen||'',arrivo:st.arrivo,riservaOre:st.riservaOre,margine:st.margine,orari:Object.assign({},st.orari),cap:Object.assign({},st.cap)};
+  DR={dataVen:st.dataVen||'',arrivo:st.arrivo,riservaOre:st.riservaOre,margine:st.margine,orari:Object.assign({},st.orari),formato:st.formato||'',scadAuto:scadOn(),
+    scad:{propFine:toLocalInput(scadMs('propFine')),votoIni:toLocalInput(scadMs('votoIni')),votoFine:toLocalInput(scadMs('votoFine'))}};
   openModal(`<header><div><h3>Il weekend</h3><p class="hint">Date e orari servono a calcolare i tempi utili per ogni piatto.</p></div><button class="btn sm" data-act="modal-close">Annulla</button></header>
     <div class="formgrid"><div class="field"><label for="s-data">Data del venerdì</label><input type="date" id="s-data" data-in="dr" data-f="dataVen" value="${esc(DR.dataVen)}"></div>
     <div class="field"><label for="s-arr">Arrivo del venerdì</label><input type="time" id="s-arr" data-in="dr" data-f="arrivo" value="${esc(DR.arrivo)}"></div>
     <div class="field"><label for="s-ris">Ore per spesa e sistemazione</label><input type="number" id="s-ris" min="0" step="0.5" data-in="dr" data-f="riservaOre" value="${esc(DR.riservaOre)}"></div></div>
     <div class="formgrid">${SLOTS.map(s=>`<div class="field"><label for="s-${s.key}">${esc(s.label)} (ora)</label><input type="time" id="s-${s.key}" data-in="dr" data-f="orari.${s.key}" value="${esc(DR.orari[s.key])}"></div>`).join('')}</div>
-    <div class="formgrid">${DAYS.map(d=>`<div class="field"><label for="s-cap-${d.key}">Piatti ${esc(d.label.toLowerCase())}</label><input type="number" id="s-cap-${d.key}" min="0" step="1" data-in="dr" data-f="cap.${d.key}" value="${esc(DR.cap[d.key])}"></div>`).join('')}
+    <div class="formgrid"><div class="field"><label for="s-fmt">Formato del menu</label><select id="s-fmt" data-chg="dr" data-f="formato"><option value="">Lo decide il voto</option>${FORMATI.map(f=>`<option value="${f.key}" ${DR.formato===f.key?'selected':''}>${esc(f.nome)} · ${f.tot} piatti</option>`).join('')}</select></div>
     <div class="field"><label for="s-mar">Margine sulla spesa (%)</label><input type="number" id="s-mar" min="0" step="5" data-in="dr" data-f="margine" value="${esc(DR.margine)}"></div></div>
+    <div class="panel" style="display:flex;flex-direction:column;gap:10px"><h4>Scadenze (ora italiana)</h4>
+      <label class="checkline"><input type="checkbox" id="s-auto" data-chg="dr" data-f="scadAuto" ${DR.scadAuto?'checked':''}> Le fasi cambiano da sole con le scadenze</label>
+      <div class="formgrid"><div class="field"><label for="s-pf">Chiusura proposte e voto sul formato</label><input type="datetime-local" id="s-pf" data-in="dr" data-f="scad.propFine" value="${esc(DR.scad.propFine)}"></div>
+      <div class="field"><label for="s-vi">Apertura voto sui piatti</label><input type="datetime-local" id="s-vi" data-in="dr" data-f="scad.votoIni" value="${esc(DR.scad.votoIni)}"></div>
+      <div class="field"><label for="s-vf">Chiusura voto sui piatti</label><input type="datetime-local" id="s-vf" data-in="dr" data-f="scad.votoFine" value="${esc(DR.scad.votoFine)}"></div></div>
+      <p class="hint">Spostare una scadenza in avanti riapre la fase. L’organizzatore può sempre proporre piatti.</p></div>
     <p class="err" id="ed-err" hidden></p>
     <div class="foot"><button class="btn" data-act="modal-close">Annulla</button><button class="btn primary" data-act="save-settings">Salva</button></div>`);
 }
 A['edit-settings']=()=>openSettingsEditor();
 async function saveSettings(patch){
-  const merged=mergeSettings(Object.assign({},S.settings,patch,patch.orari?{orari:Object.assign({},S.settings.orari,patch.orari)}:{},patch.cap?{cap:Object.assign({},S.settings.cap,patch.cap)}:{}));
+  const merged=mergeSettings(Object.assign({},S.settings,patch,patch.orari?{orari:Object.assign({},S.settings.orari,patch.orari)}:{},patch.scad?{scad:Object.assign({},S.settings.scad,patch.scad)}:{}));
   return S.settingsExists?write('update','settings/main',patch):write('set','settings/main',merged);
 }
 A['save-settings']=async()=>{
   const err=m=>{const e=$('#ed-err');e.textContent=m;e.hidden=false;};
   if(!/^\d{1,2}:\d{2}$/.test(DR.arrivo))return err('Inserisci l’ora di arrivo.');
   for(const s of SLOTS)if(!/^\d{1,2}:\d{2}$/.test(DR.orari[s.key]))return err('Inserisci tutti gli orari dei pasti.');
-  const patch={dataVen:DR.dataVen||'',arrivo:DR.arrivo,riservaOre:Math.max(0,num(DR.riservaOre)),margine:Math.max(0,num(DR.margine)),orari:DR.orari,cap:{ven:Math.max(0,Math.round(num(DR.cap.ven))),sab:Math.max(0,Math.round(num(DR.cap.sab))),dom:Math.max(0,Math.round(num(DR.cap.dom)))}};
+  const sc={propFine:fromLocalInput(DR.scad.propFine),votoIni:fromLocalInput(DR.scad.votoIni),votoFine:fromLocalInput(DR.scad.votoFine)};
+  if(!sc.propFine||!sc.votoIni||!sc.votoFine)return err('Inserisci data e ora di tutte e tre le scadenze.');
+  if(!(Date.parse(sc.propFine)<=Date.parse(sc.votoIni)&&Date.parse(sc.votoIni)<Date.parse(sc.votoFine)))return err('Le scadenze devono essere in ordine: chiusura proposte, apertura voto, chiusura voto.');
+  const patch={dataVen:DR.dataVen||'',arrivo:DR.arrivo,riservaOre:Math.max(0,num(DR.riservaOre)),margine:Math.max(0,num(DR.margine)),orari:DR.orari,formato:FMT(DR.formato)?DR.formato:'',scadAuto:!!DR.scadAuto,scad:sc};
   if(await saveSettings(patch)){closeModal();toast('Impostazioni salvate');DR=null;}
 };
 
@@ -2059,7 +2342,7 @@ function build(){
   if(!UI.migrated&&isOrg()&&!S.readOnly&&S.legacyCats&&Object.keys(S.legacyCats).length){UI.migrated=true;migrateCats();}
   const views={proposte:vProposte,suggerimenti:vSugg,voto:vVoto,menu:vMenu,spesa:vSpesa,programma:vProgramma,persone:vPersone};
   const view=UI.dish?vPiatto():(views[UI.tab]||vProposte)();
-  return vHeader()+vNav()+`<main class="wrap">${S.offline?`<div class="note warn" style="margin-top:16px"><b>Sei offline.</b> Puoi continuare: le modifiche restano in coda e si salvano appena torna la connessione. Non chiudere la pagina.</div>`:''}${S.readOnly?`<div class="note bad" style="margin-top:16px"><b>Sola lettura.</b> Puoi guardare tutto ma non modificare: chiedi a Marco di darti accesso come collaboratore.</div>`:''}${view}</main>`;
+  return vHeader()+vBand()+vNav()+`<main class="wrap">${S.offline?`<div class="note warn" style="margin-top:16px"><b>Sei offline.</b> Puoi continuare: le modifiche restano in coda e si salvano appena torna la connessione. Non chiudere la pagina.</div>`:''}${S.readOnly?`<div class="note bad" style="margin-top:16px"><b>Sola lettura.</b> Puoi guardare tutto ma non modificare: chiedi a Marco di darti accesso come collaboratore.</div>`:''}${view}</main>`;
 }
 function render(){
   const root=$('#app');if(!root)return;
@@ -2193,6 +2476,13 @@ document.addEventListener('click',e=>{ // ricorda se i riquadri a tendina sono a
   const sm=e.target.closest&&e.target.closest('details[id]>summary');
   if(sm){const d=sm.parentElement;UI.open=UI.open||{};UI.open[d.id]=!d.open;}
 },true);
+/* Countdown: aggiorna i conti alla rovescia ogni secondo senza ridisegnare la pagina; allo scadere ridisegna (la fase cambia). */
+setInterval(()=>{
+  $$('[data-cd]').forEach(e=>{
+    const left=+e.dataset.cd-nowMs();
+    if(left<=0){if(!e.dataset.done){e.dataset.done='1';schedule();}e.textContent=fmtCd(0);}else e.textContent=fmtCd(left);
+  });
+},1000);
 setInterval(()=>{ // copia di sicurezza periodica, solo se ci sono state modifiche
   if(!db||!S.dirty||S.pending>0||S.offline)return;
   const last=(S.backups[0]&&S.backups[0].at)||0;

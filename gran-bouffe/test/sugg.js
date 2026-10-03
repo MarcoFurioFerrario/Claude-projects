@@ -23,10 +23,10 @@ const recipes=[
   await d.waitForSelector('.hero-sug');
   (await d.textContent('.hs-num'))==='44'&&(await d.textContent('.hero-sug')).includes('ricette già pronte da cui attingere')?pass('home: banda "44 ricette già pronte da cui attingere"'):fail('hero');
   (await d.$('.pill-sug'))===null?pass('nessuna pillola ridondante mentre sei già nei Suggerimenti'):fail('pillola doppia');
-  await d.click('.tab:has-text("Proposte")');await d.waitForSelector('.promo');
-  (await d.textContent('.pill-sug')).includes('44 ricette pronte')&&(await d.textContent('.promo')).includes('Hai già 44 ricette da cui attingere')?pass('Proposte: pillola in testata e avviso con "44 ricette"'):fail('promo');
+  await d.click('.tab:has-text("Proposte")');await d.waitForSelector('.choose');
+  (await d.textContent('.pill-sug')).includes('44 ricette pronte')&&(await d.textContent('.choose .opt.a')).includes('44 piatti del Triveneto già pronti')?pass('Proposte: pillola in testata e strada A con "44 piatti già pronti"'):fail('choose');
   await d.screenshot({path:out+'/25-proposte-promo.png',clip:{x:0,y:0,width:1280,height:700}});
-  await d.click('.promo [data-act=tab]');await d.waitForSelector('.hero-sug');
+  await d.click('.choose .opt.a [data-act=tab]');await d.waitForSelector('.hero-sug');
   await d.screenshot({path:out+'/26-suggerimenti-hero.png',clip:{x:0,y:0,width:1280,height:900}});
   await d.waitForSelector('.card.sg');
   await d.click('.hs-regs [data-v="Veneto"]');(await d.$$eval('.card.sg',e=>e.length))===17?pass('chip regione Veneto: 17 piatti'):fail('chip regione');

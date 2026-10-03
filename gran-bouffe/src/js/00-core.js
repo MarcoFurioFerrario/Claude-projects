@@ -73,13 +73,43 @@ const VSTATI={
   non_valido:{label:'Link non valido',cls:'bad'}
 };
 const PRESET=['Marco Furio','Marco Terracina','Teo','Tia','Melo','Jaki','Mazzetti','Fantoni','Murro','Fede','Umbe','Jack','Gesù Pippia','Turi','Lollo'];
+/* Scadenze (ora italiana, UTC+2 in ottobre): le proposte e il voto sul formato chiudono insieme; il voto sui piatti dura 24 ore. */
+const SCAD_DEF={propFine:'2026-10-04T21:00:00+02:00',votoIni:'2026-10-05T00:00:00+02:00',votoFine:'2026-10-06T00:00:00+02:00'};
 const DEF={fase:'proposte',edizione:'XI',tema:'Triveneto',dataVen:'',arrivo:'16:00',riservaOre:1,margine:0,
-  orari:{'ven-cena':'20:30','sab-pranzo':'13:30','sab-cena':'20:30','dom-pranzo':'13:30'},cap:{ven:5,sab:12,dom:5}};
+  orari:{'ven-cena':'20:30','sab-pranzo':'13:30','sab-cena':'20:30','dom-pranzo':'13:30'},scad:Object.assign({},SCAD_DEF),scadAuto:true,formato:''};
 function mergeSettings(d){
   const o=JSON.parse(JSON.stringify(DEF));if(!d)return o;
-  for(const k of Object.keys(d)){if(k==='orari'||k==='cap')Object.assign(o[k],d[k]||{});else o[k]=d[k];}
+  for(const k of Object.keys(d)){if(k==='orari'||k==='scad')Object.assign(o[k],d[k]||{});else o[k]=d[k];}
   return o;
 }
+/* Formati del menu tra cui si vota. cap = piatti per giorno, slot = piatti per pasto, comp = portate obbligatorie in un pasto. */
+const FORMATI=[
+  {key:'dieta',nome:'Dieta',tot:15,cap:{ven:3,sab:8,dom:4},slot:{'ven-cena':3,'sab-pranzo':4,'sab-cena':4,'dom-pranzo':4},
+    righe:['Venerdì 3 piatti','Sabato 4 a pranzo + 4 a cena','Domenica 4 a pranzo']},
+  {key:'bouffetta',nome:'Bouffetta',tot:18,cap:{ven:4,sab:10,dom:4},slot:{'ven-cena':4,'sab-pranzo':5,'sab-cena':5,'dom-pranzo':4},comp:{'ven-cena':['antipasti','primi','secondi','dolci']},
+    righe:['Venerdì 4 piatti: antipasto, primo, secondo, dolce','Sabato 5 + 5','Domenica 4']},
+  {key:'esagerare',nome:'L’importante è esagerare',tot:22,cap:{ven:5,sab:12,dom:5},libero:true,
+    righe:['22 piatti','Nessun vincolo su cosa, quando e come']}
+];
+const FMT=k=>FORMATI.find(f=>f.key===k)||null;
+/* Fonti ritenute affidabili (whitelist). lv A = riferimento culturale o istituzionale, B = editoria di cucina o ente del territorio. */
+const FONTI=[
+  {d:'accademiaitalianadellacucina.it',n:'Accademia Italiana della Cucina',lv:'A'},
+  {d:'it.wikisource.org',n:'Wikisource (Artusi, La scienza in cucina)',lv:'A'},
+  {d:'taccuinigastrosofici.it',n:'Taccuini Gastrosofici',lv:'B',nota:'affidabile se contiene la ricetta cercata'},
+  {d:'cucchiaio.it',n:'Cucchiaio d’Argento',lv:'B'},
+  {d:'lacucinaitaliana.it',n:'La Cucina Italiana',lv:'B'},
+  {d:'aifb.it',n:'AIFB · Calendario del cibo italiano',lv:'B'},
+  {d:'turismofvg.it',n:'Turismo FVG',lv:'B'},
+  {d:'docfriuli.eu',n:'Consorzio DOC Friuli',lv:'B'},
+  {d:'trentinoqualita.it',n:'Qualità Trentino',lv:'B'},
+  {d:'visittrentino.it',n:'Visit Trentino',lv:'B'},
+  {d:'alto-adige.com',n:'Alto Adige (promozione del territorio)',lv:'B'},
+  {d:'suedtirol.info',n:'Alto Adige · Südtirol Info',lv:'B'},
+  {d:'genusslandsuedtirol.it',n:'Il gusto dell’Alto Adige',lv:'B'},
+  {d:'tirol.at',n:'Tirol (turismo)',lv:'B'}
+];
+const fonteOk=u=>{const h=domain(u);return h?FONTI.find(f=>h===f.d||h.endsWith('.'+f.d))||null:null;};
 
 /* ============ stato ============ */
 const S={meId:null,participants:[],recipes:[],allRecipes:[],trash:[],backups:[],metaExists:false,pending:0,dirty:false,offline:false,lastOk:0,votes:{},spesa:{},settings:mergeSettings(),settingsExists:false,loaded:{},dbOk:null,readOnly:false,owner:false};
@@ -92,8 +122,42 @@ const R=id=>S.recipes.find(r=>r.id===id);
 const me=()=>P(S.meId);
 const nConf=()=>S.participants.filter(p=>p.confirmed).length;
 const isOrg=()=>!!(S.owner||(me()&&me().organizer));
-const canPropose=()=>S.settings.fase==='proposte'||isOrg();
-const canVote=()=>S.settings.fase==='voto';
+/* ---- scadenze e fasi ----
+   La fase effettiva è la più avanzata tra quella scelta dall'organizzatore e quella che dicono le scadenze (se automatiche).
+   stage() distingue anche "attesa": proposte chiuse, voto dei piatti non ancora aperto. */
+const nowMs=()=>(typeof window!=='undefined'&&typeof window.GB_NOW==='function'?window.GB_NOW():Date.now());
+const scadOn=()=>S.settings.scadAuto!==false;
+const scadMs=k=>{const t=Date.parse((S.settings.scad||{})[k]);return isFinite(t)?t:Date.parse(SCAD_DEF[k]);};
+const faseIdx=k=>Math.max(0,FASI.findIndex(f=>f[0]===k));
+const autoIdx=()=>{if(!scadOn())return 0;const n=nowMs();return n>=scadMs('votoFine')?2:n>=scadMs('votoIni')?1:0;};
+const faseEff=()=>FASI[Math.max(faseIdx(S.settings.fase),autoIdx())][0];
+const stage=()=>{const f=faseEff();return f==='proposte'&&scadOn()&&nowMs()>=scadMs('propFine')?'attesa':f;};
+const propOpen=()=>stage()==='proposte';
+const fmtOpen=propOpen; // il voto sul formato chiude insieme alle proposte
+const canPropose=()=>propOpen()||isOrg();
+const canVote=()=>stage()==='voto';
+const TZ='Europe/Rome';
+function romeParts(ms){
+  const o={};new Intl.DateTimeFormat('en-GB',{timeZone:TZ,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(new Date(ms)).forEach(p=>{o[p.type]=p.value;});
+  return o;
+}
+const toLocalInput=ms=>{const o=romeParts(ms);return `${o.year}-${o.month}-${o.day}T${o.hour}:${o.minute}`;};
+/* 'AAAA-MM-GGTHH:MM' in ora italiana -> testo ISO con l'offset giusto (+02:00 d'estate, +01:00 d'inverno) */
+function fromLocalInput(s){
+  const m=/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/.exec(String(s||''));if(!m)return null;
+  const guess=Date.UTC(+m[1],+m[2]-1,+m[3],+m[4],+m[5]);
+  for(const off of [2,1])if(toLocalInput(guess-off*3600000)===s)return s+':00'+(off===2?'+02:00':'+01:00');
+  return null;
+}
+const fmtDay=ms=>new Date(ms).toLocaleDateString('it-IT',{timeZone:TZ,weekday:'long',day:'numeric',month:'long'});
+const fmtHour=ms=>new Date(ms).toLocaleTimeString('it-IT',{timeZone:TZ,hour:'2-digit',minute:'2-digit'});
+const fmtDT=ms=>fmtDay(ms)+', ore '+fmtHour(ms);
+/* una scadenza a mezzanotte si legge meglio come "mezzanotte di lunedì 5 ottobre" */
+const fmtEnd=ms=>fmtHour(ms)==='00:00'?'mezzanotte di '+fmtDay(ms-60000):fmtDT(ms);
+function fmtCd(ms){
+  const s=Math.max(0,Math.floor(ms/1000)),d=Math.floor(s/86400),h=Math.floor(s%86400/3600),m=Math.floor(s%3600/60),x=s%60,p=n=>String(n).padStart(2,'0');
+  return d>0?`${d} g ${p(h)} h ${p(m)} min ${p(x)} s`:`${p(h)}:${p(m)}:${p(x)}`;
+}
 /* I responsabili sono ownerIds (le vecchie squadre, teamIds, contano come responsabili). Chiunque può aggiungersi o togliersi;
    i dati del piatto li modifica solo chi l'ha proposto (o un organizzatore). */
 const ownersOf=r=>[...new Set([...(r.ownerIds||[]),...(r.teamIds||[])])];
@@ -105,7 +169,7 @@ const vstato=r=>((r.verifica||{}).stato)||'da_verificare';
 const chipCat=k=>{const c=catOf(k);return `<span class="chip" style="--h:${c.h}">${esc(c.label)}</span>`;};
 const badge=(t,cls)=>`<span class="badge ${cls||''}">${esc(t)}</span>`;
 const A={},CH={},IN={};
-const homeTab=()=>({voto:'voto',menu:'menu',cucina:'menu'}[S.settings.fase])||'suggerimenti';
+const homeTab=()=>({voto:'voto',menu:'menu',cucina:'menu',attesa:'proposte'}[stage()])||'suggerimenti';
 const isOpen=id=>(UI.open&&UI.open[id])?'open':'';
 let toastT;
 function toast(msg,kind){

@@ -44,6 +44,7 @@ Quando Claude riceve la configurazione del punto 5 la inserisce nel sito. Dopo c
 
 9. Apri il link. Se vedi l'elenco vuoto, premi **Carica i 15 confermati**.
 10. Scegli il tuo nome. **Marco Furio** è l'organizzatore: da lui si cambiano le fasi (Proposte, Voto, Menu, Cucina), si assegnano i piatti ai pasti e si impostano orari e data.
+    Le fasi cambiano **da sole** con le scadenze: proposte e voto sul formato del menu chiudono domenica 4 ottobre alle 21:00 (ora italiana), il voto sui piatti dura da lunedì 5 ottobre 00:00 a mezzanotte. Per spostare una scadenza o spegnere il cambio automatico: **Persone → Il weekend → Modifica**. In cima a ogni pagina c'è il conto alla rovescia e il voto su quanti piatti preparare (Dieta 15, Bouffetta 18, L'importante è esagerare 22).
 11. Manda il link agli amici. La prima volta scelgono il nome, poi il sito li riconosce (cookie di un anno).
 
 ## Dove sono i dati e come sono protetti

@@ -20,10 +20,11 @@ function vLogin(){
 }
 
 function vHeader(){
-  const st=S.settings,f=st.fase,idx=FASI.findIndex(x=>x[0]===f);
+  const st=S.settings,sg=stage(),idx=faseIdx(faseEff());
   const rail=FASI.map((s,i)=>{
-    const cls=i<idx?'done':i===idx?'now':'';
-    return `<li class="${cls}">${isOrg()?`<button data-act="fase" data-v="${s[0]}" ${i===idx?'aria-current="step"':''}>${s[1]}</button>`:`<span ${i===idx?'aria-current="step"':''}>${s[1]}</span>`}</li>`;
+    const cls=sg==='attesa'?(i===0?'done':i===1?'next':''):(i<idx?'done':i===idx?'now':'');
+    const cur=cls==='now'||cls==='next'?'aria-current="step"':'';
+    return `<li class="${cls}">${isOrg()?`<button data-act="fase" data-v="${s[0]}" ${cur}>${s[1]}</button>`:`<span ${cur}>${s[1]}</span>`}</li>`;
   }).join('');
   const sel=slotted().length,tot=totalCap(),nv=voters().length;
   return `<header class="wrap top">
@@ -50,11 +51,13 @@ function filterRecipes(){
     &&(!q||norm(r.title+' '+(r.note||'')+' '+pname(r.proposerId)).includes(q)))
     .sort((a,b)=>catIdx(a.category)-catIdx(b.category)||byTitle(a,b));
 }
+/* segnalino per i link che puntano a una fonte della whitelist */
+const wlMark=u=>{const f=fonteOk(u);return f?` <span class="wl" title="Fonte nella lista di quelle affidabili: ${esc(f.n)}${f.nota?' ('+esc(f.nota)+')':''}">✓ affidabile</span>`:'';};
 function srcBlock(r){
   const v=r.verifica||{};
   const auth=v.linkAutorevole&&isUrl(v.linkAutorevole);
-  return `<div class="src"><span><span class="lbl">Link del proponente</span><br><a href="${esc(safeHref(r.link))}" target="_blank" rel="noopener noreferrer">${esc(domain(r.link)||r.link)} ↗</a></span>
-    ${auth?`<span><span class="lbl">Fonte di riferimento</span><br><a href="${esc(safeHref(v.linkAutorevole))}" target="_blank" rel="noopener noreferrer">${esc(v.fonte||domain(v.linkAutorevole))} ↗</a></span>`:''}
+  return `<div class="src"><span><span class="lbl">Link del proponente</span><br><a href="${esc(safeHref(r.link))}" target="_blank" rel="noopener noreferrer">${esc(domain(r.link)||r.link)} ↗</a>${wlMark(r.link)}</span>
+    ${auth?`<span><span class="lbl">Fonte di riferimento</span><br><a href="${esc(safeHref(v.linkAutorevole))}" target="_blank" rel="noopener noreferrer">${esc(v.fonte||domain(v.linkAutorevole))} ↗</a>${wlMark(v.linkAutorevole)}</span>`:''}
     ${v.nota?`<span class="hint">${esc(v.nota)}</span>`:''}</div>`;
 }
 function cardRecipe(r){
@@ -97,14 +100,29 @@ async function ownerToggle(id){
   }finally{UI.ownBusy=false;}
 }
 A['owner-toggle']=t=>ownerToggle(t.dataset.id);
+/* Le due strade per proporre un piatto, una accanto all'altra: dal catalogo oppure fuori elenco. */
+function vChoose(){
+  const libere=SUG.filter(x=>sugState(x)==='libera').length,open=canPropose();
+  const sg=stage(),motivo={attesa:'la scadenza è passata',voto:'sono aperte le votazioni'}[sg]||'il menu è in definizione';
+  const why=!open?`<div class="note"><b>Le proposte sono chiuse:</b> ${motivo}. Un organizzatore può ancora aggiungere piatti o spostare la scadenza.</div>`:'';
+  return `${why}<div class="choose" role="group" aria-label="Come proporre un piatto">
+    <div class="opt a"><span class="optn" aria-hidden="true">A</span>
+      <h3>Scegli tra i Suggerimenti</h3>
+      <p>${SUG.length} piatti del Triveneto già pronti, con link, vino e tempi. <b class="num">${libere}</b> sono ancora da proporre: il modulo si compila da solo.</p>
+      <button class="btn primary big" data-act="tab" data-v="suggerimenti">Sfoglia i Suggerimenti <span aria-hidden="true">→</span></button></div>
+    <div class="or" aria-hidden="true"><span>oppure</span></div>
+    <div class="opt b"><span class="optn" aria-hidden="true">B</span>
+      <h3>Proponi un piatto fuori elenco</h3>
+      <p>Hai in mente una ricetta che non c’è? Servono nome, categoria, link e almeno una persona che lo cucina.</p>
+      <button class="btn big" data-act="new-recipe" ${open?'':'disabled'}>+ Proponi un piatto fuori elenco</button></div></div>`;
+}
 function vProposte(){
   const list=filterRecipes();
   const pend=S.recipes.filter(r=>vstato(r)==='da_verificare').length;
   const chips=[['','Tutte']].concat(CATS.map(c=>[c.key,c.label])).map(c=>`<button class="fchip" aria-pressed="${UI.cat===c[0]}" data-act="fcat" data-v="${c[0]}">${esc(c[1])}</button>`).join('');
   let body='';
   if(!S.recipes.length){
-    body=`<div class="empty"><h3>Nessuna proposta, per ora</h3><p>Scegli un piatto del Triveneto, indica chi lo cucinerà e incolla il link della ricetta.</p>
-      ${canPropose()?`<button class="btn primary" data-act="new-recipe">+ Proponi il primo piatto</button>`:''}</div>`;
+    body=`<div class="empty"><h3>Nessuna proposta, per ora</h3><p>Scegli una delle due strade qui sopra: un piatto dei Suggerimenti oppure uno tuo.</p></div>`;
   }else if(!list.length){
     body=`<div class="empty"><h3>Nessun risultato</h3><p>Cambia o azzera i filtri.</p><button class="btn" data-act="fclear">Azzera filtri</button></div>`;
   }else{
@@ -114,9 +132,8 @@ function vProposte(){
   return `<section class="view">
     <div class="vhead"><div><h2>Proposte</h2>
       <p class="lede">Ogni proposta ha un proponente, almeno un responsabile della produzione, una categoria e il link a una ricetta. Il link viene controllato e affiancato da una fonte di riferimento autorevole. <b class="num">${S.recipes.length}</b> proposte finora, obiettivo 40–50.</p></div>
-      <button class="btn primary" data-act="new-recipe" ${canPropose()?'':'disabled'}>+ Proponi un piatto</button></div>
-    ${canPropose()&&SUG.some(x=>sugState(x)==='libera')?`<div class="promo"><div><b>Hai già ${SUG.length} ricette da cui attingere.</b> ${SUG.filter(x=>sugState(x)==='libera').length} sono ancora da proporre: scegli dai Suggerimenti e il modulo si compila da solo.</div><button class="btn primary" data-act="tab" data-v="suggerimenti">Vai ai Suggerimenti</button></div>`:''}
-    ${!canPropose()?`<div class="note">Le proposte sono chiuse perché sono aperte le votazioni. L’organizzatore può riaprirle dalla barra delle fasi.</div>`:''}
+    </div>
+    ${vChoose()}
     ${isOrg()&&pend?`<div class="note warn"><b>${pend} ${pend===1?'link da verificare':'link da verificare'}.</b> Chiedi a Claude di controllarli: verifica che il link funzioni e corrisponda al piatto, poi aggiunge una fonte autorevole (Accademia Italiana della Cucina, La Cucina Italiana, Cucchiaio d’Argento, Artusi, enti del territorio). Lo stato compare su ogni scheda.</div>`:''}
     <div class="filters">
       <div class="field wide"><label for="q">Cerca</label><input type="search" id="q" data-in="q" value="${esc(UI.q)}" placeholder="Piatto, proponente…"></div>
@@ -158,7 +175,10 @@ A['purge-recipe']=async t=>{
 };
 A['open-dish']=t=>{UI.navigated=true;UI.dish=t.dataset.id;UI.tab='menu';setHash('piatto-'+t.dataset.id);render();window.scrollTo(0,0);};
 A.fase=async t=>{
-  const v=t.dataset.v;if(S.settings.fase===v)return;
+  const v=t.dataset.v;
+  if(faseIdx(v)<autoIdx()){toast('Le scadenze automatiche hanno già chiuso questa fase. Per riaprirla sposta la scadenza o disattiva le fasi automatiche (Persone → Il weekend → Modifica).','err');return;}
+  if(v==='proposte'&&scadOn()&&nowMs()>=scadMs('propFine')){toast('La scadenza delle proposte è passata. Per riaprirle spostala (Persone → Il weekend → Modifica).','err');return;}
+  if(S.settings.fase===v)return;
   if(await saveSettings({fase:v}))toast('Fase impostata: '+(FASI.find(f=>f[0]===v)||[])[1]);
 };
 IN.q=t=>{UI.q=t.value;render();};

@@ -25,7 +25,7 @@ function build(){
   if(!UI.migrated&&isOrg()&&!S.readOnly&&S.legacyCats&&Object.keys(S.legacyCats).length){UI.migrated=true;migrateCats();}
   const views={proposte:vProposte,suggerimenti:vSugg,voto:vVoto,menu:vMenu,spesa:vSpesa,programma:vProgramma,persone:vPersone};
   const view=UI.dish?vPiatto():(views[UI.tab]||vProposte)();
-  return vHeader()+vNav()+`<main class="wrap">${S.offline?`<div class="note warn" style="margin-top:16px"><b>Sei offline.</b> Puoi continuare: le modifiche restano in coda e si salvano appena torna la connessione. Non chiudere la pagina.</div>`:''}${S.readOnly?`<div class="note bad" style="margin-top:16px"><b>Sola lettura.</b> Puoi guardare tutto ma non modificare: chiedi a Marco di darti accesso come collaboratore.</div>`:''}${view}</main>`;
+  return vHeader()+vBand()+vNav()+`<main class="wrap">${S.offline?`<div class="note warn" style="margin-top:16px"><b>Sei offline.</b> Puoi continuare: le modifiche restano in coda e si salvano appena torna la connessione. Non chiudere la pagina.</div>`:''}${S.readOnly?`<div class="note bad" style="margin-top:16px"><b>Sola lettura.</b> Puoi guardare tutto ma non modificare: chiedi a Marco di darti accesso come collaboratore.</div>`:''}${view}</main>`;
 }
 function render(){
   const root=$('#app');if(!root)return;
@@ -159,6 +159,13 @@ document.addEventListener('click',e=>{ // ricorda se i riquadri a tendina sono a
   const sm=e.target.closest&&e.target.closest('details[id]>summary');
   if(sm){const d=sm.parentElement;UI.open=UI.open||{};UI.open[d.id]=!d.open;}
 },true);
+/* Countdown: aggiorna i conti alla rovescia ogni secondo senza ridisegnare la pagina; allo scadere ridisegna (la fase cambia). */
+setInterval(()=>{
+  $$('[data-cd]').forEach(e=>{
+    const left=+e.dataset.cd-nowMs();
+    if(left<=0){if(!e.dataset.done){e.dataset.done='1';schedule();}e.textContent=fmtCd(0);}else e.textContent=fmtCd(left);
+  });
+},1000);
 setInterval(()=>{ // copia di sicurezza periodica, solo se ci sono state modifiche
   if(!db||!S.dirty||S.pending>0||S.offline)return;
   const last=(S.backups[0]&&S.backups[0].at)||0;

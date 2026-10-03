@@ -54,7 +54,7 @@ function openRecipeEditor(id,pre){
     <div class="formgrid"><div class="field"><label for="ed-cat">Categoria *</label><select id="ed-cat" data-chg="dr" data-f="category">${CATS.map(c=>`<option value="${c.key}" ${DR.category===c.key?'selected':''}>${esc(c.label)}</option>`).join('')}</select></div>
     <div class="field"><label for="ed-reg">Regione</label><select id="ed-reg" data-chg="dr" data-f="region"><option value="">Non specificata</option>${REGIONI.map(x=>`<option ${DR.region===x?'selected':''}>${esc(x)}</option>`).join('')}</select></div></div>
     <div class="field"><label for="ed-link">Link alla ricetta *</label><input type="url" id="ed-link" data-in="dr" data-f="link" value="${esc(DR.link)}" placeholder="https://…" inputmode="url" autocomplete="off">
-      <span class="hint">Meglio una fonte autorevole. Il link viene controllato e affiancato da una fonte di riferimento.</span></div>
+      <span class="hint">Meglio una fonte autorevole. Il link viene controllato e affiancato da una fonte di riferimento. Fonti già considerate affidabili: ${esc(FONTI.slice(0,6).map(f=>f.n).join(', '))} e gli enti del territorio.</span></div>
     ${id?'':`<div class="field"><span class="lbl">Chi lo cucina (almeno uno) *</span><div class="pickrow" id="ed-owners">${ownersHtml()}</div></div>`}
     <div class="field"><label for="ed-note">Note (facoltative)</label><textarea id="ed-note" data-in="dr" data-f="note" placeholder="Perché lo proponi, varianti, difficoltà…">${esc(DR.note)}</textarea></div>
     ${org&&id?`<div class="panel" style="display:flex;flex-direction:column;gap:10px"><h4>Verifica del link (organizzatore)</h4>
@@ -195,27 +195,37 @@ Regole:
 /* ---------- impostazioni del weekend ---------- */
 function openSettingsEditor(){
   const st=S.settings;
-  DR={dataVen:st.dataVen||'',arrivo:st.arrivo,riservaOre:st.riservaOre,margine:st.margine,orari:Object.assign({},st.orari),cap:Object.assign({},st.cap)};
+  DR={dataVen:st.dataVen||'',arrivo:st.arrivo,riservaOre:st.riservaOre,margine:st.margine,orari:Object.assign({},st.orari),formato:st.formato||'',scadAuto:scadOn(),
+    scad:{propFine:toLocalInput(scadMs('propFine')),votoIni:toLocalInput(scadMs('votoIni')),votoFine:toLocalInput(scadMs('votoFine'))}};
   openModal(`<header><div><h3>Il weekend</h3><p class="hint">Date e orari servono a calcolare i tempi utili per ogni piatto.</p></div><button class="btn sm" data-act="modal-close">Annulla</button></header>
     <div class="formgrid"><div class="field"><label for="s-data">Data del venerdì</label><input type="date" id="s-data" data-in="dr" data-f="dataVen" value="${esc(DR.dataVen)}"></div>
     <div class="field"><label for="s-arr">Arrivo del venerdì</label><input type="time" id="s-arr" data-in="dr" data-f="arrivo" value="${esc(DR.arrivo)}"></div>
     <div class="field"><label for="s-ris">Ore per spesa e sistemazione</label><input type="number" id="s-ris" min="0" step="0.5" data-in="dr" data-f="riservaOre" value="${esc(DR.riservaOre)}"></div></div>
     <div class="formgrid">${SLOTS.map(s=>`<div class="field"><label for="s-${s.key}">${esc(s.label)} (ora)</label><input type="time" id="s-${s.key}" data-in="dr" data-f="orari.${s.key}" value="${esc(DR.orari[s.key])}"></div>`).join('')}</div>
-    <div class="formgrid">${DAYS.map(d=>`<div class="field"><label for="s-cap-${d.key}">Piatti ${esc(d.label.toLowerCase())}</label><input type="number" id="s-cap-${d.key}" min="0" step="1" data-in="dr" data-f="cap.${d.key}" value="${esc(DR.cap[d.key])}"></div>`).join('')}
+    <div class="formgrid"><div class="field"><label for="s-fmt">Formato del menu</label><select id="s-fmt" data-chg="dr" data-f="formato"><option value="">Lo decide il voto</option>${FORMATI.map(f=>`<option value="${f.key}" ${DR.formato===f.key?'selected':''}>${esc(f.nome)} · ${f.tot} piatti</option>`).join('')}</select></div>
     <div class="field"><label for="s-mar">Margine sulla spesa (%)</label><input type="number" id="s-mar" min="0" step="5" data-in="dr" data-f="margine" value="${esc(DR.margine)}"></div></div>
+    <div class="panel" style="display:flex;flex-direction:column;gap:10px"><h4>Scadenze (ora italiana)</h4>
+      <label class="checkline"><input type="checkbox" id="s-auto" data-chg="dr" data-f="scadAuto" ${DR.scadAuto?'checked':''}> Le fasi cambiano da sole con le scadenze</label>
+      <div class="formgrid"><div class="field"><label for="s-pf">Chiusura proposte e voto sul formato</label><input type="datetime-local" id="s-pf" data-in="dr" data-f="scad.propFine" value="${esc(DR.scad.propFine)}"></div>
+      <div class="field"><label for="s-vi">Apertura voto sui piatti</label><input type="datetime-local" id="s-vi" data-in="dr" data-f="scad.votoIni" value="${esc(DR.scad.votoIni)}"></div>
+      <div class="field"><label for="s-vf">Chiusura voto sui piatti</label><input type="datetime-local" id="s-vf" data-in="dr" data-f="scad.votoFine" value="${esc(DR.scad.votoFine)}"></div></div>
+      <p class="hint">Spostare una scadenza in avanti riapre la fase. L’organizzatore può sempre proporre piatti.</p></div>
     <p class="err" id="ed-err" hidden></p>
     <div class="foot"><button class="btn" data-act="modal-close">Annulla</button><button class="btn primary" data-act="save-settings">Salva</button></div>`);
 }
 A['edit-settings']=()=>openSettingsEditor();
 async function saveSettings(patch){
-  const merged=mergeSettings(Object.assign({},S.settings,patch,patch.orari?{orari:Object.assign({},S.settings.orari,patch.orari)}:{},patch.cap?{cap:Object.assign({},S.settings.cap,patch.cap)}:{}));
+  const merged=mergeSettings(Object.assign({},S.settings,patch,patch.orari?{orari:Object.assign({},S.settings.orari,patch.orari)}:{},patch.scad?{scad:Object.assign({},S.settings.scad,patch.scad)}:{}));
   return S.settingsExists?write('update','settings/main',patch):write('set','settings/main',merged);
 }
 A['save-settings']=async()=>{
   const err=m=>{const e=$('#ed-err');e.textContent=m;e.hidden=false;};
   if(!/^\d{1,2}:\d{2}$/.test(DR.arrivo))return err('Inserisci l’ora di arrivo.');
   for(const s of SLOTS)if(!/^\d{1,2}:\d{2}$/.test(DR.orari[s.key]))return err('Inserisci tutti gli orari dei pasti.');
-  const patch={dataVen:DR.dataVen||'',arrivo:DR.arrivo,riservaOre:Math.max(0,num(DR.riservaOre)),margine:Math.max(0,num(DR.margine)),orari:DR.orari,cap:{ven:Math.max(0,Math.round(num(DR.cap.ven))),sab:Math.max(0,Math.round(num(DR.cap.sab))),dom:Math.max(0,Math.round(num(DR.cap.dom)))}};
+  const sc={propFine:fromLocalInput(DR.scad.propFine),votoIni:fromLocalInput(DR.scad.votoIni),votoFine:fromLocalInput(DR.scad.votoFine)};
+  if(!sc.propFine||!sc.votoIni||!sc.votoFine)return err('Inserisci data e ora di tutte e tre le scadenze.');
+  if(!(Date.parse(sc.propFine)<=Date.parse(sc.votoIni)&&Date.parse(sc.votoIni)<Date.parse(sc.votoFine)))return err('Le scadenze devono essere in ordine: chiusura proposte, apertura voto, chiusura voto.');
+  const patch={dataVen:DR.dataVen||'',arrivo:DR.arrivo,riservaOre:Math.max(0,num(DR.riservaOre)),margine:Math.max(0,num(DR.margine)),orari:DR.orari,formato:FMT(DR.formato)?DR.formato:'',scadAuto:!!DR.scadAuto,scad:sc};
   if(await saveSettings(patch)){closeModal();toast('Impostazioni salvate');DR=null;}
 };
 

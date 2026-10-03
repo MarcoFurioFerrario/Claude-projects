@@ -2,7 +2,27 @@
 const slotDef=k=>SLOTS.find(s=>s.key===k);
 const slotDay=k=>(slotDef(k)||{}).day||'';
 const slotLabel=k=>(slotDef(k)||{}).label||'';
-const totalCap=()=>{const c=S.settings.cap;return num(c.ven)+num(c.sab)+num(c.dom);};
+/* --- formato del menu: voto di ognuno in votes/<id>.formato; vale quello fissato dall'organizzatore, altrimenti
+   (a voto chiuso) il più votato, a parità il più abbondante; senza voti resta "esagerare" (22 piatti, come prima). --- */
+function fmtVotes(){
+  const t={};FORMATI.forEach(f=>{t[f.key]=[];});
+  for(const p of S.participants){const v=S.votes[p.id];if(v&&t[v.formato])t[v.formato].push(p);}
+  return t;
+}
+function fmtWinner(){
+  const t=fmtVotes();let best=null,bn=0;
+  for(const f of [...FORMATI].reverse()){const n=t[f.key].length;if(n>bn){bn=n;best=f.key;}}
+  return best;
+}
+function fmtEff(){
+  const fx=S.settings.formato;
+  if(FMT(fx))return{key:fx,how:'fissato'};
+  if(!fmtOpen()){const w=fmtWinner();if(w)return{key:w,how:'voto'};}
+  return{key:'esagerare',how:'provvisorio'};
+}
+const fmtNow=()=>FMT(fmtEff().key);
+const capNow=()=>fmtNow().cap;
+const totalCap=()=>{const c=capNow();return num(c.ven)+num(c.sab)+num(c.dom);};
 const slotted=()=>S.recipes.filter(r=>r.slot&&slotDef(r.slot));
 
 /* --- tempi e fattibilità --- */
@@ -179,6 +199,7 @@ function voteStats(){
   return res;
 }
 const voters=()=>S.participants.filter(p=>S.votes[p.id]&&Object.values(S.votes[p.id].rank||{}).some(l=>Array.isArray(l)&&l.length));
+const myFmt=()=>{const v=S.votes[S.meId];return v&&FMT(v.formato)?v.formato:'';};
 
 /* --- selezione automatica dai voti --- */
 function quotas(total){
@@ -190,25 +211,49 @@ function quotas(total){
   for(let i=0;used<total;i++,used++)q[rem[i%rem.length][0]]++;
   return q;
 }
+const byScore=(a,b)=>((b.score==null?-1:b.score)-(a.score==null?-1:a.score))||byTitle(a.r,b.r);
 function suggest(){
-  const st=voteStats(),total=totalCap(),q=quotas(total);
+  const st=voteStats(),fm=fmtNow(),total=totalCap(),q=quotas(total);
   const chosen=[],left=[];
-  for(const c of CATS){
-    const list=st[c.key],k=q[c.key]||0;
-    list.slice(0,k).forEach(x=>chosen.push(x));
-    list.slice(k).forEach(x=>left.push(x));
+  if(fm.libero){ // nessuna quota per portata: i più votati in assoluto
+    const all=[].concat(...CATS.map(c=>st[c.key])).sort(byScore);
+    all.slice(0,total).forEach(x=>chosen.push(x));
+  }else{
+    for(const c of CATS){
+      const list=st[c.key],k=q[c.key]||0;
+      list.slice(0,k).forEach(x=>chosen.push(x));
+      list.slice(k).forEach(x=>left.push(x));
+    }
+    left.sort(byScore);
+    while(chosen.length<total&&left.length)chosen.push(left.shift());
   }
-  left.sort((a,b)=>((b.score==null?-1:b.score)-(a.score==null?-1:a.score))||byTitle(a.r,b.r));
-  while(chosen.length<total&&left.length)chosen.push(left.shift());
-  const caps={ven:num(S.settings.cap.ven),sab:num(S.settings.cap.sab),dom:num(S.settings.cap.dom)};
+  const caps={ven:num(fm.cap.ven),sab:num(fm.cap.sab),dom:num(fm.cap.dom)};
   const cnt={ven:0,sab:0,dom:0},catCnt={ven:{},sab:{},dom:{}},slotCnt={};
   const out={};
-  const arr=[...chosen].sort((a,b)=>lead(b.r)-lead(a.r)||(b.score||0)-(a.score||0));
+  /* pasto con portate obbligatorie (venerdì della Bouffetta): prima una per portata, la meglio votata tra quelle che stanno nei tempi */
+  const fixedIds=new Set(),venMissing=new Set();
+  for(const [sk,cats] of Object.entries(fm.comp||{})){
+    const day=slotDay(sk);
+    for(const cat of cats){
+      const pool=st[cat].filter(x=>!fixedIds.has(x.r.id)&&feasible(x.r,sk));
+      const pick=pool.find(x=>chosen.includes(x))||pool[0];
+      if(!pick){venMissing.add(cat);continue;}
+      if(!chosen.includes(pick)){
+        const same=chosen.filter(x=>x.r.category===cat&&!fixedIds.has(x.r.id)).pop()||chosen.filter(x=>!fixedIds.has(x.r.id)).pop();
+        if(same&&chosen.length>=total)chosen.splice(chosen.indexOf(same),1);
+        chosen.push(pick);
+      }
+      fixedIds.add(pick.r.id);out[pick.r.id]=sk;cnt[day]++;catCnt[day][cat]=(catCnt[day][cat]||0)+1;slotCnt[sk]=(slotCnt[sk]||0)+1;
+    }
+  }
+  const comp=fm.comp&&fm.comp['ven-cena'];
+  const arr=chosen.filter(x=>!fixedIds.has(x.r.id)).sort((a,b)=>lead(b.r)-lead(a.r)||(b.score||0)-(a.score||0));
   for(const x of arr){
     const r=x.r;
     let best=null,bs=-1e9;
     for(const d of DAYS){
       if(cnt[d.key]>=caps[d.key])continue;
+      if(comp&&d.key==='ven'&&!venMissing.has(r.category))continue;
       if(!SLOTS.some(s=>s.day===d.key&&feasible(r,s.key)))continue;
       const sc=(caps[d.key]-cnt[d.key])/Math.max(1,caps[d.key])-0.25*(catCnt[d.key][r.category]||0);
       if(sc>bs){bs=sc;best=d.key;}
