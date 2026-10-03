@@ -38,7 +38,7 @@ function vHeader(){
 }
 
 function vNav(){
-  const tabs=[['suggerimenti','Suggerimenti',SUG.length],['proposte','Proposte',S.recipes.length],['voto','Votazioni'],['menu','Menu',slotted().length+'/'+totalCap()],['spesa','Spesa'],['programma','Programma'],['persone','Persone',nConf()]];
+  const tabs=[['suggerimenti','Suggerimenti',SUG.length],['libro','Il libro'],['proposte','Proposte',S.recipes.length],['voto','Votazioni'],['menu','Menu',slotted().length+'/'+totalCap()],['spesa','Spesa'],['programma','Programma'],['persone','Persone',nConf()]];
   return `<nav class="tabs" aria-label="Sezioni"><div class="in">${tabs.map(t=>
     `<button class="tab${t[0]==='suggerimenti'?' tab-sug':''}" data-act="tab" data-v="${t[0]}" ${(UI.tab===t[0]&&!UI.dish)||(UI.dish&&t[0]==='menu')?'aria-current="page"':''}>${t[1]}${t[2]!==undefined?`<span class="n">${t[2]}</span>`:''}</button>`).join('')}</div></nav>`;
 }
@@ -47,7 +47,7 @@ function vNav(){
 function filterRecipes(){
   const q=norm(UI.q);
   return S.recipes.filter(r=>(!UI.cat||r.category===UI.cat)&&(!UI.reg||r.region===UI.reg)&&(!UI.ver||vstato(r)===UI.ver)
-    &&(!UI.mine||r.proposerId===S.meId||ownersOf(r).includes(S.meId))
+    &&(!UI.mine||r.proposerId===S.meId||ownersOf(r).includes(S.meId))&&(!UI.libro||libroFor(r))
     &&(!q||norm(r.title+' '+(r.note||'')+' '+pname(r.proposerId)).includes(q)))
     .sort((a,b)=>catIdx(a.category)-catIdx(b.category)||byTitle(a,b));
 }
@@ -67,7 +67,7 @@ function cardRecipe(r){
   const confirmDel=UI.confirm==='del:'+r.id;
   return `<article class="card ${r.slot?'sel':''}">
     ${fotoFig(r,'thumb')}
-    <div class="row spread"><div class="row" style="gap:6px">${chipCat(r.category)}${r.region?`<span class="chip plain">${esc(r.region)}</span>`:''}</div>${badge(st.label,st.cls)}</div>
+    <div class="row spread"><div class="row" style="gap:6px">${chipCat(r.category)}${r.region?`<span class="chip plain">${esc(r.region)}</span>`:''}${libroFor(r)?badge('Dal libro','info'):''}</div>${badge(st.label,st.cls)}</div>
     <h3>${esc(r.title)}</h3>
     <dl class="kv"><dt>Proposta da</dt><dd>${esc(pname(r.proposerId))}</dd><dt>Responsabili</dt><dd>${esc(owners)}</dd></dl>
     ${r.note?`<p class="small muted clamp">${esc(r.note)}</p>`:''}
@@ -141,6 +141,7 @@ function vProposte(){
       <div class="field"><label for="freg">Regione</label><select id="freg" data-chg="freg"><option value="">Tutte</option>${REGIONI.map(r=>`<option ${UI.reg===r?'selected':''}>${esc(r)}</option>`).join('')}</select></div>
       <div class="field"><label for="fver">Link</label><select id="fver" data-chg="fver"><option value="">Tutti</option>${Object.keys(VSTATI).map(k=>`<option value="${k}" ${UI.ver===k?'selected':''}>${esc(VSTATI[k].label)}</option>`).join('')}</select></div>
       <label class="checkline"><input type="checkbox" id="fmine" data-chg="fmine" ${UI.mine?'checked':''}> Solo le mie</label>
+      <label class="checkline"><input type="checkbox" id="flibro" data-chg="flibro" ${UI.libro?'checked':''}> Solo dal libro</label>
     </div>
     <div class="filterchips">${chips}</div>
     ${body}
@@ -156,7 +157,7 @@ function vTrash(){
 
 A.tab=t=>{UI.navigated=true;UI.tab=t.dataset.v;UI.dish=null;setHash(UI.tab);render();window.scrollTo(0,0);};
 A.fcat=t=>{UI.cat=t.dataset.v;render();};
-A.fclear=()=>{UI.q='';UI.cat='';UI.reg='';UI.ver='';UI.mine=false;render();};
+A.fclear=()=>{UI.q='';UI.cat='';UI.reg='';UI.ver='';UI.mine=false;UI.libro=false;render();};
 A['del-cancel']=()=>{UI.confirm='';render();};
 A['del-recipe']=async t=>{
   const id=t.dataset.id;
@@ -186,3 +187,4 @@ IN.q=t=>{UI.q=t.value;render();};
 CH.freg=t=>{UI.reg=t.value;render();};
 CH.fver=t=>{UI.ver=t.value;render();};
 CH.fmine=t=>{UI.mine=t.checked;render();};
+CH.flibro=t=>{UI.libro=t.checked;render();};

@@ -406,6 +406,20 @@ button.chip.reg[aria-pressed="true"]{outline:3px solid var(--polenta);outline-of
 .foto-add{display:flex;gap:10px 16px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:12px 14px;border:1.5px dashed var(--btn-line);border-radius:12px}
 .fo-img{display:block;max-width:100%;max-height:260px;border-radius:10px;border:1px solid var(--line)}
 
+/* Il libro */
+.libro-hero{background:linear-gradient(135deg,var(--hero-a),var(--hero-b));color:var(--hero-ink);border-radius:16px;padding:24px clamp(16px,3vw,32px);display:flex;flex-direction:column;gap:10px;box-shadow:var(--shadow)}
+.libro-hero h2{font-size:clamp(30px,5vw,46px);color:var(--polenta)}
+.libro-hero .film{color:inherit;opacity:.8}
+.libro-hero p{max-width:70ch}
+.libro-hero .btn.primary{background:var(--polenta);border-color:var(--polenta-ink);color:var(--polenta-ink)}
+.idee{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:12px}
+.rcard{border-top:6px solid hsl(var(--h) 50% var(--grp-l));display:flex;flex-direction:column;gap:12px}
+.festa{padding:8px 12px;border-radius:8px;background:var(--accent-soft);font-size:14px}
+.pens{display:flex;flex-direction:column;gap:6px}
+.pens details,.rl{border:1px solid var(--line);border-radius:8px;padding:8px 12px;background:var(--surface)}
+.pens details p{margin-top:8px;font-size:14.5px}
+.panel.libro{border-left:6px solid var(--polenta)}
+
 </style>
 <div id="app"><p class="boot">Carico Gran Bouffe…</p></div>
 <div id="modal" hidden></div>
@@ -601,7 +615,7 @@ function errMsg(e){
   if(c==='revoked')return 'Accesso alla pagina revocato.';
   return 'Salvataggio non riuscito'+(e&&e.message?': '+e.message:'.');
 }
-const BUILD='musoetdo';
+const BUILD='musqs7iq';
 const BACKUP_EVERY=window.GB_BACKUP_EVERY||15*60*1000,BACKUP_KEEP=60;
 function saveHtml(){
   if(S.offline)return '<span class="sv warn">Offline: le modifiche restano in coda</span>';
@@ -836,6 +850,129 @@ const EXTRA={
 };
 SUG.forEach(s=>Object.assign(s,EXTRA[s.id]||{}));
 const sugById=id=>SUG.find(s=>s.id===id);
+
+/* ============ dal libro «Giorni Golosi» (Marco Ferrario, Trenta Editore, 2013) ============
+   Riassunti e parafrasi delle pagine sulle tre regioni del Triveneto: le ricette citate (alcune con ricetta completa nel libro,
+   altre solo nominate nell'introduzione della regione) e le considerazioni storico-culturali. Le proposte nate dal libro hanno
+   libroId = chiave di LIBRO.piatti; per le proposte già esistenti il collegamento è per titolo (campo k). */
+const ING=(name,qty,unit,shop)=>({name,qty,unit,shop});
+const LIBRO={
+  t:'Giorni Golosi',sub:'I dolci italiani per fare festa tutto l’anno',aut:'Marco Ferrario',ed:'Trenta Editore, 2013',
+  /* l'impianto del libro */
+  idee:[
+    {t:'Ogni ricetta, una festa',x:'Il libro è più di un ricettario: ogni dolce è legato a una ricorrenza (anche ironica o inventata) e le ricette sono unite da “linee di gusto” che le imparentano come foglioline dello stesso albero. Per ogni regione una ricetta completa, preceduta da due pagine che nominano le altre preparazioni, con aneddoti e “parenti” lontani.'},
+    {t:'Perché la festa è dolce',x:'Il dolce è “energia pronta all’uso”: gli zuccheri sono assorbiti subito e sono l’unico carburante delle cellule del cervello, mentre grassi e proteine, i cibi salati, si digeriscono lentamente. Per i nostri antenati un’occasione ghiotta di benessere; per questo si festeggia con la torta e non con il baccalà. Oggi che le occasioni di dolce non sono più rare, il consiglio è riservarlo alle ricorrenze: si apprezzano meglio la festa e la ricetta.'},
+    {t:'Le ricette evolvono come i viventi',x:'Come nella teoria di Darwin, le ricette si trasmettono con piccole mutazioni casuali e si affermano solo se l’ambiente lo permette: il cioccolato, “cibo degli dei”, ebbe successo in Europa quando fu mescolato a zucchero e reso crema da bere; quando il cacao divenne troppo caro, una miscela di nocciole e cacao diede la crema gianduia. Panettone, Pandolce, Pandoro, Panforte, Pampepato e Parrozzo sono rami di un dolce ancestrale: il pane addolcito con ciò che c’era per il giorno di festa. E il pane è il cibo-simbolo della nostra specie, l’unica a cucinarlo invece di mangiarlo crudo.'},
+    {t:'Una variante, non un’identità',x:'La ricetta scelta per ogni regione non è l’identità del luogo ma una delle tante varianti che lì si è consolidata, per un frutto dominante, un ingrediente raro o abbondante, un personaggio politico o religioso, una ricorrenza. L’albero è la grande tradizione gastronomica mediterranea, di radici latine, che oggi prolifera grazie a tutti gli scambi tra i paesi.'},
+    {t:'Il dolce come simbolo',x:'Nella cucina di ogni popolo il dolce sta al vertice della rappresentazione sociale e culturale: piacere puro a conclusione del pasto e, nel calendario, segno dei momenti importanti, religiosi e agricoli (Natale, Pasqua, le feste patronali, perfino i Morti). È il modo in cui cerchiamo significati oltre le cose concrete, legandoci a natura, religione, tempo, vita. (Introduzione di Maurizio Sentieri)'},
+    {t:'La tradizione come risorsa',x:'Chiedersi quanto la fedeltà a un territorio, alle sue storie e alla sua cultura sia una risorsa è un’operazione importante: ogni tradizione è una “esperienza riuscita” di valorizzazione culturale, e la tradizione dolciaria ha alla radice la gioia di vivere. (Prefazione di Guido Profumo)'}
+  ],
+  /* le tre regioni */
+  reg:[
+    {k:'taa',nome:'Trentino-Alto Adige',pag:'pp. 30-33',h:150,
+     intro:'La mela è l’ingrediente più ricorrente: frutto divino già per l’antica Grecia (i pomi d’oro, trofeo di una fatica di Ercole) e per la mitologia vichinga dell’Edda. Il Trentino produce circa il 40% del raccolto italiano e l’11% di quello europeo con la renetta, di gusto lievemente acidulo; pare che Tolstoj, volendo un meleto nella sua residenza, abbia fatto venire le piante proprio dall’Alto Adige.',
+     pensieri:[
+       {t:'Due anime: Alto Adige e Trento',x:'In Alto Adige sono più evidenti le influenze austriache, come nel Krapfen e nel fritto dolce dello Strauben. L’area di Trento, pur con gli stessi ingredienti di montagna (frutta, grappa, burro, uova), risente delle regioni limitrofe e preferisce la forma a torta, come lo Zelten.'},
+       {t:'Parentele lontane',x:'Lo Strudel, il più noto dei dolci della zona, ha una chiara parentela con la Baklava, dolce a sfoglia dell’impero bizantino che si dice nato nelle cucine del palazzo Topkapi, ma forse anche con una ricetta di un ricettario cinese del 1300 chiamata Gullach. Il Krapfen ha un gemello quasi identico al Sud Italia, ma con il ripieno più “borbonico” di crema pasticcera (la “bomba” o “bombolone”). Il Pandolce di Bolzano, “ennesimo esponente del genere panettone”, richiama invece la Liguria.'},
+       {t:'Zelten: un tripudio per rare feste',x:'La grande torta di frutta secca, noci, fichi, mandorle, pinoli, uvetta e ciliegie candite era riservata – come ricorda il significato tedesco del nome – a feste “rare”.'},
+       {t:'Apfelschmarren e il Simposio di Platone (23 settembre)',x:'Il libro associa la ricetta al 23 settembre per una serie di coincidenze: è il mese perfetto per la maturazione delle mele; quel giorno morì Sturluson, il poeta medievale che tramanda la vicenda del giovane vichingo Othar, in cerca della mela più bella del mondo per sedurre la dea dei boschi Ethel; più di recente è diventata la festa dell’orgoglio bisessuale, di cui la mela può essere simbolo, perché la tradizione classica la associa alla forma androgina che, nel Simposio di Platone, aveva l’uomo prima che Zeus, geloso, lo dividesse in due: da lì la ricerca “dell’altra metà della mela”.'}
+     ],
+     festa:{ric:'apfelschmarren',nome:'Apfelschmarren',quando:'23 settembre',cosa:'Festa dell’orgoglio bisessuale'},
+     piatti:['apfelschmarren','strudel','krapfen','strauben','zelten','canederlidolci','rabarbaro']},
+    {k:'ven',nome:'Veneto',pag:'pp. 34-37',h:345,
+     intro:'Da tempo immemorabile il territorio della Repubblica Veneta è sinonimo di buon cibo, buon vino, divertimento e libertà: la “bella vita”. Persino il giovane Galileo andava a Venezia a dar sfogo alla sua irrequietezza, alla passione per musica, vino e buon cibo; ed è la patria dell’avventuriero gaudente per eccellenza, Casanova. Terra ricca per gli scambi mercantili con le Indie e il Nuovo Mondo, infonde la stessa raffinata copiosità nelle sue ricette, attente alla qualità e alla particolarità dei cibi.',
+     pensieri:[
+       {t:'Tiramisù: una genesi recentissima',x:'Uno dei dolci più diffusi al mondo pare sia nato in un ristorante di Treviso, ma le prime tracce stanno nei ricettari dopo il 1960. Le linee di discendenza sono chiare: il caffè, ormai irrinunciabile a fine pasto, sull’architettura della Charlotte (savoiardi alternati a crema bavarese e frutta), incrociata con un po’ della Zuppa inglese romagnola; il mascarpone, tipico del nord, e il caffè al posto del liquore, con la perdita della frutta, hanno completato un dolce più semplice e replicabile, quindi di grande successo.'},
+       {t:'Pandoro e Nadalin: praticità e artista',x:'Il Pandoro nasce verso la fine dell’Ottocento dall’unione tra la praticità di un industriale, Melegatti, che volle alleggerire una ricetta più antica, e l’estro di un artista, Angelo Dall’Oca, che gli diede la forma a stella a otto punte. La ricetta di partenza è il Nadalin, pagnotta dolce medievale più grezza e compatta, che pare avere un antecedente “romano” in un dolce citato da Plinio il Vecchio.'},
+       {t:'Befana e rigenerazione: la Pinsa (5 gennaio)',x:'La torta veniva posta alla base dei grandi falò accesi in tutta la regione per bruciare la “vecia”, dal medioevo ribattezzata “befana”, simbolo dell’anno passato: un rito di rigenerazione catartica già in voga presso gli antichi Romani, che vedevano nella vecchia la natura giunta in inverno alla fine del suo ciclo vitale e trasformata dal fuoco in carbone perché, attraverso la terra, potesse rinascere rigogliosa in primavera. Il significato resta nella lingua (la marantega è la “mare antenga”, la “madre antica”, la dea terra) e nella ricetta: la frutta candita e secca rigenera il pane vecchio per fare qualcosa di buono da qualcosa di “passato”, in un processo di “creazione di valore” che l’economia domestica conosceva ben prima che la parola “riciclaggio” diventasse di moda.'},
+       {t:'Spirito contadino, spirito libertino',x:'Per la Pinsa il libro propone anche una versione “moderna”: molto alta, tagliata in tre dischi e farcita (cioccolato, zabaione, crema, mascarpone, panna, frutta), “per rendere onore allo spirito libertino veneto, più che a quello contadino”.'},
+       {t:'Fritti e castagne',x:'Anche il fritto fa la sua parte (Crema fritta, Tampelun, Crostoli, Rofioli), e sul tema delle castagne ci sono la Maronada e il classico castagnaccio, qui chiamato Bole.'}
+     ],
+     festa:{ric:'pinsa',nome:'Pinsa',quando:'5 gennaio',cosa:'Befana'},
+     piatti:['pinza','nicolotta','macafame','tiramisu','nadalin','pandoro','baicoli','cremafritta','crostoli','rofioi','bole']},
+    {k:'fvg',nome:'Friuli-Venezia Giulia',pag:'pp. 38-41',h:210,
+     intro:'Il Friuli, in antichità chiamato Carnia per i monti che lo cingono a nord, ha subito influssi di cucine nordiche, ma anche slave e mitteleuropee, che oggi risulterebbero insoliti al palato italiano: si sono affievoliti, specialmente nei dolci, a favore di un sapore più mediterraneo, pur mantenendo qualche ingrediente o tecnica di quelle tradizioni. Sono rimasti il “frico”, cioè il fritto (come in buona parte della cucina montanara), i Cròstoli, i Busolai e gli Struchi.',
+     pensieri:[
+       {t:'Il mondo alla rovescia: gnocchi dolci',x:'Gli Gnocchi, di origine germanica, a Trieste si capovolgono: un classico primo diventa, “come in un universo parallelo”, un dolce, con gnocchi belli grossi ripieni di susine e conditi con pangrattato rosolato in burro, zucchero e cannella. Analogo “ribaltamento glicemico” per il riso cotto nel latte zuccherato. Sempre a Trieste, il Koch è un tortino di semolino, burro e uvetta aromatizzato con bucce d’arancia.'},
+       {t:'Due Pinse con lo stesso nome',x:'Torna lo stesso nome della ricetta veneta, ma qui la Pinsa è tutt’altra cosa: una focaccia molto morbida e lievitata che mutua dal Pandoro la consistenza e dal Panettone la forma, e corona il tutto con l’aroma d’arancia.'},
+       {t:'I dolci dei morti',x:'Favette, Ossa e Pane dei Morti sono i dolci di novembre: semplici, di farina, uova e zucchero, in sintonia con la sobrietà della ricorrenza. La tradizione vuole che siano offerti dai vivi ai parenti morti che nella notte tra l’1 e il 2 novembre ritornano dall’Aldilà: dolci particolarmente buoni, “da far resuscitare i morti”. Le Favette erano fatte con un trito di fave, poi sostituite dalle mandorle (anche “rosa”, con alchermes, e “marrone”, con cacao); le Ossa cambiano solo per la forma e la cannella; il Pane dei Morti è un piccolo panettone alla mandorla con fichi secchi al posto dei canditi.'},
+       {t:'Presnitz: sintesi di Strudel e Gubana',x:'L’Artusi lo presenta come “dolce di tedescheria e com’è buono!”: un avvoltolato di pasta sfoglia (o frolla) dalla tipica forma a “pitone”, ripieno di un tripudio di noci, mandorle, pinoli, fichi, prugne, albicocche, uvetta, cioccolata, zucchero, cannella, chiodi di garofano e rum.'},
+       {t:'Gubana, lo scisma e il pastafarianesimo (19 settembre)',x:'La ricchezza di questo dolce è proverbiale: in Friuli si dice “pieno come una gubana”. I cittadini friulani lo scelsero come dolce da offrire a papa Gregorio XII nel periodo dello scisma d’Occidente, quando la Francia aveva un suo Papa e l’Italia un altro; poco dopo Gregorio si convinse a lasciare il papato e lo scisma si risolse dopo oltre quarant’anni di lotte. Il libro lo dedica al pastafarianesimo, festività ironica inventata da un fisico americano per schernire l’inserimento del creazionismo nei programmi di insegnamento obbligatorio negli Stati Uniti: la gubana come simbolica cellula dolce, con il nucleo di frutta e la membrana di pasta lievitata.'}
+     ],
+     festa:{ric:'gubana',nome:'Gubana',quando:'19 settembre',cosa:'Giornata del pastafarianesimo'},
+     piatti:['gubana','presnitz','strucchi','crostoli','gnocchisusine','koch','pinzatriestina','favette','ossa','frico']}
+  ],
+  /* le tre ricette complete del libro (per 6 persone) */
+  ricette:{
+    apfelschmarren:{titolo:'Apfelschmarren',serves:6,
+      ing:[ING('Farina',225,'g','dispensa'),ING('Latte',150,'ml','latticini'),ING('Panna',150,'ml','latticini'),ING('Tuorli d’uovo',9,'pz','latticini'),ING('Zucchero vanigliato',1,'bustine','dispensa'),ING('Grappa',40,'ml','cantina'),ING('Albumi',9,'pz','latticini'),ING('Zucchero',60,'g','dispensa'),ING('Mele',300,'g','ortolano'),ING('Olio per friggere',0,'q.b.','dispensa'),ING('Sale',0,'q.b.','dispensa'),ING('Burro',0,'q.b.','latticini'),ING('Zucchero a velo',0,'q.b.','dispensa')],
+      steps:['Mescola la farina, il latte, la panna, i tuorli, lo zucchero vanigliato e la grappa fino a ottenere un impasto omogeneo.','Monta gli albumi a neve non troppo ferma con il sale, aggiungi lo zucchero e incorporali al composto.','Scalda abbondante olio in una padella capiente e senza parti di plastica (andrà in forno), versa l’impasto, cospargi di fettine sottili di mela e cuoci come una frittata, rigirandola.','Quando entrambe le parti sono ben dorate, metti la padella nel forno già caldo e cuoci circa 5 minuti a 200°.','Dividi la torta in quadrati di varie dimensioni, spolvera di zucchero a velo, aggiungi un po’ di burro e falla saltare ancora qualche istante sul fornello, in modo che lo zucchero caramelli.','Servi su piatti caldi, con altro zucchero a velo.'],
+      fasi:[],
+      cons:'Tradizionalmente lo schmarren si serve con marmellata di mirtilli: si può variare con una mousse di mirtilli o accompagnarlo con un gelato ai frutti di bosco, giocando sulle temperature. La cottura della frittata non è mai banale: nella tecnica “rustica” si fa scaldare il burro fino a quando sta per imbrunire, si versa l’impasto e, quando comincia ad addensarsi, si rimescola dai bordi al centro con una forchetta, creando piccole crosticine; in quella “classica” si versa l’impasto nel burro non ancora bollente mescolando di continuo, per una cottura più omogenea.'},
+    pinsa:{titolo:'Pinsa veneta',serves:6,
+      ing:[ING('Farina di mais gialla',450,'g','dispensa'),ING('Farina 00',300,'g','dispensa'),ING('Latte',750,'ml','latticini'),ING('Lievito per dolci',1,'bustine','dispensa'),ING('Burro',300,'g','latticini'),ING('Zucchero semolato',300,'g','dispensa'),ING('Uvetta sultanina',150,'g','dispensa'),ING('Pinoli',45,'g','dispensa'),ING('Cedrini canditi',75,'g','dispensa'),ING('Zucca candita',75,'g','dispensa'),ING('Fichi secchi',9,'pz','dispensa'),ING('Mela',1,'pz','ortolano'),ING('Grappa',40,'ml','cantina'),ING('Semi di anice',0,'q.b.','dispensa'),ING('Sale',0,'q.b.','dispensa'),ING('Pangrattato per la tortiera',0,'q.b.','dispensa')],
+      steps:['Ammorbidisci l’uvetta in acqua tiepida e taglia a pezzetti tutta la frutta.','Prepara la polenta: scalda il burro con il latte, un bicchiere d’acqua e un pizzico di sale; quando è bollente aggiungi la farina gialla e mescola circa 20 minuti, lasciando il composto non troppo denso.','Fuori dal fuoco aggiungi gradualmente la farina 00 con il lievito e lo zucchero: l’impasto è ottimale quando un pizzico forma fili un po’ elastici.','Impasta con la frutta a pezzetti, i semi di anice e la grappa; lascia lievitare coperto un paio d’ore.','Versa in una forma imburrata e cospargi di pangrattato; cuoci in forno preriscaldato a 180° circa 40 minuti, poi altri 40 minuti a 150°.','La Pinsa è cotta quando ha una crosticina bruna e lo stuzzicadenti, infilato in più punti, esce asciutto.'],
+      fasi:[{label:'Lievitazione dell’impasto',ore:2}],
+      cons:'Come ogni ricetta contadina chiede “occhio” e “mano”: impasto, lievitazione e cottura contano, ma anche saper attendere. È un po’ come le lasagne: lasciata due giorni a riposare diventa ancora più buona. Varianti: la Nicolotta (pane raffermo al posto della polenta), il Macafame (impasto con 6 uova), o una Pinsa molto alta tagliata in tre dischi e farcita di cioccolato, zabaione, crema, mascarpone, panna o frutta.'},
+    gubana:{titolo:'Gubana',serves:6,
+      ing:[ING('Farina',220,'g','dispensa'),ING('Burro',130,'g','latticini'),ING('Zucchero',110,'g','dispensa'),ING('Miele',20,'g','dispensa'),ING('Uova',1,'pz','latticini'),ING('Tuorlo d’uovo',30,'g','latticini'),ING('Latte',40,'ml','latticini'),ING('Lievito di birra',10,'g','dispensa'),ING('Sale',2,'g','dispensa'),ING('Gherigli di noce',140,'g','dispensa'),ING('Uvetta',60,'g','dispensa'),ING('Amaretti',40,'g','dispensa'),ING('Biscotti secchi',30,'g','dispensa'),ING('Pinoli',30,'g','dispensa'),ING('Limone',0.5,'pz','ortolano'),ING('Cedro candito',20,'g','dispensa'),ING('Albume',1,'pz','latticini'),ING('Rum',0,'q.b.','cantina'),ING('Grappa di prugne',0,'q.b.','cantina'),ING('Vanillina',0,'q.b.','dispensa'),ING('Cannella',0,'q.b.','dispensa'),ING('Aceto bianco',0,'q.b.','dispensa')],
+      steps:['Setaccia a fontana 2/3 della farina, versa al centro il lievito di birra sciolto nel latte tiepido con un cucchiaino di zucchero, l’uovo, il tuorlo e un pizzico di sale; lavora con le mani fino a un impasto morbido. Copri e lascia lievitare 2 ore.','Incorpora il resto della farina, 90 g di burro e 50 g di zucchero lavorando energicamente; lascia lievitare ancora un’ora.','Metti a bagno l’uvetta nel rum e monda le noci; fai caramellare a bagnomaria 30 g di zucchero con un cucchiaio d’acqua e una goccia d’aceto, aggiungi 50 g di noci frantumate, versa su carta da forno imburrata e lascia raffreddare.','Trita amaretti e biscotti secchi, poi le noci caramellate e quelle restanti; rosola i pinoli con un po’ di burro (40 g in tutto per il ripieno).','Raccogli tutto in una ciotola con l’uvetta strizzata, i pinoli col loro burro, la scorza grattugiata di mezzo limone, un pizzico di sale, vanillina, cannella, lo zucchero restante e il cedro candito tritato fine; bagna con la grappa a piacere: l’impasto deve restare sufficientemente umido. Fai riposare il ripieno al fresco un giorno o più.','Stendi la pasta a rettangolo di 20 × 40 cm, distribuisci il ripieno con abbondanti ciuffetti di burro, arrotola come uno strudel, chiudi bene le estremità e allunga il rotolo fino a 70-80 cm.','Prendi il lembo di destra, alzalo e ripiegalo all’interno, poi avvolgi tutt’intorno il resto del rotolo tranne l’ultimo lembo, che va unito al primo sotto il dolce. Metti la gubana in uno stampo e lasciala lievitare fino al raddoppio.','Spennella con l’albume sbattuto, cospargi di zucchero semolato e cuoci in forno caldo a 160° per circa 1 ora. Lascia raffreddare.'],
+      fasi:[{label:'Ripieno a riposo (un giorno o più)',ore:24},{label:'Lievitazioni dell’impasto',ore:3}],
+      cons:'La preparazione è delicata: il consiglio è fare prima una prova “in piccolo” con 1/4 delle dosi, per avere un campione su cui aggiustare il dolce “in grande”.'}
+  },
+  /* i singoli piatti: pagina, nota del libro e, per i piatti già proposti dagli amici, le chiavi per riconoscerli (k) */
+  piatti:{
+    apfelschmarren:{reg:'taa',pag:'pp. 32-33',tipo:'ricetta',ric:'apfelschmarren',k:['kaiserschmarrn','apfelschmarren','schmarrn'],nota:'Il libro ne dà la ricetta completa con l’apfelschmarren: la stessa famiglia del Kaiserschmarrn, con fettine di mela nella pastella. Ricorrenza associata: 23 settembre, la mela e il Simposio di Platone (vedi “Il libro”).'},
+    krapfen:{reg:'taa',pag:'pp. 30-31',nota:'Influenza austriaca dell’Alto Adige: pasta lievitata fritta e ripiena di marmellata. Un gemello quasi identico esiste al Sud, ma con il ripieno più “borbonico” di crema pasticcera: la “bomba” o “bombolone”.'},
+    strudel:{reg:'taa',pag:'pp. 30-31 e 38-39',nota:'Il più noto dei dolci della zona: ripieno di mele, pangrattato e uvetta avvolto in una sfoglia croccante e leggera. Radici antiche, parente della Baklava bizantina o forse di una ricetta cinese del 1300 chiamata Gullach. Si è diffuso anche in Friuli.'},
+    strauben:{reg:'taa',pag:'pp. 30-31',nota:'Il fritto dolce è un tratto della zona: una miscela di farina, burro, latte, grappa e uova versata a filo nell’olio bollente, che cuocendo prende la forma di un vermicello arrotolato.'},
+    zelten:{reg:'taa',pag:'pp. 30-31',nota:'Nell’area di Trento prevale la forma a torta: grande torta con frutta secca, noci, fichi, mandorle, pinoli, uvetta e ciliegie candite, un tripudio che, come dice il significato tedesco del nome, era riservato a “rare” feste. Il libro cita anche il Pandolce di Bolzano, ennesimo esponente del genere “panettone”.'},
+    canederlidolci:{reg:'taa',pag:'pp. 30-31',nota:'A Bolzano si trovano anche i canederli dolci: polpettine impastate con albicocche.'},
+    rabarbaro:{reg:'taa',pag:'pp. 30-31',nota:'A Bolzano la crostata usa il rabarbaro, erba digestiva, al posto delle più consuete marmellate di frutta.'},
+    pinza:{reg:'ven',pag:'pp. 36-37',tipo:'ricetta',ric:'pinsa',nota:'Il libro la chiama Pinsa: torta contadina di polenta (o pane vecchio), frutta candida e secca, che si cuoceva sotto i falò accesi il 5 gennaio per bruciare la “vecia”, simbolo dell’anno passato. Rigenerare il pane vecchio: “creazione di valore” ante litteram.'},
+    nicolotta:{reg:'ven',pag:'pp. 34-35',nota:'Variante della Pinsa: a Venezia il pane raffermo sostituisce in parte o del tutto la polenta.'},
+    macafame:{reg:'ven',pag:'pp. 34-35',nota:'Altra variante della Pinsa: l’impasto è arricchito con 6 uova.'},
+    tiramisu:{reg:'ven',pag:'pp. 34-35',k:['tiramisu'],nota:'Pare nato in un ristorante di Treviso, ma la genesi è recentissima: le prime tracce stanno nei ricettari dopo il 1960. Discende dalla Charlotte ottocentesca (savoiardi e crema bavarese) incrociata con la Zuppa inglese romagnola; caffè e mascarpone al posto di liquore e frutta lo hanno reso più semplice, replicabile e quindi di successo mondiale.'},
+    nadalin:{reg:'ven',pag:'pp. 34-35',nota:'L’antenato del Pandoro: pagnotta dolce medievale, meno burrosa e fragrante, più grezza e compatta; pare abbia un antecedente “romano” in un dolce citato da Plinio il Vecchio.'},
+    pandoro:{reg:'ven',pag:'pp. 34-35',nota:'Fine Ottocento: la praticità di un industriale (Melegatti, che alleggerì una ricetta antica, il Nadalin) e l’estro di un artista (Angelo Dall’Oca, che inventò la forma a stella a otto punte).'},
+    baicoli:{reg:'ven',pag:'pp. 34-35',nota:'Tra i tipici biscotti veneziani citati dal libro fra le “profondità” della tradizione dolciaria veneta.'},
+    cremafritta:{reg:'ven',pag:'pp. 34-35',nota:'Crema pasticcera tirata molto densa, tagliata a losanghe e fritta in padella: il fritto fa la sua parte nella pasticceria veneta.'},
+    crostoli:{reg:'ven',pag:'pp. 34-35 e 38-39',nota:'Simili alle chiacchiere: nastri di pasta annodati e fritti. Citati dal libro per il Veneto e per il Friuli (cròstoli), come eredità della cucina montanara del fritto.'},
+    rofioi:{reg:'ven',pag:'pp. 34-35',nota:'Ravioli fritti ripieni di composta di susine, mandorle e amaretti.'},
+    bole:{reg:'ven',pag:'pp. 34-35',nota:'Sul tema delle castagne: la Maronada (crema) e il classico castagnaccio, che in Veneto si chiama Bole.'},
+    gubana:{reg:'fvg',pag:'pp. 40-41',tipo:'ricetta',ric:'gubana',k:['gubana'],nota:'“Pieno come una gubana” è un modo di dire friulano. Offerta a papa Gregorio XII ai tempi dello scisma d’Occidente, che dopo oltre quarant’anni si risolse; il libro la dedica al pastafarianesimo (19 settembre) e la descrive come una cellula dolce: nucleo di frutta, membrana di pasta lievitata.'},
+    presnitz:{reg:'fvg',pag:'pp. 38-39',k:['presnitz'],nota:'Sintesi tra Strudel e Gubana. L’Artusi: “dolce di tedescheria e com’è buono!”. Avvoltolato di sfoglia (o frolla) a forma di “pitone” con un tripudio di noci, mandorle, pinoli, fichi, prugne, albicocche, uvetta, cioccolata, spezie e rum.'},
+    strucchi:{reg:'fvg',pag:'pp. 38-39',nota:'Gli Struchi: una sorta di ravioli di pasta frolla fritta, ripieni di noci, uvetta, nocciole, frutta candita e secca secondo le occasioni.'},
+    gnocchisusine:{reg:'fvg',pag:'pp. 38-39',nota:'A Trieste il classico primo si capovolge in dolce, “come in un universo parallelo”: gnocchi grossi ripieni di susine con pangrattato rosolato in burro, zucchero e cannella. Analogo “ribaltamento glicemico” per il riso cotto nel latte zuccherato.'},
+    koch:{reg:'fvg',pag:'pp. 38-39',nota:'Di antica tradizione triestina: un tortino di semolino, burro e uvetta aromatizzato con bucce d’arancia.'},
+    pinzatriestina:{reg:'fvg',pag:'pp. 38-39',nota:'Stesso nome della Pinsa veneta ma tutt’altra cosa: focaccia morbida e lievitata che prende dal Pandoro la consistenza e dal Panettone la forma, con l’aroma d’arancia.'},
+    favette:{reg:'fvg',pag:'pp. 38-39',nota:'Con le Ossa e il Pane dei Morti, la trilogia dei dolci di novembre: semplici, in sintonia con la sobrietà della ricorrenza. Un tempo con un trito di fave, poi mandorle; anche “rosa” (alchermes) e “marrone” (cacao).'},
+    ossa:{reg:'fvg',pag:'pp. 38-39',nota:'Biscotti analoghi alle Favette che cambiano per la forma, che dà il nome, e per la cannella. Si offrono ai parenti morti che tra l’1 e il 2 novembre tornano dall’Aldilà: buoni da far resuscitare i morti.'},
+    frico:{reg:'fvg',pag:'pp. 38-39',k:['frico'],nota:'Dall’antico influsso nordico resta il “frico”, ossia il fritto, come in buona parte della cucina montanara.'}
+  },
+  /* citati dal libro, ma senza una ricetta trovata su una fonte accessibile */
+  cerca:[
+    {n:'Golosessi',reg:'Veneto',x:'spiedini di fichi secchi, noci e albicocche immersi nello zucchero caramellato; il libro nota un curioso analogo in Cina.'},
+    {n:'Maronada',reg:'Veneto',x:'crema di castagne.'},
+    {n:'Tampelun',reg:'Veneto',x:'frittelle di farina di castagne.'},
+    {n:'Busolai',reg:'Friuli-Venezia Giulia',x:'ciambelle rustiche da inzuppare addirittura nel vino.'},
+    {n:'Pane dei Morti friulano',reg:'Friuli-Venezia Giulia',x:'piccolo panettone alla mandorla con fichi secchi al posto dei canditi, offerto ai morti.'}
+  ]
+};
+/* il piatto del libro collegato a una proposta (per libroId o, per le proposte esistenti, per titolo) */
+function libroFor(r){
+  if(!r)return null;
+  if(r.libroId&&LIBRO.piatti[r.libroId])return Object.assign({id:r.libroId},LIBRO.piatti[r.libroId]);
+  const t=norm(r.title);
+  for(const [id,p] of Object.entries(LIBRO.piatti))if(p.k&&p.k.some(k=>t.indexOf(k)>=0))return Object.assign({id},p);
+  return null;
+}
+const libroRecipe=r=>{const l=libroFor(r);return l&&l.ric?Object.assign({key:l.ric},LIBRO.ricette[l.ric]):null;};
+const libroProposta=id=>S.recipes.find(r=>{const l=libroFor(r);return l&&l.id===id;})||null;
+
+const LIBRO_N={apfelschmarren:'Apfelschmarren',krapfen:'Krapfen',strudel:'Strudel di mele',strauben:'Strauben',zelten:'Zelten',canederlidolci:'Canederli dolci',rabarbaro:'Crostata di rabarbaro',
+  pinza:'Pinsa veneta',nicolotta:'Nicolotta',macafame:'Macafame',tiramisu:'Tiramisù',nadalin:'Nadalin',pandoro:'Pandoro',baicoli:'Baicoli',cremafritta:'Crema fritta',crostoli:'Crostoli',rofioi:'Rofioi',bole:'Bole (castagnaccio)',
+  gubana:'Gubana',presnitz:'Presnitz',strucchi:'Strucchi',gnocchisusine:'Gnocchi di susine',koch:'Koch',pinzatriestina:'Pinza triestina',favette:'Favette',ossa:'Ossa da morto',frico:'Frico'};
 
 /* ============ logica: tempi, votazioni, selezione, spesa ============ */
 const slotDef=k=>SLOTS.find(s=>s.key===k);
@@ -1191,7 +1328,7 @@ function vHeader(){
 }
 
 function vNav(){
-  const tabs=[['suggerimenti','Suggerimenti',SUG.length],['proposte','Proposte',S.recipes.length],['voto','Votazioni'],['menu','Menu',slotted().length+'/'+totalCap()],['spesa','Spesa'],['programma','Programma'],['persone','Persone',nConf()]];
+  const tabs=[['suggerimenti','Suggerimenti',SUG.length],['libro','Il libro'],['proposte','Proposte',S.recipes.length],['voto','Votazioni'],['menu','Menu',slotted().length+'/'+totalCap()],['spesa','Spesa'],['programma','Programma'],['persone','Persone',nConf()]];
   return `<nav class="tabs" aria-label="Sezioni"><div class="in">${tabs.map(t=>
     `<button class="tab${t[0]==='suggerimenti'?' tab-sug':''}" data-act="tab" data-v="${t[0]}" ${(UI.tab===t[0]&&!UI.dish)||(UI.dish&&t[0]==='menu')?'aria-current="page"':''}>${t[1]}${t[2]!==undefined?`<span class="n">${t[2]}</span>`:''}</button>`).join('')}</div></nav>`;
 }
@@ -1200,7 +1337,7 @@ function vNav(){
 function filterRecipes(){
   const q=norm(UI.q);
   return S.recipes.filter(r=>(!UI.cat||r.category===UI.cat)&&(!UI.reg||r.region===UI.reg)&&(!UI.ver||vstato(r)===UI.ver)
-    &&(!UI.mine||r.proposerId===S.meId||ownersOf(r).includes(S.meId))
+    &&(!UI.mine||r.proposerId===S.meId||ownersOf(r).includes(S.meId))&&(!UI.libro||libroFor(r))
     &&(!q||norm(r.title+' '+(r.note||'')+' '+pname(r.proposerId)).includes(q)))
     .sort((a,b)=>catIdx(a.category)-catIdx(b.category)||byTitle(a,b));
 }
@@ -1220,7 +1357,7 @@ function cardRecipe(r){
   const confirmDel=UI.confirm==='del:'+r.id;
   return `<article class="card ${r.slot?'sel':''}">
     ${fotoFig(r,'thumb')}
-    <div class="row spread"><div class="row" style="gap:6px">${chipCat(r.category)}${r.region?`<span class="chip plain">${esc(r.region)}</span>`:''}</div>${badge(st.label,st.cls)}</div>
+    <div class="row spread"><div class="row" style="gap:6px">${chipCat(r.category)}${r.region?`<span class="chip plain">${esc(r.region)}</span>`:''}${libroFor(r)?badge('Dal libro','info'):''}</div>${badge(st.label,st.cls)}</div>
     <h3>${esc(r.title)}</h3>
     <dl class="kv"><dt>Proposta da</dt><dd>${esc(pname(r.proposerId))}</dd><dt>Responsabili</dt><dd>${esc(owners)}</dd></dl>
     ${r.note?`<p class="small muted clamp">${esc(r.note)}</p>`:''}
@@ -1294,6 +1431,7 @@ function vProposte(){
       <div class="field"><label for="freg">Regione</label><select id="freg" data-chg="freg"><option value="">Tutte</option>${REGIONI.map(r=>`<option ${UI.reg===r?'selected':''}>${esc(r)}</option>`).join('')}</select></div>
       <div class="field"><label for="fver">Link</label><select id="fver" data-chg="fver"><option value="">Tutti</option>${Object.keys(VSTATI).map(k=>`<option value="${k}" ${UI.ver===k?'selected':''}>${esc(VSTATI[k].label)}</option>`).join('')}</select></div>
       <label class="checkline"><input type="checkbox" id="fmine" data-chg="fmine" ${UI.mine?'checked':''}> Solo le mie</label>
+      <label class="checkline"><input type="checkbox" id="flibro" data-chg="flibro" ${UI.libro?'checked':''}> Solo dal libro</label>
     </div>
     <div class="filterchips">${chips}</div>
     ${body}
@@ -1309,7 +1447,7 @@ function vTrash(){
 
 A.tab=t=>{UI.navigated=true;UI.tab=t.dataset.v;UI.dish=null;setHash(UI.tab);render();window.scrollTo(0,0);};
 A.fcat=t=>{UI.cat=t.dataset.v;render();};
-A.fclear=()=>{UI.q='';UI.cat='';UI.reg='';UI.ver='';UI.mine=false;render();};
+A.fclear=()=>{UI.q='';UI.cat='';UI.reg='';UI.ver='';UI.mine=false;UI.libro=false;render();};
 A['del-cancel']=()=>{UI.confirm='';render();};
 A['del-recipe']=async t=>{
   const id=t.dataset.id;
@@ -1339,6 +1477,7 @@ IN.q=t=>{UI.q=t.value;render();};
 CH.freg=t=>{UI.reg=t.value;render();};
 CH.fver=t=>{UI.ver=t.value;render();};
 CH.fmine=t=>{UI.mine=t.checked;render();};
+CH.flibro=t=>{UI.libro=t.checked;render();};
 
 /* ============ banda in alto: scadenze con countdown e voto sul formato del menu ============ */
 /* Tre tappe: proposte (+ voto sul formato) fino alla scadenza, voto dei piatti per 24 ore, poi menu e spesa. */
@@ -1733,6 +1872,73 @@ IN.sq=t=>{UI.sq=t.value;render();};
 A.sreg=t=>{UI.sreg=UI.sreg===t.dataset.v?'':t.dataset.v;render();};
 ['swt','sst','slv','ssort'].forEach(k=>{CH[k]=t=>{UI[k]=t.value;render();};});
 
+/* ============ "Il libro": ricette e considerazioni di «Giorni Golosi», collegate alle proposte ============ */
+const ingTxt=i=>{
+  const u=String(i.unit||'');
+  if(u==='q.b.'||!num(i.qty))return 'q.b.';
+  return (u==='g'||u==='ml')?fmtQty(u,num(i.qty)):fmtN(num(i.qty))+' '+u;
+};
+function libroRicettaHtml(rc,id){
+  return `<details class="rl" id="rl-${esc(id)}" ${isOpen('rl-'+id)}><summary>Ricetta del libro: ${esc(rc.titolo)} (per ${rc.serves} persone)</summary>
+    <div class="cols" style="margin-top:10px"><div><h4>Ingredienti</h4><ul class="steps" style="padding-left:18px;margin-top:6px;gap:3px">${rc.ing.map(i=>`<li>${esc(i.name)}: <b>${esc(ingTxt(i))}</b></li>`).join('')}</ul></div>
+    <div><h4>Procedimento</h4><ol class="steps" style="margin-top:6px">${rc.steps.map(s=>`<li>${esc(s)}</li>`).join('')}</ol></div></div>
+    ${rc.cons?`<p class="small muted" style="margin-top:8px">${esc(rc.cons)}</p>`:''}</details>`;
+}
+function vLibro(){
+  const n=S.recipes.filter(libroFor).length;
+  const regs=LIBRO.reg.map(g=>{
+    const chips=g.piatti.map(id=>{const r=libroProposta(id);return r
+      ?`<button class="fchip" data-act="open-dish" data-id="${esc(r.id)}">${esc(r.title)}</button>`
+      :`<span class="chip plain">${esc(LIBRO_N[id]||id)}</span>`;}).join(' ');
+    const rc=LIBRO.ricette[g.festa.ric];
+    return `<section class="panel rcard" style="--h:${g.h}"><div class="row spread"><h3>${esc(g.nome)}</h3><span class="badge info">${esc(g.pag)}</span></div>
+      <p style="margin-top:10px">${esc(g.intro)}</p>
+      <div class="festa"><b>${esc(g.festa.nome)}</b> · ${esc(g.festa.quando)} · ${esc(g.festa.cosa)}</div>
+      <div class="pens">${g.pensieri.map((p,i)=>`<details id="lp-${g.k}-${i}" ${isOpen('lp-'+g.k+'-'+i)}><summary>${esc(p.t)}</summary><p>${esc(p.x)}</p></details>`).join('')}</div>
+      ${libroRicettaHtml(rc,g.festa.ric)}
+      <div><span class="lbl">Piatti del libro tra le proposte</span><div class="filterchips" style="margin-top:6px">${chips}</div></div></section>`;
+  }).join('');
+  const cerca=LIBRO.cerca.map(c=>`<div class="row spread" style="padding:8px 0;border-top:1px dashed var(--line)"><span><b>${esc(c.n)}</b> <span class="chip plain">${esc(c.reg)}</span><br><span class="small muted">${esc(c.x)}</span></span>
+    <button class="btn sm" data-act="libro-proponi" data-n="${esc(c.n)}" ${canPropose()?'':'disabled'}>Proponi</button></div>`).join('');
+  return `<section class="view">
+    <div class="libro-hero"><p class="film">dal libro</p><h2>${esc(LIBRO.t)}</h2><p>${esc(LIBRO.sub)}. Di ${esc(LIBRO.aut)}, ${esc(LIBRO.ed)}.</p>
+      <p class="small">Le ricette citate nelle pagine su Trentino-Alto Adige, Veneto e Friuli-Venezia Giulia sono tra le Proposte (<b class="num">${n}</b> con il segno «Dal libro»); qui le riflessioni storico-culturali del libro.</p>
+      <div class="row"><button class="btn primary" data-act="libro-filtro">Vedi le proposte dal libro</button></div></div>
+    <div><h3 class="grp">L’idea del libro</h3><div class="idee">${LIBRO.idee.map(i=>`<div class="panel"><h4>${esc(i.t)}</h4><p class="small" style="margin-top:6px">${esc(i.x)}</p></div>`).join('')}</div></div>
+    <div><h3 class="grp">Le tre regioni</h3><div style="display:flex;flex-direction:column;gap:16px">${regs}</div></div>
+    <div class="panel"><h3>Citati nel libro, ricetta ancora da trovare</h3><p class="hint" style="margin:6px 0">Nominati nell’introduzione della regione, ma senza una ricetta su una fonte della lista. Se ne trovi una, proponili con il link.</p>${cerca}</div></section>`;
+}
+/* riquadro nella scheda del piatto */
+function libroPanel(r){
+  const l=libroFor(r);if(!l)return '';
+  const g=LIBRO.reg.find(x=>x.k===l.reg),rc=libroRecipe(r);
+  const vuota=!(r.ingredients||[]).length&&!(r.steps||[]).length;
+  const conf=UI.confirm==='libro:'+r.id;
+  return `<div class="panel libro"><div class="row spread"><h3>Dal libro «${esc(LIBRO.t)}»</h3><span class="badge info">${esc(l.pag)}</span></div>
+    <p style="margin-top:8px">${esc(l.nota)}</p>
+    ${rc?libroRicettaHtml(rc,'p-'+rc.key):''}
+    <div class="row" style="margin-top:10px">${rc&&canEditRecipe(r)?(vuota||conf
+      ?`<button class="btn sm primary" data-act="libro-usa" data-id="${esc(r.id)}">${conf?'Sì, sostituisci ingredienti e procedimento':'Usa questa ricetta nella scheda'}</button>${conf?`<button class="btn sm" data-act="del-cancel">No</button>`:''}`
+      :`<button class="btn sm" data-act="libro-usa" data-id="${esc(r.id)}">Sostituisci la scheda con la ricetta del libro</button>`):''}
+      <button class="btn sm" data-act="tab" data-v="libro">${esc(g?g.nome:'Il libro')}: le riflessioni →</button></div></div>`;
+}
+A['libro-filtro']=()=>{UI.navigated=true;UI.libro=true;UI.tab='proposte';UI.dish=null;setHash('proposte');render();window.scrollTo(0,0);};
+A['libro-proponi']=t=>{
+  const c=LIBRO.cerca.find(x=>x.n===t.dataset.n);if(!c)return;
+  if(!canPropose()){toast('Le proposte sono chiuse.','err');return;}
+  openRecipeEditor(null,{title:c.n,category:'dolci',region:c.reg,note:'Citato nel libro «'+LIBRO.t+'»: '+c.x});
+};
+A['libro-usa']=async t=>{
+  const r=R(t.dataset.id),rc=r&&libroRecipe(r);if(!r||!rc||!canEditRecipe(r))return;
+  const vuota=!(r.ingredients||[]).length&&!(r.steps||[]).length;
+  if(!vuota&&UI.confirm!=='libro:'+r.id){UI.confirm='libro:'+r.id;render();return;}
+  UI.confirm='';
+  const patch={ingredients:rc.ing.map(i=>({name:i.name,qty:i.qty,unit:i.unit,shop:i.shop})),steps:rc.steps.slice(),serves:rc.serves};
+  if(rc.fasi&&rc.fasi.length&&!(r.fasi||[]).length)patch.fasi=rc.fasi.map(f=>({label:f.label,ore:f.ore}));
+  if(await write('update','recipes/'+r.id,patch))toast('Scheda compilata con la ricetta del libro (per '+rc.serves+' persone)');
+  render();
+};
+
 /* ============ viste: scheda piatto, spesa, programma, persone ============ */
 function absLabel(t){
   const idx=Math.floor(t/24+1e-9);
@@ -1782,6 +1988,7 @@ function vPiatto(){
           ${S.meId?`<div class="row" style="margin-top:10px">${canEditRecipe(r)?`<button class="btn sm" data-act="team-edit" data-id="${esc(r.id)}">Gestisci team</button>`:''}<button class="btn sm join ${mine?'on':''}" data-act="owner-toggle" data-id="${esc(r.id)}" aria-pressed="${mine}">${mine?'Esco dai responsabili':'Mi aggiungo ai responsabili'}</button></div>`:''}</div>
         <div class="panel"><h3>Ricetta di riferimento</h3><div style="margin-top:10px">${srcBlock(r)}</div>
           <div style="margin-top:8px">${badge((VSTATI[vstato(r)]||VSTATI.da_verificare).label,(VSTATI[vstato(r)]||VSTATI.da_verificare).cls)}</div></div>
+        ${libroPanel(r)}
         <div class="panel"><h3>Vini in abbinamento</h3>${vini?`<ul class="steps" style="margin-top:10px;padding-left:18px">${vini}</ul>`:`<p class="muted small" style="margin-top:8px">Nessun vino indicato.</p>`}</div>
       </div>
       <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
@@ -2403,7 +2610,7 @@ function setHash(h){try{history.replaceState(null,'','#'+h);}catch(e){try{locati
 function routeFromHash(){
   let h='';try{h=location.hash.slice(1);}catch(e){}
   if(h.startsWith('piatto-')){UI.dish=h.slice(7);UI.tab='menu';UI.navigated=true;}
-  else if(['proposte','suggerimenti','voto','menu','spesa','programma','persone'].includes(h)){UI.tab=h;UI.dish=null;UI.navigated=true;}
+  else if(['proposte','suggerimenti','libro','voto','menu','spesa','programma','persone'].includes(h)){UI.tab=h;UI.dish=null;UI.navigated=true;}
 }
 function doLogout(){S.meId=null;store.set('gb.me','');render();}
 
@@ -2422,7 +2629,7 @@ function build(){
   if(!me())return vLogin();
   if(!UI.homed){UI.homed=true;if(!UI.navigated)UI.tab=homeTab();}
   if(!UI.migrated&&isOrg()&&!S.readOnly&&S.legacyCats&&Object.keys(S.legacyCats).length){UI.migrated=true;migrateCats();}
-  const views={proposte:vProposte,suggerimenti:vSugg,voto:vVoto,menu:vMenu,spesa:vSpesa,programma:vProgramma,persone:vPersone};
+  const views={proposte:vProposte,suggerimenti:vSugg,libro:vLibro,voto:vVoto,menu:vMenu,spesa:vSpesa,programma:vProgramma,persone:vPersone};
   const view=UI.dish?vPiatto():(views[UI.tab]||vProposte)();
   return vHeader()+vBand()+vNav()+`<main class="wrap">${S.offline?`<div class="note warn" style="margin-top:16px"><b>Sei offline.</b> Puoi continuare: le modifiche restano in coda e si salvano appena torna la connessione. Non chiudere la pagina.</div>`:''}${S.readOnly?`<div class="note bad" style="margin-top:16px"><b>Sola lettura.</b> Puoi guardare tutto ma non modificare: chiedi a Marco di darti accesso come collaboratore.</div>`:''}${view}</main>`;
 }

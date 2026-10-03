@@ -47,6 +47,7 @@ function vPiatto(){
           ${S.meId?`<div class="row" style="margin-top:10px">${canEditRecipe(r)?`<button class="btn sm" data-act="team-edit" data-id="${esc(r.id)}">Gestisci team</button>`:''}<button class="btn sm join ${mine?'on':''}" data-act="owner-toggle" data-id="${esc(r.id)}" aria-pressed="${mine}">${mine?'Esco dai responsabili':'Mi aggiungo ai responsabili'}</button></div>`:''}</div>
         <div class="panel"><h3>Ricetta di riferimento</h3><div style="margin-top:10px">${srcBlock(r)}</div>
           <div style="margin-top:8px">${badge((VSTATI[vstato(r)]||VSTATI.da_verificare).label,(VSTATI[vstato(r)]||VSTATI.da_verificare).cls)}</div></div>
+        ${libroPanel(r)}
         <div class="panel"><h3>Vini in abbinamento</h3>${vini?`<ul class="steps" style="margin-top:10px;padding-left:18px">${vini}</ul>`:`<p class="muted small" style="margin-top:8px">Nessun vino indicato.</p>`}</div>
       </div>
       <div style="display:flex;flex-direction:column;gap:16px;min-width:0">

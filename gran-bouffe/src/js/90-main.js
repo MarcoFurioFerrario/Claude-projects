@@ -4,7 +4,7 @@ function setHash(h){try{history.replaceState(null,'','#'+h);}catch(e){try{locati
 function routeFromHash(){
   let h='';try{h=location.hash.slice(1);}catch(e){}
   if(h.startsWith('piatto-')){UI.dish=h.slice(7);UI.tab='menu';UI.navigated=true;}
-  else if(['proposte','suggerimenti','voto','menu','spesa','programma','persone'].includes(h)){UI.tab=h;UI.dish=null;UI.navigated=true;}
+  else if(['proposte','suggerimenti','libro','voto','menu','spesa','programma','persone'].includes(h)){UI.tab=h;UI.dish=null;UI.navigated=true;}
 }
 function doLogout(){S.meId=null;store.set('gb.me','');render();}
 
@@ -23,7 +23,7 @@ function build(){
   if(!me())return vLogin();
   if(!UI.homed){UI.homed=true;if(!UI.navigated)UI.tab=homeTab();}
   if(!UI.migrated&&isOrg()&&!S.readOnly&&S.legacyCats&&Object.keys(S.legacyCats).length){UI.migrated=true;migrateCats();}
-  const views={proposte:vProposte,suggerimenti:vSugg,voto:vVoto,menu:vMenu,spesa:vSpesa,programma:vProgramma,persone:vPersone};
+  const views={proposte:vProposte,suggerimenti:vSugg,libro:vLibro,voto:vVoto,menu:vMenu,spesa:vSpesa,programma:vProgramma,persone:vPersone};
   const view=UI.dish?vPiatto():(views[UI.tab]||vProposte)();
   return vHeader()+vBand()+vNav()+`<main class="wrap">${S.offline?`<div class="note warn" style="margin-top:16px"><b>Sei offline.</b> Puoi continuare: le modifiche restano in coda e si salvano appena torna la connessione. Non chiudere la pagina.</div>`:''}${S.readOnly?`<div class="note bad" style="margin-top:16px"><b>Sola lettura.</b> Puoi guardare tutto ma non modificare: chiedi a Marco di darti accesso come collaboratore.</div>`:''}${view}</main>`;
 }

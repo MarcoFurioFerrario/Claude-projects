@@ -400,3 +400,17 @@ button.chip.reg[aria-pressed="true"]{outline:3px solid var(--polenta);outline-of
 .fotobox{display:flex;flex-direction:column;gap:8px}
 .foto-add{display:flex;gap:10px 16px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:12px 14px;border:1.5px dashed var(--btn-line);border-radius:12px}
 .fo-img{display:block;max-width:100%;max-height:260px;border-radius:10px;border:1px solid var(--line)}
+
+/* Il libro */
+.libro-hero{background:linear-gradient(135deg,var(--hero-a),var(--hero-b));color:var(--hero-ink);border-radius:16px;padding:24px clamp(16px,3vw,32px);display:flex;flex-direction:column;gap:10px;box-shadow:var(--shadow)}
+.libro-hero h2{font-size:clamp(30px,5vw,46px);color:var(--polenta)}
+.libro-hero .film{color:inherit;opacity:.8}
+.libro-hero p{max-width:70ch}
+.libro-hero .btn.primary{background:var(--polenta);border-color:var(--polenta-ink);color:var(--polenta-ink)}
+.idee{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:12px}
+.rcard{border-top:6px solid hsl(var(--h) 50% var(--grp-l));display:flex;flex-direction:column;gap:12px}
+.festa{padding:8px 12px;border-radius:8px;background:var(--accent-soft);font-size:14px}
+.pens{display:flex;flex-direction:column;gap:6px}
+.pens details,.rl{border:1px solid var(--line);border-radius:8px;padding:8px 12px;background:var(--surface)}
+.pens details p{margin-top:8px;font-size:14.5px}
+.panel.libro{border-left:6px solid var(--polenta)}
