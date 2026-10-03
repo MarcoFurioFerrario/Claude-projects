@@ -7,6 +7,7 @@ IN.dr=t=>{
   const f=t.dataset.f;
   setPath(DR,f,t.type==='checkbox'?t.checked:t.value);
   if(f==='category'||f==='title')renderIdeas();
+  if(f.startsWith('foto.'))fotoPrev();
 };
 CH.dr=t=>{
   if(!DR)return;

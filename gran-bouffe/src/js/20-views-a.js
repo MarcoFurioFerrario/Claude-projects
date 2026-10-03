@@ -66,6 +66,7 @@ function cardRecipe(r){
   const owners=own.map(id=>pname(id)+(id===S.meId?' (tu)':'')).join(', ')||'—';
   const confirmDel=UI.confirm==='del:'+r.id;
   return `<article class="card ${r.slot?'sel':''}">
+    ${fotoFig(r,'thumb')}
     <div class="row spread"><div class="row" style="gap:6px">${chipCat(r.category)}${r.region?`<span class="chip plain">${esc(r.region)}</span>`:''}</div>${badge(st.label,st.cls)}</div>
     <h3>${esc(r.title)}</h3>
     <dl class="kv"><dt>Proposta da</dt><dd>${esc(pname(r.proposerId))}</dd><dt>Responsabili</dt><dd>${esc(owners)}</dd></dl>

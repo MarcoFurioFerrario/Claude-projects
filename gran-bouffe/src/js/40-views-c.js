@@ -37,6 +37,7 @@ function vPiatto(){
       <h2>${esc(r.title)}</h2>
       <div class="row"><span class="muted">Proposto da <b style="color:var(--ink)">${esc(pname(r.proposerId))}</b></span>
       ${canEditRecipe(r)?`<button class="btn sm primary" data-act="edit-dish" data-id="${esc(r.id)}">Compila / modifica scheda</button><button class="btn sm" data-act="edit-recipe" data-id="${esc(r.id)}">Dati della proposta</button>`:''}</div></div>
+    ${fotoBlock(r)}
     ${verdict}
     <div class="cols">
       <div style="display:flex;flex-direction:column;gap:16px;min-width:0">

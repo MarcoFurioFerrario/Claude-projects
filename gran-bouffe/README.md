@@ -13,7 +13,7 @@ Pubblicata come artifact di claude.ai: <https://claude.ai/artifact/WFrai8Hzx76Go
 5. **Formato del menu** (voto in cima, aperto da subito e chiuso insieme alle proposte): *Dieta* 15 piatti (ven 3, sab 4+4, dom 4), *Bouffetta* 18 (ven 4 = antipasto, primo, secondo, dolce; sab 5+5; dom 4), *L'importante è esagerare* 22 senza vincoli su portata e pasto. Un voto a testa, modificabile fino alla chiusura (`votes/<id>.formato`). Finché si vota il menu resta su 22 piatti ("provvisorio"); a voto chiuso vale il più votato, a parità il più abbondante; l'organizzatore può fissare il formato dal menu a tendina della banda. Il formato guida i tetti per giorno e per pasto nel Menu e il pulsante "Suggerisci dai voti" (Bouffetta: il venerdì riceve una portata per tipo; Esagerare: nessuna quota per portata).
 6. **Votazioni** (fase *Voto*): ognuno ordina le proposte di ogni categoria dalla migliore alla peggiore. Il punteggio è il piazzamento medio normalizzato (100 = sempre primo).
 7. **Menu** (fase *Menu*): gli organizzatori assegnano i piatti ai pasti, nei limiti del formato scelto (di base 5 venerdì sera, 12 sabato, 5 domenica). "Suggerisci dai voti" propone una selezione bilanciata per categoria e tempi. Sotto i giorni c'è la *carta dei vini* con i vini in abbinamento dei piatti scelti e il pulsante per copiare la carta del banchetto.
-8. **Scheda piatto**: proponente, team responsabili, ingredienti scalati sui confermati, procedimento, vini, tempi. "Genera bozza con Claude" compila una bozza da controllare.
+8. **Scheda piatto**: foto del piatto con nome della fonte e link alla pagina d'origine (anche sulle card di Proposte; proponente, responsabili e organizzatori la aggiungono, cambiano o tolgono dalla scheda; se l'immagine non si carica resta il link alla fonte), proponente, team responsabili, ingredienti scalati sui confermati, procedimento, vini, tempi. "Genera bozza con Claude" compila una bozza da controllare.
 9. **Spesa**: lista unica, somma gli ingredienti uguali tra piatti (anche con unità diverse), arrotonda per eccesso, calcola le confezioni, assegna chi compra, copia per WhatsApp o scarica CSV.
 10. **Programma**: finestre di tempo utili per pasto (arrivo, orari) e cronoprogramma. Un piatto che richiede più ore di anticipo di quelle disponibili non può stare in quel pasto, a meno che la parte lunga si prepari a casa.
 
@@ -33,6 +33,20 @@ Robustezza dei dati:
 ## Fonti affidabili (whitelist)
 
 L'elenco è in `src/js/00-core.js` (`FONTI`): Accademia Italiana della Cucina e Wikisource (Artusi) come riferimenti (livello A); Taccuini Gastrosofici (affidabile se contiene la ricetta cercata), Cucchiaio d'Argento, La Cucina Italiana, AIFB, Turismo FVG, Consorzio DOC Friuli, Qualità Trentino, Visit Trentino, Alto Adige (alto-adige.com, suedtirol.info, genusslandsuedtirol.it) e Tirol come editoria ed enti del territorio (livello B). I link che puntano a questi domini mostrano "✓ affidabile" sulla scheda e l'editor di proposta ricorda le fonti da preferire. Per aggiungere un dominio basta una riga in `FONTI`.
+
+## Foto dei piatti
+
+Il campo `foto` di ogni proposta contiene solo l'**indirizzo** dell'immagine (non viene copiata) più `pagina` (la pagina della fonte da cui viene), `fonte` (nome) e `data`; sotto la foto compaiono sempre fonte e link. Le foto devono venire dalle fonti della whitelist.
+
+`tools/foto.js` le recupera in automatico: per ogni proposta apre la fonte di riferimento (`verifica.linkAutorevole`) e il link del proponente, ma solo se il sito è nella whitelist, prende l'immagine principale della pagina (`og:image`, poi JSON-LD, poi `twitter:image`), scarta loghi e pixel di tracciamento, controlla che l'indirizzo risponda davvero con un'immagine e salva solo il campo `foto`.
+
+```
+node tools/foto.js              # prova a secco: stampa cosa farebbe
+node tools/foto.js --scrivi     # salva su Firestore
+node tools/foto.js --solo r_abc --forza
+```
+
+Serve un ambiente che raggiunga i siti delle fonti. Nel sandbox in cui l'app è stata costruita il proxy blocca tutto (risposta 403): da lì lo script elenca le proposte e il motivo, ma non scarica nulla. Domini da consentire per le 27 proposte attuali: `cucchiaio.it`, `turismofvg.it`, `aifb.it`, `docfriuli.eu`, `tirol.at`, `suedtirol.info`, `alto-adige.com`, `genusslandsuedtirol.it`, `trentinoqualita.it`, `taccuinigastrosofici.it` e `firestore.googleapis.com`, più gli host dove le fonti tengono le immagini (lo script dice quali blocca). In alternativa si aggiunge la foto a mano dalla scheda del piatto.
 
 ## Verifica dei link (la fa Claude)
 
@@ -64,7 +78,7 @@ Quando un piatto entra in menu si possono compilare le sue schede dalla fonte ve
 | Collezione | Documento | Contenuto |
 |---|---|---|
 | `participants` | `p_<nome>` | `name`, `confirmed`, `organizer`, `ord` |
-| `recipes` | `r_…` | `ownerIds` (team responsabili; `teamIds` è il vecchio campo delle squadre, svuotato alla prima modifica), `sugId` (piatto del catalogo da cui nasce), `title`, `category`, `region`, `link`, `note`, `proposerId`, `ownerIds[]`, `teamIds[]`, `slot` (`ven-cena`, `sab-pranzo`, `sab-cena`, `dom-pranzo` o `""`), `verifica{}`, `serves`, `porzione`, `ingredients[{name,qty,unit,shop}]`, `steps[]`, `fasi[{label,ore}]`, `preparabileACasa`, `vini[{nome,bottiglie}]`, `consigli` |
+| `recipes` | `r_…` | `foto{url,pagina,fonte,autore,data}`, `ownerIds` (team responsabili; `teamIds` è il vecchio campo delle squadre, svuotato alla prima modifica), `sugId` (piatto del catalogo da cui nasce), `title`, `category`, `region`, `link`, `note`, `proposerId`, `ownerIds[]`, `teamIds[]`, `slot` (`ven-cena`, `sab-pranzo`, `sab-cena`, `dom-pranzo` o `""`), `verifica{}`, `serves`, `porzione`, `ingredients[{name,qty,unit,shop}]`, `steps[]`, `fasi[{label,ore}]`, `preparabileACasa`, `vini[{nome,bottiglie}]`, `consigli` |
 | `votes` | `<participantId>` | `rank{<categoria>: [recipeId…]}` (dal migliore), `formato` (`dieta`, `bouffetta`, `esagerare`) |
 | `spesa` | slug dell'ingrediente | `comprato`, `chi`, `pack{base,size}` |
 | `meta` | `backups` | indice delle copie: `items[{id,at,motivo,by,n}]` |
@@ -80,6 +94,8 @@ node build.js          # assembla src/ in index.html (artifact) e docs/index.htm
 node test/flow.js      # artifact: prova end-to-end in Chromium con un db finto in memoria
 node test/sugg.js      # sezione Suggerimenti: segnalini, filtri, proposta precompilata, carta dei vini
 node test/band.js       # scadenze, countdown, fasi automatiche, voto sul formato, scelta A/B in Proposte, whitelist
+node test/foto.js       # foto del piatto: card, scheda, aggiunta/cambio/rimozione, fonte citata, immagine non raggiungibile
+node test/foto-tool.js  # tools/foto.js contro un server finto (pagine, immagini, API Firestore)
 node test/owners.js     # team responsabili: aggiungersi/togliersi, permessi, gestione del team
 node test/cats.js       # zuppe unite ai primi, griglia ai secondi, dati e voti già esistenti
 node test/standalone.js # versione pubblica: Firestore finto, cookie, merge dei voti
