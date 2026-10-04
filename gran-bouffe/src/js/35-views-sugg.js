@@ -50,10 +50,17 @@ function sugCard(x,grouped){
 /* ---- equilibrio: cosa abbiamo già e cosa manca (regioni, portate, vini) ---- */
 function eqRowsData(){
   const lib=sugLibere(),all=SUG.map(s=>({s,st:sugState(s)})),fm=fmtNow(),q=fm.libero?null:quotas(totalCap());
-  const mk=(k,label,tot,menu,libere,extra)=>Object.assign({k,label,tot,menu,libere},extra||{});
-  const reg=REGIONI.map(r=>{const rs=S.recipes.filter(x=>x.region===r);return mk(r,r,rs.length,rs.filter(x=>x.slot).length,lib.filter(s=>s.r===r).length);});
-  const cat=CATS.map(c=>{const rs=S.recipes.filter(x=>x.category===c.key);return mk(c.key,c.label,rs.length,rs.filter(x=>x.slot).length,lib.filter(s=>s.c===c.key).length,{q:q?q[c.key]:null});});
-  const wt=WTYPES.map(w=>{const xs=all.filter(x=>x.s.wt===w);return mk(w,w,xs.filter(x=>x.st!=='libera').length,xs.filter(x=>x.st==='menu').length,xs.filter(x=>x.st==='libera').length);});
+  /* ogni riga: totali e divisione per regione (p = già proposti, l = ancora da proporre nel catalogo) */
+  const split=(prop,libs,rf,lf)=>{
+    const rows=REGIONI.map(r=>({r,p:prop.filter(x=>rf(x)===r).length,l:libs.filter(x=>lf(x)===r).length}));
+    const resto=prop.length-rows.reduce((a,g)=>a+g.p,0);
+    return resto>0?rows.concat([{r:'',p:resto,l:0}]):rows; // regione non indicata o fuori elenco
+  };
+  const mk=(k,label,prop,menu,libs,rf,lf,extra)=>Object.assign({k,label,tot:prop.length,menu,libere:libs.length,reg:split(prop,libs,rf,lf)},extra||{});
+  const rr=x=>x.region,sr=x=>x.r;
+  const reg=REGIONI.map(r=>{const rs=S.recipes.filter(x=>x.region===r);return mk(r,r,rs,rs.filter(x=>x.slot).length,lib.filter(s=>s.r===r),rr,sr);});
+  const cat=CATS.map(c=>{const rs=S.recipes.filter(x=>x.category===c.key);return mk(c.key,c.label,rs,rs.filter(x=>x.slot).length,lib.filter(s=>s.c===c.key),rr,sr,{q:q?q[c.key]:null});});
+  const wt=WTYPES.map(w=>{const xs=all.filter(x=>x.s.wt===w),pr=xs.filter(x=>x.st!=='libera').map(x=>x.s);return mk(w,w,pr,xs.filter(x=>x.st==='menu').length,xs.filter(x=>x.st==='libera').map(x=>x.s),sr,sr);});
   /* verdetti in parole: regioni e (senza quote) portate si confrontano con la media; con un formato a quote le portate con i posti nel menu */
   const media=rows=>rows.reduce((a,r)=>a+r.tot,0)/Math.max(1,rows.length);
   const vs=(rows,m)=>rows.forEach(r=>{
@@ -72,35 +79,50 @@ function eqRowsData(){
   vs(reg,media(reg));vs(cat,media(cat));
   return{reg,cat,wt,q,fm};
 }
+/* un colore per regione (stesso tono delle etichette di regione); grigio per «regione non indicata» */
+const regColor=r=>r?`hsl(${REG_H[r]} 45% var(--reg-l))`:'hsl(0 0% 45%)';
+const elenca=a=>a.length>1?a.slice(0,-1).join(', ')+' e '+a[a.length-1]:a.join('');
 function eqBlock(titolo,sotto,rows,key){
   const max=Math.max(1,...rows.map(r=>r.tot+r.libere));
+  const nome=r=>r?(REG_SHORT[r]||r):'Regione non indicata';
   return `<div class="eqblk"><h4>${esc(titolo)}</h4><p class="small muted">${esc(sotto)}</p>
     ${rows.map(r=>{
-      const prop=r.tot-r.menu,w=(r.tot+r.libere)/max*100;
-      const seg=(n,cls,lab)=>n?`<i class="${cls}" style="flex:${n}" title="${esc(lab+': '+n)}"><b>${n}</b></i>`:'';
+      const w=(r.tot+r.libere)/max*100;
+      /* per ogni regione: prima i piatti già proposti (colore pieno), poi quelli ancora da proporre (tratteggiati) */
+      const seg=r.reg.map(g=>{
+        const st=`--c:${regColor(g.r)}`;
+        return (g.p?`<i class="g p" style="${st};flex:${g.p}" title="${esc(nome(g.r)+': '+g.p+(g.p===1?' proposto':' proposti'))}"><b>${g.p}</b></i>`:'')
+          +(g.l?`<i class="g l" style="${st};flex:${g.l}" title="${esc(nome(g.r)+': '+g.l+' ancora da proporre')}"><b>${g.l}</b></i>`:'');
+      }).join('');
+      const aria=r.reg.filter(g=>g.p||g.l).map(g=>`${nome(g.r)}: ${g.p} ${g.p===1?'proposto':'proposti'}, ${g.l} da proporre`).join('; ');
+      const senza=key==='reg'||!r.tot?[]:r.reg.filter(g=>g.r&&!g.p).map(g=>REG_SHORT[g.r]||g.r);
       return `<div class="eqr2"><div class="eql"><b>${esc(r.label)}</b>${r.v?`<span class="verd ${r.v.c}">${esc(r.v.t)}</span>`:''}</div>
-        <div class="eqbar" style="width:${Math.max(8,w)}%" role="img" aria-label="${esc(r.label)}: ${r.menu} in menu, ${prop} proposti, ${r.libere} ancora da proporre">${seg(r.menu,'m','In menu')}${seg(prop,'p','Proposti')}${seg(r.libere,'l','Ancora da proporre')}</div>
+        <div class="eqbar" style="width:${Math.max(8,w)}%" role="img" aria-label="${esc(r.label)}: ${esc(aria)}">${seg}</div>
         <div class="eqn small"><span><b class="num">${r.tot}</b> proposti${r.menu?` (${r.menu} in menu)`:''}</span><span><b class="num">${r.libere}</b> ancora da proporre</span>
-        ${r.libere?`<button class="btn sm" data-act="eq-filtra" data-k="${key}" data-v="${esc(r.k)}">Vedi i ${r.libere} da proporre</button>`:''}</div></div>`;
+        ${r.libere?`<button class="btn sm" data-act="eq-filtra" data-k="${key}" data-v="${esc(r.k)}">Vedi i ${r.libere} da proporre</button>`:''}</div>
+        ${senza.length?`<p class="small eqsenza">Nessun piatto proposto di: <b>${esc(elenca(senza))}</b></p>`:''}</div>`;
     }).join('')}</div>`;
 }
 function vEquilibrio(){
   const d=eqRowsData();
   const manca=d.cat.filter(r=>r.v&&r.v.k==='manca').map(r=>`${r.label} (${r.tot} su ${r.q})`),tante=d.cat.filter(r=>r.v&&r.v.k==='molte').map(r=>r.q!=null?`${r.label} (${r.tot} per ${r.q} posti)`:`${r.label} (${r.tot} proposte)`);
+  const catSenza=d.cat.filter(r=>r.tot>0).map(r=>[r.label,r.reg.filter(g=>g.r&&!g.p).map(g=>REG_SHORT[g.r]||g.r)]).filter(x=>x[1].length).map(x=>`${x[0]} (senza ${elenca(x[1])})`);
   const regPoche=d.reg.filter(r=>r.v&&r.v.k==='poche').map(r=>r.label),catPoche=d.cat.filter(r=>r.v&&r.v.k==='poche').map(r=>r.label);
   const righe=[
     manca.length?`<b>Ne servono altre:</b> ${esc(manca.join(', '))}.`:'',
     tante.length?`<b>Ce ne sono molte:</b> ${esc(tante.join(', '))}: la scelta sarà dura, meglio un voto per categoria.`:'',
+    catSenza.length?`<b>Regioni assenti per portata:</b> ${esc(catSenza.join('; '))}.`:'',
     catPoche.length?`<b>Portate con poca scelta:</b> ${esc(catPoche.join(', '))}.`:'',
     regPoche.length?`<b>Regioni con poche proposte:</b> ${esc(regPoche.join(', '))}.`:'',
     !S.recipes.length?'Ancora nessuna proposta: le barre tratteggiate sono i piatti dei Suggerimenti che aspettano di essere proposti.':'',
-    S.recipes.length&&!manca.length&&!tante.length&&!regPoche.length&&!catPoche.length?'Per ora le proposte sono ben distribuite.':''
+    S.recipes.length&&!manca.length&&!tante.length&&!regPoche.length&&!catPoche.length&&!catSenza.length?'Per ora le proposte sono ben distribuite.':''
   ].filter(Boolean);
   return `<section class="panel eq" id="sg-eq"><h3>Equilibrio: regioni, portate e vini</h3>
     <p class="small muted" style="margin-top:6px">Quanti piatti abbiamo già (proposti e in menu) e quanti restano ancora da proporre nei Suggerimenti, così vedi dove il banchetto è sbilanciato. Formato del menu in uso: <b>${esc(d.fm.nome)}</b>, ${d.fm.tot} piatti.</p>
-    <div class="legend"><span><i class="lg m"></i> In menu</span><span><i class="lg p"></i> Proposti, non ancora in menu</span><span><i class="lg l"></i> Ancora da proporre (nei Suggerimenti)</span></div>
+    <div class="legend" aria-label="Legenda dei colori">${REGIONI.map(r=>`<span><i class="lg g" style="--c:${regColor(r)}"></i> ${esc(r)}</span>`).join('')}${[d.reg,d.cat,d.wt].some(rows=>rows.some(x=>x.reg.some(g=>!g.r)))?`<span><i class="lg g" style="--c:${regColor('')}"></i> Regione non indicata</span>`:''}</div>
+    <div class="legend"><span><i class="lg g p" style="--c:${regColor(REGIONI[0])}"></i> Colore pieno: già proposti</span><span><i class="lg g l" style="--c:${regColor(REGIONI[0])}"></i> Tratteggiato: ancora da proporre (nei Suggerimenti)</span></div>
     <div class="note" style="margin-top:10px">${righe.join('<br>')}</div>
-    <div class="eqgrid2">${eqBlock('Per regione','Tutte le proposte, per regione indicata.',d.reg,'reg')}${eqBlock('Per portata',d.q?'Con i posti che il formato lascia a ogni portata nel menu.':'Il formato scelto non fissa quote per portata.',d.cat,'cat')}${eqBlock('Per tipo di vino','Solo i piatti del catalogo, per abbinamento di vino.',d.wt,'wt')}</div></section>`;
+    <div class="eqgrid2">${eqBlock('Per regione','Ogni regione ha il suo colore, lo stesso in tutte le barre qui sotto.',d.reg,'reg')}${eqBlock('Per portata',(d.q?'Con i posti che il formato lascia a ogni portata nel menu. ':'Il formato scelto non fissa quote per portata. ')+'Le barre sono divise per regione: se un colore manca, manca quella regione.',d.cat,'cat')}${eqBlock('Per tipo di vino','Solo i piatti del catalogo, per abbinamento di vino e per regione.',d.wt,'wt')}</div></section>`;
 }
 function vSugg(){
   const all=sugList(),list=filterSug(all),lib=all.length;

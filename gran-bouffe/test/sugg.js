@@ -12,7 +12,8 @@ const recipes=[
   R('t3','Gubana','dolci','Friuli-Venezia Giulia',{slot:'sab-cena'}),
   R('t4','Presnitz triestino','dolci','Friuli-Venezia Giulia',{slot:'dom-pranzo'}),
   R('t5','Bigoli in salsa','primi','Veneto'),
-  R('t6','Sarde in saor','antipasti','Veneto')
+  R('t6','Sarde in saor','antipasti','Veneto'),
+  R('t7','Radicchio alla piastra','contorni','')
 ];
 (async()=>{
   const {browser,errors,mk}=await run();
@@ -71,7 +72,27 @@ const recipes=[
   // equilibrio: regioni, portate, vini
   await d.waitForSelector('#sg-eq .eqblk');
   (await d.$$eval('#sg-eq .eqblk h4',e=>e.map(x=>x.textContent))).join('|')==='Per regione|Per portata|Per tipo di vino'?pass('Equilibrio: tre blocchi, regioni, portate e vini'):fail('blocchi equilibrio');
-  (await d.$('#sg-eq details'))===null&&(await d.$$('#sg-eq .legend span')).length===3?pass('Equilibrio sempre aperto, con legenda a tre colori (in menu, proposti, ancora da proporre)'):fail('legenda');
+  (await d.$('#sg-eq details'))===null?pass('Equilibrio sempre aperto'):fail('equilibrio chiuso');
+  const leg=await d.$$eval('#sg-eq .legend span',e=>e.map(x=>x.textContent.trim()));
+  leg.slice(0,3).join('|')==='Veneto|Friuli-Venezia Giulia|Trentino-Alto Adige'&&leg.includes('Colore pieno: già proposti')&&leg.some(x=>x.startsWith('Tratteggiato'))&&leg.includes('Regione non indicata')
+    ?pass('legenda: un colore per regione (più «regione non indicata» perché c’è una proposta senza regione), pieno = proposti, tratteggiato = da proporre'):fail('legenda '+leg);
+  // le barre sono divise per regione, con gli stessi colori delle etichette di regione
+  const col=sel=>d.$eval(sel,e=>getComputedStyle(e).backgroundColor);
+  const chipCol={};for(const r of ['Veneto','Friuli-Venezia Giulia','Trentino-Alto Adige'])chipCol[r]=await col('.hs-regs .chip.reg[data-v="'+r+'"]');
+  new Set(Object.values(chipCol)).size===3?pass('le tre regioni hanno tre colori diversi'):fail('colori regioni '+JSON.stringify(chipCol));
+  const segs=await d.$$eval('#sg-eq .eqblk:nth-of-type(2) .eqr2',rs=>rs.map(r=>({l:r.querySelector('.eql b').textContent,s:[...r.querySelectorAll('.eqbar i')].map(i=>({t:i.title,c:getComputedStyle(i).backgroundColor,b:i.textContent,p:i.classList.contains('p')}))})));
+  const dolciS=segs.find(x=>x.l.startsWith('Dolci')).s.filter(x=>x.p);
+  dolciS.length===2&&dolciS[0].t==='Veneto: 1 proposto'&&dolciS[1].t==='Friuli-V.G.: 2 proposti'&&dolciS[0].c===chipCol.Veneto&&dolciS[1].c===chipCol['Friuli-Venezia Giulia']
+    ?pass('Dolci: segmenti per regione (Veneto 1, Friuli 2) con il colore della regione'):fail('segmenti dolci '+JSON.stringify(dolciS));
+  const aiuto=segs.find(x=>x.l.startsWith('Antipasti')).s;
+  aiuto.some(x=>!x.p&&x.t.startsWith('Veneto')&&x.b!=='0')&&aiuto.some(x=>x.p&&x.t==='Veneto: 1 proposto')?pass('Antipasti: Veneto con un piatto proposto (pieno) e gli altri ancora da proporre (tratteggiato), nello stesso colore'):fail('segmenti antipasti '+JSON.stringify(aiuto));
+  const cont=segs.find(x=>x.l.startsWith('Contorni')).s.filter(x=>x.p);
+  cont.length===1&&cont[0].t==='Regione non indicata: 1 proposto'&&cont[0].c!==chipCol.Veneto?pass('proposta senza regione: segmento grigio «Regione non indicata»'):fail('segmento senza regione '+JSON.stringify(cont));
+  const senza=await d.$$eval('#sg-eq .eqsenza',e=>e.map(x=>x.closest('.eqr2').querySelector('.eql b').textContent+': '+x.textContent));
+  senza.some(x=>x.startsWith('Dolci')&&x.includes('Trentino-A.A.'))?pass('sotto la barra: «Nessun piatto proposto di: Trentino-A.A.» dove una regione manca'):fail('senza '+senza);
+  (await d.textContent('#sg-eq .note')).includes('Regioni assenti per portata')?pass('nel riepilogo: le portate dove manca una regione'):fail('riepilogo assenti');
+  const vv=await d.$$eval('#sg-eq .eqblk:nth-of-type(1) .eqr2',rs=>rs.map(r=>[r.querySelector('.eql b').textContent,[...r.querySelectorAll('.eqbar i')].map(i=>i.title.split(':')[0]).filter((v,i,a)=>a.indexOf(v)===i)]));
+  vv.every(x=>x[1].length<=1)?pass('nel blocco per regione ogni barra ha un solo colore'):fail('barre per regione '+JSON.stringify(vv));
   const rows=await d.$$eval('#sg-eq .eqblk',b=>b.map(x=>[...x.querySelectorAll('.eqr2')].map(r=>({l:r.querySelector('.eql b').textContent,v:(r.querySelector('.verd')||{}).textContent||'',n:r.querySelector('.eqn').textContent.replace(/\s+/g,' ').trim()}))));
   rows[0].length===3&&rows[1].length===5&&rows[2].length===new Set(SUG.map(s=>s.wt)).size?pass('righe: 3 regioni, 5 portate, tutti i tipi di vino'):fail('righe '+rows.map(r=>r.length));
   const dolci=rows[1].find(r=>r.l.startsWith('Dolci'));
