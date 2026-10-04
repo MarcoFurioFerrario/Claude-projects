@@ -9,7 +9,7 @@ function vVoto(){
   const doneN=CATS.filter(c=>catRecipes(c.key).length&&myRank(c.key)).length,needN=CATS.filter(c=>catRecipes(c.key).length).length;
   return `<section class="view">
     <div class="vhead"><div><h2>Votazioni</h2>
-      <p class="lede">Per ogni categoria ordina le proposte dalla migliore (1) alla peggiore: vince chi ha il piazzamento medio più alto. Come nell’edizione scorsa, ma con il conteggio automatico.</p></div>
+      <p class="lede">Per ogni portata assegna le tue prime posizioni: scegli il numero accanto a ogni piatto oppure trascinalo nel suo posto. I piatti che non metti in classifica restano fuori (0 punti). A parità di punti vince chi ha più primi posti, poi più secondi posti e così via.</p></div>
       <div class="filterchips"><button class="fchip" aria-pressed="${mine}" data-act="vmode" data-v="mia">La mia classifica</button><button class="fchip" aria-pressed="${!mine}" data-act="vmode" data-v="ris">Risultati</button></div></div>
     ${sg==='proposte'||sg==='attesa'?`<div class="note"><b>Il voto sui piatti non è ancora aperto.</b> ${scadOn()?`Si apre ${esc(fmtDT(scadMs('votoIni')))} e dura fino a ${esc(fmtEnd(scadMs('votoFine')))}.`:'Lo apre l’organizzatore dalla barra delle fasi.'} Intanto puoi guardare le proposte e votare il formato del menu (banda in alto).</div>`:''}
     ${sg==='voto'&&scadOn()?`<div class="note ok">Votazione aperta fino a ${esc(fmtEnd(scadMs('votoFine')))}.</div>`:''}
@@ -19,54 +19,78 @@ function vVoto(){
   </section>`;
 }
 function vRank(cat){
-  const d=rankedDraft(cat),open=canVote();
-  if(!d.ids.length)return `<div class="empty"><h3>Nessuna proposta in “${esc(catOf(cat).label)}”</h3><p>Quando ne arriveranno potrai ordinarle qui.</p></div>`;
-  const rows=d.ids.map((id,i)=>{
-    const r=R(id);const fresh=d.fresh.includes(id)&&d.saved;
-    return `<li class="rk ${fresh?'fresh':''}"><div class="pos num">${i+1}</div>
-      <div><div class="t">${esc(r.title)} ${fresh?badge('Nuova','warn'):''}</div>
+  const d=rankedDraft(cat),open=canVote(),n=d.n;
+  if(!n)return `<div class="empty"><h3>Nessuna proposta in “${esc(catOf(cat).label)}”</h3><p>Quando ne arriveranno potrai ordinarle qui.</p></div>`;
+  const opts=cur=>`<option value="0" ${!cur?'selected':''}>${cur?'Fuori classifica':'Posizione…'}</option>`+Array.from({length:n},(_,i)=>`<option value="${i+1}" ${cur===i+1?'selected':''}>${i+1}° posto · ${rankPts(cat,i+1)} punti</option>`).join('');
+  const row=(id,pos)=>{
+    const r=R(id),fresh=d.fresh.includes(id);
+    return `<div class="dr" data-dish="${esc(id)}"><button type="button" class="grip" data-grip="${esc(id)}" aria-label="Trascina «${esc(r.title)}»" title="Trascina" ${open?'':'disabled'}>⠿</button>
+      <div class="dt"><div class="t">${esc(r.title)} ${fresh?badge('Nuova','warn'):''}</div>
       <div class="small muted">${r.region?esc(r.region)+' · ':''}proposta da ${esc(pname(r.proposerId))} · <a href="${esc(safeHref(r.link))}" target="_blank" rel="noopener noreferrer">ricetta ↗</a></div></div>
-      <div class="row mv" style="gap:6px"><button class="btn sm ico" data-act="mv" data-id="${esc(id)}" data-d="-1" aria-label="Sposta in su" ${(!open||i===0)?'disabled':''}>▲</button>
-      <button class="btn sm ico" data-act="mv" data-id="${esc(id)}" data-d="1" aria-label="Sposta in giù" ${(!open||i===d.ids.length-1)?'disabled':''}>▼</button></div></li>`;
-  }).join('');
+      <label class="pp"><span class="sr">Posizione di ${esc(r.title)}</span><select id="rk-${esc(id)}" data-chg="rkpos" data-id="${esc(id)}" ${open?'':'disabled'}>${opts(pos)}</select></label></div>`;
+  };
+  const slots=d.slots.map((id,i)=>`<li class="slot ${id?'on':''}" data-slot="${i}"><div class="pos num">${i+1}</div>${id?row(id,i+1):`<div class="slot-empty">${open?'Trascina qui un piatto o sceglilo dall’elenco sotto':'Posizione libera'}</div>`}</li>`).join('');
+  const pool=d.pool.map(r=>`<li>${row(r.id,0)}</li>`).join('');
   let status;
-  if(d.dirty)status=`${badge('Modifiche non salvate','warn')}`;
-  else if(d.saved&&!d.fresh.length)status=badge('Classifica salvata','ok');
-  else if(d.saved)status=badge('Ci sono proposte nuove da ordinare','warn');
-  else status=badge('Non hai ancora votato questa categoria','muted');
-  return `<ol class="rank">${rows}</ol>
+  if(d.dirty)status=badge('Modifiche non salvate','warn');
+  else if(d.saved&&d.fresh.length)status=badge('Ci sono proposte nuove: decidi se metterle in classifica','warn');
+  else if(d.saved)status=badge('Classifica salvata','ok');
+  else status=badge('Non hai ancora votato questa portata','muted');
+  const hints=[];
+  if(d.filled&&d.filled<n)hints.push(`Hai compilato ${d.filled} ${d.filled===1?'posizione':'posizioni'} su ${n}: più posizioni compili, meno pareggi.`);
+  if(d.gaps)hints.push('Ci sono posizioni vuote: salvando, quelle sotto salgono a chiuderle.');
+  const canSave=open&&d.filled>0&&(d.dirty||!d.saved);
+  return `<div class="rankbox rank">
+    <p class="small muted rkinfo">In “${esc(catOf(cat).label)}” classifichi fino a <b class="num">${n}</b> piatti: 1° posto = <b class="num">${rankPts(cat,1)}</b> punti, ${n}° = <b class="num">${rankPts(cat,n)}</b>; fuori classifica 0. Se scegli una posizione già occupata, il piatto che c’era scende alla prima posizione libera sotto, oppure esce.</p>
+    <ol class="slots" aria-label="La tua classifica">${slots}</ol>
+    <div class="pool" data-drop="pool"><h4>Fuori classifica <span class="num muted">${d.pool.length}</span></h4>
+      ${d.pool.length?`<ul class="poolist">${pool}</ul>`:'<p class="small muted">Hai messo in classifica tutte le proposte.</p>'}</div>
+    ${hints.length?`<p class="small muted">${hints.join(' ')}</p>`:''}
     <div class="row spread" style="position:sticky;bottom:12px;background:var(--bg);padding:10px 0;border-top:1px solid var(--line)">${status}
-    <button class="btn primary" data-act="save-rank" ${(!open||(!d.dirty&&d.saved&&!d.fresh.length))?'disabled':''}>${d.saved&&!d.dirty&&!d.fresh.length?'Salvata':(d.dirty||d.saved?'Salva classifica':'Conferma questo ordine')}</button></div>`;
+    <button class="btn primary" data-act="save-rank" ${canSave?'':'disabled'}>${d.saved&&!d.dirty?'Salvata':(d.dirty||d.saved?'Salva classifica':'Conferma questa classifica')}</button></div></div>`;
 }
 function vRes(cat){
-  const st=voteStats()[cat],libero=!!fmtNow().libero,q=libero?0:(quotas(totalCap())[cat]||0);
+  const stAll=voteStats()[cat],libero=!!fmtNow().libero,q=libero?0:(quotas(totalCap())[cat]||0);
   const done=voters().length,conf=S.participants.filter(p=>p.confirmed);
   const missing=conf.filter(p=>!voters().some(v=>v.id===p.id)).map(p=>p.name);
+  const st=stAll;
   if(!st.length)return `<div class="empty"><h3>Nessuna proposta in questa categoria</h3></div>`;
+  const voted=x=>x.score!=null;
+  const same=(a,b)=>a&&b&&voted(a)&&voted(b)&&sameVotes(a,b);
+  const tie=i=>same(st[i],st[i-1])||same(st[i],st[i+1]);
+  /* pari merito a cavallo del limite della quota: serve una decisione dell'organizzatore */
+  const edge=q>0&&q<st.length&&same(st[q-1],st[q]);
+  const edgeAt=i=>edge&&same(st[i],st[q]);
   const rows=st.map((x,i)=>{
-    const inQ=x.score!=null&&i<q;
-    return `<div class="res ${i<3&&x.score!=null?'top3':''} ${inQ?'cut':''}"><div class="pos num">${i+1}</div>
-      <div><div style="font-weight:600;overflow-wrap:anywhere">${esc(x.r.title)}</div><div class="small muted">${x.r.region?esc(x.r.region)+' · ':''}${esc(pname(x.r.proposerId))}${x.r.slot?' · '+badge('In menu','ok'):''}</div></div>
-      <div class="bar" title="Punteggio"><i style="width:${x.score==null?0:x.score}%"></i></div>
-      <div class="small num" style="text-align:right">${x.score==null?'<span class="muted">nessun voto</span>':`<b>${x.score}</b>/100<br><span class="muted">pos. media ${fmtN(x.avg,1)} · ${x.n} vot${x.n===1?'o':'i'}</span>`}</div></div>`;
+    const inQ=voted(x)&&i<q,pari=voted(x)&&tie(i);
+    return `<div class="res ${i<3&&voted(x)?'top3':''} ${inQ?'cut':''}"><div class="pos num">${i+1}</div>
+      <div><div style="font-weight:600;overflow-wrap:anywhere">${esc(x.r.title)} ${pari?badge('Pari merito',edgeAt(i)?'warn':'muted'):''}</div><div class="small muted">${x.r.region?esc(x.r.region)+' · ':''}${esc(pname(x.r.proposerId))}${x.r.slot?' · '+badge('In menu','ok'):''}</div></div>
+      <div class="bar" title="Punteggio"><i style="width:${voted(x)?x.score:0}%"></i></div>
+      <div class="small num" style="text-align:right">${voted(x)?`<b>${x.pts}</b> punti<br><span class="muted">${x.first[0]} primi posti · in classifica per ${x.n} su ${x.nv}</span>`:'<span class="muted">nessun voto</span>'}</div></div>`;
   }).join('');
   return `<div class="note">Hanno votato <b class="num">${done}</b> su <b class="num">${S.participants.length}</b>.${missing.length?` Mancano i confermati: ${esc(missing.join(', '))}.`:''}
     ${libero?`Formato «${esc(fmtNow().nome)}»: nessuna quota per portata, entrano i più votati in assoluto.`:`Le righe evidenziate rientrano nella quota suggerita per “${esc(catOf(cat).label)}” (<b class="num">${q}</b> su ${totalCap()} piatti, formato ${esc(fmtNow().nome)}).`}</div>
+    ${edge?`<div class="note warn"><b>Pari merito al limite della quota.</b> Anche contando primi, secondi posti e così via i piatti evidenziati “Pari merito” sono identici: decide l’organizzatore.</div>`:''}
     <div class="panel" style="padding:0;overflow:hidden">${rows}</div>
-    <p class="hint">Punteggio 100 = sempre primo; 0 = sempre ultimo. Conta solo chi ha ordinato la categoria.</p>`;
+    <p class="hint">Punteggio: 1° posto = ${rankPts(cat,1)} punti, 2° = ${rankPts(cat,2)}… ultimo posto classificabile = 2; fuori classifica 0. La barra mostra i punti rispetto al massimo possibile (tutti i votanti della portata che mettono il piatto primo). A parità di punti: più primi posti, poi più secondi posti, e così via.</p>`;
 }
 A.vcat=t=>{UI.vcat=t.dataset.v;render();};
 A.vmode=t=>{UI.vmode=t.dataset.v;render();};
-A.mv=t=>{
-  const cat=UI.vcat,ids=rankedDraft(cat).ids.slice(),i=ids.indexOf(t.dataset.id),j=i+num(t.dataset.d);
-  if(i<0||j<0||j>=ids.length)return;
-  [ids[i],ids[j]]=[ids[j],ids[i]];UI.draft[cat]=ids;render();
-};
+CH.rkpos=t=>rankSet(UI.vcat,t.dataset.id,num(t.value));
+function rankSet(cat,id,p){
+  if(!canVote()){toast('Il voto non è aperto.','err');return;}
+  const d=rankedDraft(cat),cur=d.slots.indexOf(id)+1;
+  if(cur===p)return;
+  const out=rankPlace(d.slots,id,p);
+  UI.draft[cat]=out.slots;render();
+  if(out.moved){const t=R(out.moved.id).title;toast(out.moved.pos?`«${t}» scende alla posizione ${out.moved.pos}.`:`«${t}» esce dalla classifica: non c’era posto libero sotto.`);}
+}
 A['save-rank']=async()=>{
-  const cat=UI.vcat,ids=rankedDraft(cat).ids;
-  if(!S.meId)return;
+  const cat=UI.vcat,d=rankedDraft(cat),ids=d.slots.filter(Boolean);
+  if(!S.meId||!ids.length)return;
+  const now=Date.now(),patch={rank:{[cat]:ids},rankAt:{[cat]:now},updatedAt:now};
   const ex=S.votes[S.meId];
-  const ok=ex?await write('update','votes/'+S.meId,{rank:{[cat]:ids},updatedAt:Date.now()}):await write('set','votes/'+S.meId,{rank:{[cat]:ids},updatedAt:Date.now()});
+  const ok=ex?await write('update','votes/'+S.meId,patch):await write('set','votes/'+S.meId,patch);
   if(ok){delete UI.draft[cat];toast('Classifica salvata: '+catOf(cat).label);}
   render();
 };

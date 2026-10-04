@@ -119,12 +119,12 @@ const ranks={};['p_teo','p_tia','p_jack'].forEach(p=>{ranks[p]={};['antipasti','
   (await d.textContent('.cd-t')).includes('mezzanotte di lunedì 5 ottobre')?pass('chiusura scritta: mezzanotte di lunedì 5 ottobre'):fail('chiusura '+await d.textContent('.cd-t'));
   (await d.textContent('.cd [data-cd]')).trim()==='23 h 59 min 59 s'||(await d.textContent('.cd [data-cd]')).trim().startsWith('23:59')?pass('24 ore di voto: '+(await d.textContent('.cd [data-cd]')).trim()):fail('24 ore '+await d.textContent('.cd [data-cd]'));
   await d.click('.tab:has-text("Votazioni")');await d.waitForSelector('.rank');
-  (await d.$$eval('.rank [data-act=mv]',e=>e.filter(x=>!x.disabled).length))>0?pass('Votazioni: ordinamento attivo'):fail('voto non attivo');
+  (await d.$$eval('.rank select:not([disabled])',e=>e.length))>0?pass('Votazioni: ordinamento attivo'):fail('voto non attivo');
   await d.click('.rail button:has-text("Proposte")');await d.waitForSelector('.toast.err');
   (await d.textContent('.toast')).includes('scadenze automatiche')?pass('l’organizzatore non può riaprire una fase che le scadenze hanno chiuso (spiega come fare)'):fail('toast fase');
   await clock('2026-10-06T00:00:01+02:00');await waitTitle('Votazioni chiuse');
   (await d.textContent('.view')).includes('Le votazioni sono chiuse')?pass('martedì 6 ottobre 00:00: votazioni chiuse, risultati visibili'):fail('chiusura voto');
-  (await d.$$eval('.rank [data-act=mv]',e=>e.filter(x=>!x.disabled).length))===0?pass('ordinamento disattivato a voto chiuso'):fail('voto ancora attivo');
+  (await d.$$eval('.rank select:not([disabled])',e=>e.length))===0?pass('ordinamento disattivato a voto chiuso'):fail('voto ancora attivo');
 
   // --- editor delle scadenze (ora italiana)
   await clock('2026-10-03T12:00:00+02:00');

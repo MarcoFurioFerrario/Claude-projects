@@ -20,9 +20,10 @@ const recipes=[
   const card=t=>`.card:has(h3:text-is("${t}"))`;
   const open=async id=>{await d.evaluate(i=>{location.hash='#piatto-'+i;},id);await d.waitForSelector('.hero');};
   const rec=id=>d.evaluate(i=>__db.data.get('recipes/'+i),id);
+  const vedi=async sel=>{for(let i=0;i<6;i++){try{await d.locator(sel).scrollIntoViewIfNeeded({timeout:3000});return;}catch(e){await d.waitForTimeout(250);}}}; // un'immagine che non si carica ridisegna la pagina mentre scorriamo: si riprova
 
   await login('Teo');await d.click('.tab:has-text("Proposte")');await d.waitForSelector('.card');
-  await d.locator(card('Tiramisù')).scrollIntoViewIfNeeded(); // le foto si caricano quando la card è vicina alla vista (loading=lazy)
+  await vedi(card('Tiramisù')); // le foto si caricano quando la card è vicina alla vista (loading=lazy)
   await d.waitForFunction(()=>{const c=[...document.querySelectorAll('.card')].find(x=>x.querySelector('h3').textContent==='Tiramisù');const i=c&&c.querySelector('.foto.thumb img');return i&&i.complete&&i.naturalWidth>0;});
   pass('card: la foto si carica (anteprima 16:9)');
   const cap=await d.textContent(card('Tiramisù')+' .foto figcaption');
@@ -32,7 +33,7 @@ const recipes=[
   (await d.$(card('Fegato alla veneziana')+' .foto'))===null?pass('senza foto la card resta compatta, senza riquadri vuoti'):fail('riquadro vuoto');
 
   // immagine non raggiungibile
-  await d.locator(card('Frico')).scrollIntoViewIfNeeded();
+  await vedi(card('Frico'));
   await d.waitForSelector(card('Frico')+' .foto.ko');
   (await d.$(card('Frico')+' .foto img'))===null&&(await d.textContent(card('Frico')+' .foto.ko')).includes('Cucchiaio')?pass('immagine non raggiungibile: niente icona rotta, resta il link alla fonte'):fail('fallback foto');
   await d.screenshot({path:out+'/50-card-foto.png',clip:{x:0,y:380,width:1280,height:520}});

@@ -158,41 +158,69 @@ function groceryText(day){
 
 /* --- votazioni --- */
 const catRecipes=cat=>S.recipes.filter(r=>r.category===cat);
+/* Voto a classifica con tetto: per ogni portata ognuno ordina al massimo le sue prime N proposte (le altre restano "fuori classifica").
+   Punti: 1° posto = N+1, … ultimo posto classificabile = 2; fuori classifica = 0. È lo stesso ordine che si avrebbe dando -1 ai non classificati
+   (la scala è solo spostata di 1, così non ci sono numeri negativi). A pari punti: più primi posti, poi più secondi posti, e così via. */
+const RANK_CAP={antipasti:6,primi:6,secondi:6,contorni:4,dolci:6};
+const rankCap=cat=>RANK_CAP[cat]||6;                                      // posizioni previste per la portata (fisso: servono ai punti)
+const rankSlots=cat=>Math.min(rankCap(cat),catRecipes(cat).length);       // posizioni che si vedono ora (non più delle proposte)
+const rankPts=(cat,pos)=>rankCap(cat)+2-pos;
+const sameVotes=(a,b)=>a.pts===b.pts&&a.first.length===b.first.length&&a.first.every((f,i)=>f===b.first[i]);
 const myRank=cat=>{const v=S.votes[S.meId];return v&&v.rank&&Array.isArray(v.rank[cat])?v.rank[cat]:null;};
+/* Bozza della mia classifica: slots = una voce per posizione (id oppure null), pool = proposte fuori classifica */
 function rankedDraft(cat){
-  const all=catRecipes(cat);
-  if(UI.draft[cat]){
-    const ids=UI.draft[cat].filter(id=>R(id)&&R(id).category===cat);
-    const missing=all.filter(r=>!ids.includes(r.id)).sort(byTitle).map(r=>r.id);
-    return{ids:[...ids,...missing],dirty:true,fresh:[...missing],saved:!!myRank(cat)};
+  const all=catRecipes(cat),n=rankSlots(cat),ok=id=>!!(id&&R(id)&&R(id).category===cat);
+  const saved=myRank(cat),v=S.votes[S.meId];
+  let slots;
+  if(UI.draft[cat])slots=UI.draft[cat].slice(0,n);
+  else slots=(saved||[]).filter(ok).slice(0,n);                           // il voto salvato è una lista compatta; vecchie classifiche complete si troncano al tetto
+  while(slots.length<n)slots.push(null);
+  const seen=new Set();slots=slots.map(id=>{if(!ok(id)||seen.has(id))return null;seen.add(id);return id;});
+  const at=(v&&v.rankAt&&v.rankAt[cat])||(v&&v.updatedAt)||0;
+  const pool=all.filter(r=>!seen.has(r.id)).sort(byTitle);
+  const filled=slots.filter(Boolean).length,last=slots.reduce((m,id,i)=>id?i:m,-1);
+  return{slots,pool,n,filled,dirty:!!UI.draft[cat],saved:!!saved,
+    gaps:slots.slice(0,last+1).some(x=>!x),
+    fresh:saved?pool.filter(r=>(r.createdAt||0)>at).map(r=>r.id):[]};
+}
+/* Sposta un piatto alla posizione p (1..N) o fuori classifica (p=0). Se la posizione è occupata, chi c'era scende alla prima posizione libera sotto, altrimenti esce. */
+function rankPlace(slots,id,p){
+  slots=slots.map(x=>x===id?null:x);
+  let moved=null;
+  if(p>=1&&p<=slots.length){
+    const occ=slots[p-1];slots[p-1]=id;
+    if(occ){let j=p;while(j<slots.length&&slots[j])j++;
+      if(j<slots.length){slots[j]=occ;moved={id:occ,pos:j+1};}else moved={id:occ,pos:0};}
   }
-  const saved=(myRank(cat)||[]).filter(id=>R(id)&&R(id).category===cat);
-  const missing=all.filter(r=>!saved.includes(r.id)).sort(byTitle).map(r=>r.id);
-  return{ids:[...saved,...missing],dirty:false,fresh:saved.length?missing:[],saved:!!myRank(cat)};
+  return{slots,moved};
 }
 function voteStats(){
-  const by={};CATS.forEach(c=>by[c.key]=new Map());
+  const by={};CATS.forEach(c=>by[c.key]={m:new Map(),nv:0});
   for(const [pid,v] of Object.entries(S.votes)){
     if(!P(pid))continue;
     const rk=v.rank||{};
     for(const c of CATS){
-      const list=(rk[c.key]||[]).filter(id=>R(id)&&R(id).category===c.key);
-      const n=list.length;if(!n)continue;
+      const cap=rankCap(c.key),seen=new Set();
+      const list=(rk[c.key]||[]).filter(id=>R(id)&&R(id).category===c.key&&!seen.has(id)&&seen.add(id)).slice(0,cap);
+      if(!list.length)continue;
+      by[c.key].nv++;
       list.forEach((id,i)=>{
-        const o=by[c.key].get(id)||{sumPos:0,sumNorm:0,n:0};
-        o.sumPos+=i+1;o.sumNorm+=n>1?i/(n-1):0;o.n++;by[c.key].set(id,o);
+        const o=by[c.key].m.get(id)||{pts:0,n:0,first:new Array(cap).fill(0)};
+        o.pts+=rankPts(c.key,i+1);o.n++;o.first[i]++;by[c.key].m.set(id,o);
       });
     }
   }
   const res={};
   for(const c of CATS){
+    const cap=rankCap(c.key),nv=by[c.key].nv;
     res[c.key]=catRecipes(c.key).map(r=>{
-      const o=by[c.key].get(r.id);
-      return{r,n:o?o.n:0,avg:o?o.sumPos/o.n:null,score:o?Math.round(100*(1-o.sumNorm/o.n)):null};
+      const o=by[c.key].m.get(r.id);
+      const pct=o&&nv?100*o.pts/((cap+1)*nv):null;
+      return{r,n:o?o.n:0,nv,pts:o?o.pts:0,first:o?o.first:new Array(cap).fill(0),pct,score:pct==null?null:Math.round(pct)};
     }).sort((a,b)=>{
-      if((a.score==null)!==(b.score==null))return a.score==null?1:-1;
-      if(a.score!==b.score)return (b.score||0)-(a.score||0);
-      if(a.n!==b.n)return b.n-a.n;
+      if((a.pct==null)!==(b.pct==null))return a.pct==null?1:-1;
+      if(a.pts!==b.pts)return b.pts-a.pts;
+      for(let i=0;i<a.first.length;i++)if(a.first[i]!==b.first[i])return b.first[i]-a.first[i];
       return byTitle(a.r,b.r);
     });
   }
@@ -211,7 +239,7 @@ function quotas(total){
   for(let i=0;used<total;i++,used++)q[rem[i%rem.length][0]]++;
   return q;
 }
-const byScore=(a,b)=>((b.score==null?-1:b.score)-(a.score==null?-1:a.score))||byTitle(a.r,b.r);
+const byScore=(a,b)=>((b.pct==null?-1:b.pct)-(a.pct==null?-1:a.pct))||byTitle(a.r,b.r);
 function suggest(){
   const st=voteStats(),fm=fmtNow(),total=totalCap(),q=quotas(total);
   const chosen=[],left=[];

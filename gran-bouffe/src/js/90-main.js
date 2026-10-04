@@ -29,6 +29,7 @@ function build(){
 }
 function render(){
   const root=$('#app');if(!root)return;
+  if(UI.dragging){UI.dragPending=true;return;} // durante il trascinamento la pagina non si ridisegna
   const ae=document.activeElement;
   const fid=ae&&ae.id&&root.contains(ae)?ae.id:null;
   const sel=fid&&ae.selectionStart!=null?[ae.selectionStart,ae.selectionEnd]:null;

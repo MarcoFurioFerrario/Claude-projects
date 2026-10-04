@@ -67,12 +67,12 @@ const ranks={ // id votante -> categoria -> ordine
   await p.screenshot({path:out+'/05-proposte-mobile.png',fullPage:true});
   await p.click('.tab:has-text("Votazioni")');await p.waitForSelector('.rank');
   await p.screenshot({path:out+'/06-voto-mobile.png',fullPage:true});
-  const before=await p.$$eval('.rank .t',e=>e.map(x=>x.textContent.trim()));
-  await p.click('.rank li:nth-child(2) [data-act=mv][data-d="-1"]');
-  const after=await p.$$eval('.rank .t',e=>e.map(x=>x.textContent.trim()));
-  before[0]===after[1]&&before[1]===after[0]?pass('riordino classifica'):fail('riordino '+before+' / '+after);
+  const before=await p.$$eval('.slots .t',e=>e.map(x=>x.textContent.trim()));
+  await p.selectOption('#rk-r8','1');
+  const after=await p.$$eval('.slots .t',e=>e.map(x=>x.textContent.trim()));
+  before[0]===after[1]&&before[1]===after[0]?pass('cambio posizione: il secondo piatto va al 1° posto, chi c’era scende al primo posto libero sotto'):fail('riordino '+before+' / '+after);
   await p.click('[data-act=save-rank]');
-  await p.waitForFunction(()=>__db.data.get('votes/p_teo')&&__db.data.get('votes/p_teo').rank.primi[0]);
+  await p.waitForFunction(()=>__db.data.get('votes/p_teo')&&__db.data.get('votes/p_teo').rank.antipasti[0]==='r8');
   pass('classifica salvata');
   await p.click('[data-act=vmode][data-v=ris]');await p.waitForSelector('.res');
   await p.screenshot({path:out+'/07-risultati-mobile.png',fullPage:true});

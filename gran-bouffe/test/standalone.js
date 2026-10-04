@@ -72,9 +72,9 @@ const mockFirebase=`
   pass('2 proposte salvate (nessun valore undefined verso Firestore)');
   await page.click('.fchip:has-text("Tutte")');
   await page.click('.rail button:has-text("Voto")');await page.waitForFunction(()=>document.querySelector('.rail .now')&&document.querySelector('.rail .now').textContent.includes('Voto'));
-  await page.click('.tab:has-text("Votazioni")');await page.click('[data-act=vcat][data-v=antipasti]');await page.click('[data-act=save-rank]');
+  await page.click('.tab:has-text("Votazioni")');await page.click('[data-act=vcat][data-v=antipasti]');await page.locator('select[data-chg=rkpos]').first().selectOption('1');await page.click('[data-act=save-rank]');
   await page.waitForFunction(()=>JSON.parse(localStorage.getItem('mockfs'))['votes/p_marco-furio']);
-  await page.click('[data-act=vcat][data-v=primi]');await page.waitForSelector('[data-act=save-rank]:not([disabled])');await page.click('[data-act=save-rank]');
+  await page.click('[data-act=vcat][data-v=primi]');await page.locator('select[data-chg=rkpos]').first().selectOption('1');await page.waitForSelector('[data-act=save-rank]:not([disabled])');await page.click('[data-act=save-rank]');
   await page.waitForFunction(()=>{const v=JSON.parse(localStorage.getItem('mockfs'))['votes/p_marco-furio'];return v&&v.rank.antipasti&&v.rank.primi;});
   pass('voto salvato su due categorie senza perdere la prima (merge)');
   // 7) niente blocco AI, CSV attivo

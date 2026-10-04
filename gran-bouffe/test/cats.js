@@ -27,13 +27,13 @@ const recipes=[R('c1','Bigoli in salsa','primi'),R('c2','Jota triestina','zuppe'
   const vt=await d.$$eval('.filterchips .fchip',e=>e.map(x=>x.textContent.replace(/[✓\s\d]+$/,'').replace(/^✓\s*/,'').trim()));
   vt.length===7?pass('votazioni: 5 categorie (più i due interruttori)'):fail('chip voto '+vt);
   await d.click('[data-act=vcat][data-v=primi]');await d.waitForSelector('.rank');
-  const rows=await d.$$eval('.rank .t',e=>e.map(x=>x.textContent.replace(/\s+/g,' ').trim()));
-  rows.length===2&&rows[0].startsWith('Bigoli in salsa')&&rows[1].startsWith('Jota triestina')&&rows[1].includes('Nuova')
-    ?pass('in "Primi e zuppe" l\'ordine salvato resta e la jota compare come nuova da ordinare'):fail('righe '+rows);
+  const slotRows=await d.$$eval('.slots .t',e=>e.map(x=>x.textContent.replace(/\s+/g,' ').trim())),poolRows=await d.$$eval('.pool .t',e=>e.map(x=>x.textContent.replace(/\s+/g,' ').trim()));
+  slotRows.length===1&&slotRows[0]==='Bigoli in salsa'&&poolRows.length===1&&poolRows[0].startsWith('Jota triestina')&&poolRows[0].includes('Nuova')
+    ?pass('in "Primi e zuppe" la classifica salvata resta e la jota compare fuori classifica come nuova'):fail('righe '+slotRows+' / '+poolRows);
   // il vecchio voto sulle zuppe non conta più, quello sui primi sì
   await d.click('[data-act=vmode][data-v=ris]');await d.waitForSelector('.res');
   const res=await d.$$eval('.res',e=>e.map(x=>x.textContent.replace(/\s+/g,' ').trim()));
-  res.length===2&&res[0].includes('Bigoli in salsa')&&res[0].includes('1 voto')&&res[1].includes('nessun voto')?pass('risultati: il voto sui primi vale, quello sulle vecchie zuppe viene ignorato'):fail('risultati '+res);
+  res.length===2&&res[0].includes('Bigoli in salsa')&&res[0].includes('7 punti')&&res[1].includes('nessun voto')?pass('risultati: il voto sui primi vale, quello sulle vecchie zuppe viene ignorato'):fail('risultati '+res);
   // suggerimenti
   await d.click('.tab:has-text("Suggerimenti")');await d.waitForSelector('.card.sg');
   const sg=await d.$$eval('h3.grp',e=>e.map(x=>x.textContent.replace(/\s+/g,' ').trim()));
