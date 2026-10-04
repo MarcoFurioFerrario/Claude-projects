@@ -298,6 +298,8 @@ function sugRecipe(s){
   return S.recipes.find(r=>r.sugId===s.id)||S.recipes.find(r=>{const t=norm(r.title);return s.k.some(k=>t.indexOf(k)>=0);})||null;
 }
 const sugState=s=>{const r=sugRecipe(s);return r?(r.slot?'menu':'proposta'):'libera';};
+/* nei Suggerimenti restano solo i piatti non ancora proposti */
+const sugLibere=()=>SUG.filter(s=>sugState(s)==='libera');
 const sugFor=r=>(r.sugId&&sugById(r.sugId))||SUG.find(s=>s.k.some(k=>norm(r.title).indexOf(k)>=0))||null;
 const famMates=s=>s.f?SUG.filter(x=>x.f===s.f&&x.id!==s.id):[];
 function famDupes(){
@@ -309,5 +311,5 @@ function sugPre(s){
   const src=(s.src&&s.src[0])||{};
   return{sugId:s.id,title:s.t,category:s.c,region:s.r,link:src.u||'',
     vini:s.v?[{nome:s.v,bottiglie:0}]:[],fasi:(s.fasi||[]).map(f=>({label:f.label,ore:f.ore})),
-    verStato:s.weak?'da_sostituire':'da_verificare',verNota:s.weak||''};
+    verStato:s.weak?'da_sostituire':'da_verificare',verNota:s.weak||'',foto:SUG_FOTO[s.id]?Object.assign({},SUG_FOTO[s.id]):null};
 }

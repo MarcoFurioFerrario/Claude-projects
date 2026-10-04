@@ -38,7 +38,7 @@ const recipes=[R('c1','Bigoli in salsa','primi'),R('c2','Jota triestina','zuppe'
   await d.click('.tab:has-text("Suggerimenti")');await d.waitForSelector('.card.sg');
   const sg=await d.$$eval('h3.grp',e=>e.map(x=>x.textContent.replace(/\s+/g,' ').trim()));
   sg.some(x=>x.startsWith('Zuppe'))?fail('gruppo zuppe nei suggerimenti'):pass('suggerimenti: niente più gruppo "Zuppe" ('+sg.map(x=>x.replace(/\s\d+$/,'')).join(', ')+')');
-  const jota=await d.$$eval('.card.sg h3',e=>e.map(x=>x.textContent));jota.includes('Jota triestina')?pass('la jota è tra i primi del catalogo'):fail('jota');
+  const jota=await d.$$eval('.card.sg h3',e=>e.map(x=>x.textContent));!jota.includes('Jota triestina')&&jota.length>0?pass('la jota, già proposta, non compare più tra i suggerimenti'):fail('jota '+jota.includes('Jota triestina'));
   // menu: suggerisci rispetta le quote 22
   await d.evaluate(()=>{__db.data.get('settings/main').fase='menu';__db.notify();});
   console.log(errors.length?'ERRORI:\n'+errors.join('\n'):'nessun errore di console');

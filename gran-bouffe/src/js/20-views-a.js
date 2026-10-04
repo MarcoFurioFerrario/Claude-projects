@@ -19,28 +19,33 @@ function vLogin(){
     <p class="hint">Il tuo nome viene ricordato su questo dispositivo con un cookie (dura un anno). Non raccogliamo altri dati personali.</p></div></div>`;
 }
 
-function vHeader(){
-  const st=S.settings,sg=stage(),idx=faseIdx(faseEff());
+function vStatus(){
+  const sg=stage(),idx=faseIdx(faseEff());
   const rail=FASI.map((s,i)=>{
     const cls=sg==='attesa'?(i===0?'done':i===1?'next':''):(i<idx?'done':i===idx?'now':'');
     const cur=cls==='now'||cls==='next'?'aria-current="step"':'';
     return `<li class="${cls}">${isOrg()?`<button data-act="fase" data-v="${s[0]}" ${cur}>${s[1]}</button>`:`<span ${cur}>${s[1]}</span>`}</li>`;
   }).join('');
   const sel=slotted().length,tot=totalCap(),nv=voters().length;
+  return `<div class="wrap status"><div class="railhd">Fase del progetto${isOrg()?' · tocca una fase per cambiarla':''}</div><ol class="rail" aria-label="Fasi del progetto">${rail}</ol>
+  <div class="stats">${(UI.tab==='suggerimenti'&&!UI.dish)?'':`<button class="pill-sug" data-act="tab" data-v="suggerimenti"><b class="num">${sugLibere().length}</b> ricette ancora da proporre <span aria-hidden="true">→</span></button>`}<span><b class="num">${nConf()}</b> confermati</span><span><b class="num">${S.recipes.length}</b> proposte</span>
+  <span><b class="num">${nv}</b> hanno votato</span><span><b class="num">${sel}</b>/${tot} piatti in menu</span></div></div>`;
+}
+function vHeader(){
+  const st=S.settings;
   return `<header class="wrap top">
     <div class="brand"><div class="mark">Gran Bouffe <i>${esc(st.tema||'Triveneto')}</i></div>
     <div class="sub">${esc(st.edizione||'')} edizione · dal film di Marco Ferreri, 1973</div></div>
     <div class="who">${me()?`<span>Ciao, <b>${esc(me().name)}</b>${isOrg()?' · organizzatore':''}</span> <button class="link" data-act="logout">Cambia nome</button>`:''} <span id="savestat">${saveHtml()}</span></div>
-  </header>
-  <div class="wrap"><ol class="rail" aria-label="Fasi del progetto">${rail}</ol>
-  <div class="stats">${(UI.tab==='suggerimenti'&&!UI.dish)?'':`<button class="pill-sug" data-act="tab" data-v="suggerimenti"><b class="num">${SUG.length}</b> ricette pronte da cui attingere <span aria-hidden="true">→</span></button>`}<span><b class="num">${nConf()}</b> confermati</span><span><b class="num">${S.recipes.length}</b> proposte</span>
-  <span><b class="num">${nv}</b> hanno votato</span><span><b class="num">${sel}</b>/${tot} piatti in menu</span></div></div>`;
+  </header>`;
 }
 
 function vNav(){
-  const tabs=[['suggerimenti','Suggerimenti',SUG.length],['libro','Il libro'],['proposte','Proposte',S.recipes.length],['voto','Votazioni'],['menu','Menu',slotted().length+'/'+totalCap()],['spesa','Spesa'],['programma','Programma'],['persone','Persone',nConf()]];
-  return `<nav class="tabs" aria-label="Sezioni"><div class="in">${tabs.map(t=>
-    `<button class="tab${t[0]==='suggerimenti'?' tab-sug':''}" data-act="tab" data-v="${t[0]}" ${(UI.tab===t[0]&&!UI.dish)||(UI.dish&&t[0]==='menu')?'aria-current="page"':''}>${t[1]}${t[2]!==undefined?`<span class="n">${t[2]}</span>`:''}</button>`).join('')}</div></nav>`;
+  const tabs=[['suggerimenti','Suggerimenti',sugLibere().length],['libro','Il libro'],['proposte','Proposte',S.recipes.length],['voto','Votazioni'],['menu','Menu',slotted().length+'/'+totalCap()],['spesa','Spesa'],['programma','Programma'],['persone','Persone',nConf()]];
+  return `<nav class="tabs" aria-label="Sezioni del sito"><button class="tabarr l" data-act="tabs-scroll" data-d="-1" aria-label="Mostra le schede a sinistra" hidden>‹</button>
+    <div class="in" role="tablist">${tabs.map(t=>
+    `<button class="tab${t[0]==='suggerimenti'?' tab-sug':''}" role="tab" data-act="tab" data-v="${t[0]}" ${(UI.tab===t[0]&&!UI.dish)||(UI.dish&&t[0]==='menu')?'aria-current="page" aria-selected="true"':'aria-selected="false"'}>${t[1]}${t[2]!==undefined?`<span class="n">${t[2]}</span>`:''}</button>`).join('')}</div>
+    <button class="tabarr r" data-act="tabs-scroll" data-d="1" aria-label="Mostra le altre schede" hidden>›</button></nav>`;
 }
 
 /* --- proposte --- */
@@ -103,13 +108,13 @@ async function ownerToggle(id){
 A['owner-toggle']=t=>ownerToggle(t.dataset.id);
 /* Le due strade per proporre un piatto, una accanto all'altra: dal catalogo oppure fuori elenco. */
 function vChoose(){
-  const libere=SUG.filter(x=>sugState(x)==='libera').length,open=canPropose();
+  const libere=sugLibere().length,open=canPropose();
   const sg=stage(),motivo={attesa:'la scadenza è passata',voto:'sono aperte le votazioni'}[sg]||'il menu è in definizione';
   const why=!open?`<div class="note"><b>Le proposte sono chiuse:</b> ${motivo}. Un organizzatore può ancora aggiungere piatti o spostare la scadenza.</div>`:'';
   return `${why}<div class="choose" role="group" aria-label="Come proporre un piatto">
     <div class="opt a"><span class="optn" aria-hidden="true">A</span>
       <h3>Scegli tra i Suggerimenti</h3>
-      <p>${SUG.length} piatti del Triveneto già pronti, con link, vino e tempi. <b class="num">${libere}</b> sono ancora da proporre: il modulo si compila da solo.</p>
+      <p><b class="num">${libere}</b> piatti del Triveneto ancora da proporre, con foto, link, vino e tempi: scegli e il modulo si compila da solo.</p>
       <button class="btn primary big" data-act="tab" data-v="suggerimenti">Sfoglia i Suggerimenti <span aria-hidden="true">→</span></button></div>
     <div class="or" aria-hidden="true"><span>oppure</span></div>
     <div class="opt b"><span class="optn" aria-hidden="true">B</span>

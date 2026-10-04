@@ -3,20 +3,24 @@
    senza copiarla, e sotto compaiono sempre il nome della fonte e il link alla pagina d'origine. */
 const fotoOf=r=>{const f=r&&r.foto;return f&&isUrl(f.url)?f:null;};
 const canFoto=r=>!!S.meId&&(canEditRecipe(r)||ownersOf(r).includes(S.meId));
-const fotoKey=(r,f)=>r.id+'|'+f.url;
-function fotoFig(r,cls){
-  const f=fotoOf(r);if(!f)return '';
+const fotoKey=(k,f)=>k+'|'+f.url;
+/* html di una foto (di una proposta o di un piatto del catalogo). Le immagini create con AI portano sempre il badge «Creata con AI». */
+function fotoMarkup(f,alt,key,cls){
   const pg=isUrl(f.pagina)?f.pagina:'',nome=f.fonte||domain(pg||f.url);
-  const cap=`${pg?`<a href="${esc(safeHref(pg))}" target="_blank" rel="noopener noreferrer">${esc(nome)} ↗</a>`:esc(nome)}${f.autore?' · '+esc(f.autore):''}${pg?wlMark(pg):''}`;
-  if(UI.fotoKo&&UI.fotoKo[fotoKey(r,f)])return `<div class="foto ko ${cls||''}"><span>La foto non si carica da qui. ${pg?`Aprila alla fonte: ${cap}`:''}</span></div>`;
-  return `<figure class="foto ${cls||''}"><img src="${esc(f.url)}" alt="${esc('Foto: '+r.title)}" loading="lazy" decoding="async" referrerpolicy="no-referrer" data-foto="${esc(r.id)}">
-    <figcaption>Foto: ${cap}</figcaption></figure>`;
+  const cap=f.ai
+    ?`<b>Immagine creata con AI</b> a partire dalla ricetta${f.autore?' ('+esc(f.autore)+')':''}: non è una foto del piatto vero.`
+    :`Foto: ${pg?`<a href="${esc(safeHref(pg))}" target="_blank" rel="noopener noreferrer">${esc(nome)} ↗</a>`:esc(nome)}${f.autore?' · '+esc(f.autore):''}${pg?wlMark(pg):''}`;
+  if(UI.fotoKo&&UI.fotoKo[fotoKey(key,f)])return `<div class="foto ko ${cls||''}"><span>${f.ai?'L’immagine creata con AI non si carica.':`La foto non si carica da qui. ${pg?`Aprila alla fonte: ${cap}`:''}`}</span></div>`;
+  return `<figure class="foto ${cls||''}${f.ai?' ai':''}">${f.ai?`<span class="aib" title="Immagine creata con AI, non è una foto del piatto vero">Creata con AI</span>`:''}<img src="${esc(f.url)}" alt="${esc(alt)}" loading="lazy" decoding="async" referrerpolicy="no-referrer" data-foto="${esc(key)}">
+    <figcaption>${cap}</figcaption></figure>`;
 }
+const fotoFig=(r,cls)=>{const f=fotoOf(r);return f?fotoMarkup(f,'Foto: '+r.title,r.id,cls):'';};
+const sugFotoFig=s=>{const f=SUG_FOTO[s.id];return f?fotoMarkup(f,'Foto: '+s.t,'sug:'+s.id,'thumb'):'';};
 /* immagine che non si carica (sito che blocca il collegamento diretto, indirizzo cambiato): niente icona rotta, si mostra il link alla fonte */
 document.addEventListener('error',e=>{
   const im=e.target;if(!im||im.tagName!=='IMG'||!im.dataset||!im.dataset.foto)return;
-  const r=R(im.dataset.foto),f=fotoOf(r);if(!f)return;
-  UI.fotoKo=UI.fotoKo||{};UI.fotoKo[fotoKey(r,f)]=1;schedule();
+  const key=im.dataset.foto,f=key.indexOf('sug:')===0?SUG_FOTO[key.slice(4)]:fotoOf(R(key));if(!f)return;
+  UI.fotoKo=UI.fotoKo||{};UI.fotoKo[fotoKey(key,f)]=1;schedule();
 },true);
 
 /* nella scheda del piatto: la foto, oppure il riquadro per aggiungerla */

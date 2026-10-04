@@ -46,7 +46,7 @@ function openRecipeEditor(id,pre){
   const r=id?R(id):null;
   if(!S.meId){toast('Scegli prima il tuo nome.','err');return;}
   DR={id:id||null,title:r?r.title:'',category:r?r.category:(UI.cat||'primi'),region:r?r.region||'':'',link:r?r.link:'',note:r?r.note||'':'',
-    ownerIds:r?ownersOf(r):[S.meId],ver:Object.assign({stato:'da_verificare',linkAutorevole:'',fonte:'',nota:''},r&&r.verifica||{}),sugId:'',fasi:[],vini:[],verStato:'da_verificare',verNota:''};
+    ownerIds:r?ownersOf(r):[S.meId],ver:Object.assign({stato:'da_verificare',linkAutorevole:'',fonte:'',nota:''},r&&r.verifica||{}),sugId:'',fasi:[],vini:[],verStato:'da_verificare',verNota:'',foto:null};
   if(pre&&!id)Object.assign(DR,pre);
   const org=isOrg();
   openModal(`<header><div><h3>${id?'Modifica proposta':'Proponi un piatto'}</h3><p class="hint">${id?'Proposto da '+esc(pname(r.proposerId)):'Proponente: '+esc(me().name)}</p></div><button class="btn sm" data-act="modal-close">Annulla</button></header>
@@ -86,8 +86,9 @@ A['save-recipe']=async()=>{
     if(isOrg()&&DR.ver.linkAutorevole&&!isUrl(DR.ver.linkAutorevole))return err('Il link alla fonte autorevole non è valido.');
     ok=await write('update','recipes/'+DR.id,patch);
   }else{
-    ok=await write('set','recipes/'+uid('r'),{title,category:DR.category,region:DR.region,link,note:DR.note.trim(),proposerId:S.meId,ownerIds:DR.ownerIds,teamIds:[],
-      createdAt:Date.now(),verifica:{stato:DR.verStato||'da_verificare',nota:DR.verNota||''},sugId:DR.sugId||'',slot:'',serves:4,porzione:'normale',ingredients:[],steps:[],fasi:DR.fasi||[],preparabileACasa:false,vini:DR.vini||[],consigli:''});
+    const fo=DR.foto&&isUrl(DR.foto.url)?{url:DR.foto.url,pagina:DR.foto.pagina||'',fonte:DR.foto.fonte||'',autore:DR.foto.autore||'',data:DR.foto.data||'',ai:!!DR.foto.ai}:null;
+    ok=await write('set','recipes/'+uid('r'),Object.assign({title,category:DR.category,region:DR.region,link,note:DR.note.trim(),proposerId:S.meId,ownerIds:DR.ownerIds,teamIds:[],
+      createdAt:Date.now(),verifica:{stato:DR.verStato||'da_verificare',nota:DR.verNota||''},sugId:DR.sugId||'',slot:'',serves:4,porzione:'normale',ingredients:[],steps:[],fasi:DR.fasi||[],preparabileACasa:false,vini:DR.vini||[],consigli:''},fo?{foto:fo}:{}));
   }
   if(ok){closeModal();toast(DR.id?'Proposta aggiornata':'Proposta aggiunta');DR=null;}
 };

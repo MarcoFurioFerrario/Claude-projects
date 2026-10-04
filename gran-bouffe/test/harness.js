@@ -8,6 +8,7 @@ const body=fs.readFileSync(path.join(root,'index.html'),'utf8').replace(/<link[^
 const page_html=`<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"></head><body>${body}</body></html>`;
 const seed=JSON.parse(fs.readFileSync(path.join(root,'seed','seed.json'),'utf8')).writes;
 
+const PNG=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==','base64');
 const mock=`
 (function(){
   const data=new Map(), ls=[];
@@ -45,7 +46,9 @@ async function run(){
     page.on('console',m=>{if(m.type()==='error')errors.push('console: '+m.text());});
     page.on('pageerror',e=>errors.push('pageerror: '+e.message));
     await page.addInitScript(mock);
-    await page.route('**/*',r=>{const u=r.request().url();if(u==='https://gb.test/')return r.fulfill({status:200,contentType:'text/html; charset=utf-8',body:page_html});return r.abort();});
+    await page.route('**/*',r=>{const u=r.request().url();if(u==='https://gb.test/')return r.fulfill({status:200,contentType:'text/html; charset=utf-8',body:page_html});
+      if(r.request().resourceType()==='image'&&!/broken\.test/.test(u))return r.fulfill({status:200,contentType:'image/png',body:PNG}); // foto di fonti esterne: immagine finta, nessun accesso alla rete
+      return r.abort();});
     await page.goto('https://gb.test/',{waitUntil:'domcontentloaded'});
     return page;
   };

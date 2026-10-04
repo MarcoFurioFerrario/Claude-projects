@@ -25,19 +25,38 @@ function build(){
   if(!UI.migrated&&isOrg()&&!S.readOnly&&S.legacyCats&&Object.keys(S.legacyCats).length){UI.migrated=true;migrateCats();}
   const views={proposte:vProposte,suggerimenti:vSugg,libro:vLibro,voto:vVoto,menu:vMenu,spesa:vSpesa,programma:vProgramma,persone:vPersone};
   const view=UI.dish?vPiatto():(views[UI.tab]||vProposte)();
-  return vHeader()+vBand()+vNav()+`<main class="wrap">${S.offline?`<div class="note warn" style="margin-top:16px"><b>Sei offline.</b> Puoi continuare: le modifiche restano in coda e si salvano appena torna la connessione. Non chiudere la pagina.</div>`:''}${S.readOnly?`<div class="note bad" style="margin-top:16px"><b>Sola lettura.</b> Puoi guardare tutto ma non modificare: chiedi a Marco di darti accesso come collaboratore.</div>`:''}${view}</main>`;
+  return vHeader()+vNav()+vStatus()+vBand()+`<main class="wrap">${S.offline?`<div class="note warn" style="margin-top:16px"><b>Sei offline.</b> Puoi continuare: le modifiche restano in coda e si salvano appena torna la connessione. Non chiudere la pagina.</div>`:''}${S.readOnly?`<div class="note bad" style="margin-top:16px"><b>Sola lettura.</b> Puoi guardare tutto ma non modificare: chiedi a Marco di darti accesso come collaboratore.</div>`:''}${view}</main>`;
 }
 function render(){
   const root=$('#app');if(!root)return;
   const ae=document.activeElement;
   const fid=ae&&ae.id&&root.contains(ae)?ae.id:null;
   const sel=fid&&ae.selectionStart!=null?[ae.selectionStart,ae.selectionEnd]:null;
+  const tsOld=$('.tabs .in',root),tl=tsOld?tsOld.scrollLeft:0;
   let html;
   try{html=build();}catch(e){console.error(e);html=`<div class="wrap"><div class="note bad" style="margin-top:24px">Errore di visualizzazione: ${esc(e.message)}</div></div>`;}
   if(S.newVersion)html=`<div class="upd" role="status"><span><b>Nuova versione disponibile.</b> Aggiorna per vedere le novità.</span> <button class="btn sm primary" data-act="reload-new">Aggiorna ora</button></div>`+html;
   root.innerHTML=html;
+  tabsFix(tl);
   if(fid){const n=document.getElementById(fid);if(n){n.focus();try{if(sel)n.setSelectionRange(sel[0],sel[1]);}catch(e){}}}
 }
+/* barra delle schede: resta dove l'utente l'ha scorsa, la scheda attiva è sempre visibile, le frecce compaiono solo se c'è altro da scorrere */
+function tabsArrows(){
+  const n=$('.tabs .in'),bar=$('.tabs');if(!n||!bar)return;
+  const l=$('.tabarr.l',bar),r=$('.tabarr.r',bar),canL=n.scrollLeft>2,canR=n.scrollLeft+n.clientWidth<n.scrollWidth-2;
+  if(l)l.hidden=!canL;if(r)r.hidden=!canR;
+  bar.classList.toggle('can-l',canL);bar.classList.toggle('can-r',canR);
+}
+function tabsFix(left){
+  const n=$('.tabs .in');if(!n)return;
+  n.scrollLeft=left||0;
+  const a=$('.tab[aria-current="page"]',n);
+  if(a){const lo=a.offsetLeft-28,hi=a.offsetLeft+a.offsetWidth+28;if(lo<n.scrollLeft)n.scrollLeft=Math.max(0,lo);else if(hi>n.scrollLeft+n.clientWidth)n.scrollLeft=hi-n.clientWidth;}
+  tabsArrows();
+}
+A['tabs-scroll']=t=>{const n=$('.tabs .in');if(n)n.scrollBy({left:num(t.dataset.d)*Math.max(160,n.clientWidth*0.6),behavior:'smooth'});};
+document.addEventListener('scroll',e=>{if(e.target&&e.target.classList&&e.target.classList.contains('in')&&e.target.parentElement&&e.target.parentElement.classList.contains('tabs'))tabsArrows();},true);
+window.addEventListener('resize',tabsArrows);
 let raf=0;
 function schedule(){if(raf)return;raf=requestAnimationFrame(()=>{raf=0;render();});}
 

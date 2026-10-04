@@ -420,6 +420,66 @@ button.chip.reg[aria-pressed="true"]{outline:3px solid var(--polenta);outline-of
 .pens details p{margin-top:8px;font-size:14.5px}
 .panel.libro{border-left:6px solid var(--polenta)}
 
+/* barra delle schede: pulsanti veri, scorrevoli, con frecce e bordi sfumati */
+.tabs{display:flex;align-items:center;gap:0;position:sticky}
+.tabs .in{flex:1;min-width:0;gap:8px;padding-block:8px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}
+.tabs .in::-webkit-scrollbar{display:none}
+.tab{border:1.5px solid var(--btn-line);border-bottom-width:1.5px;border-radius:999px;background:var(--surface);color:var(--ink);padding:8px 15px;box-shadow:var(--btn-shadow);scroll-snap-align:center;flex:0 0 auto}
+.tab:hover{background:var(--surface-2);border-bottom-color:var(--btn-line);color:var(--ink);transform:translateY(-1px)}
+.tab:active{transform:translateY(1px);box-shadow:none}
+.tab[aria-current="page"]{background:var(--ink);color:var(--bg);border-color:var(--ink);box-shadow:none}
+.tab[aria-current="page"] .n{background:var(--polenta);color:var(--polenta-ink)}
+.tab.tab-sug{margin:0;background:var(--accent);color:var(--accent-ink);border-color:var(--accent);padding:8px 16px}
+.tab.tab-sug:hover{filter:brightness(1.1);background:var(--accent);color:var(--accent-ink)}
+.tab.tab-sug[aria-current="page"]{background:var(--accent);color:var(--accent-ink);box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--accent)}
+.tabarr{flex:0 0 auto;width:34px;height:34px;border-radius:50%;border:1.5px solid var(--btn-line);background:var(--surface);color:var(--ink);font-size:22px;line-height:1;cursor:pointer;display:grid;place-items:center;box-shadow:var(--btn-shadow);z-index:2}
+.tabarr[hidden]{display:none}
+.tabarr:hover{background:var(--surface-2)}
+.tabarr.l{margin-right:6px}.tabarr.r{margin-left:6px}
+.tabs.can-r .in{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 28px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 28px),transparent)}
+.tabs.can-l .in{-webkit-mask-image:linear-gradient(90deg,transparent,#000 28px);mask-image:linear-gradient(90deg,transparent,#000 28px)}
+.tabs.can-l.can-r .in{-webkit-mask-image:linear-gradient(90deg,transparent,#000 28px,#000 calc(100% - 28px),transparent);mask-image:linear-gradient(90deg,transparent,#000 28px,#000 calc(100% - 28px),transparent)}
+
+/* foto create con AI */
+.foto{position:relative}
+.foto .aib{position:absolute;top:8px;left:8px;z-index:1;background:var(--warn-soft);color:var(--warn);border:1px solid var(--warn);border-radius:6px;padding:2px 8px;font-size:11.5px;font-weight:800;box-shadow:var(--shadow)}
+.foto.ai figcaption{background:var(--warn-soft);color:var(--ink)}
+
+/* Equilibrio */
+.eq{display:flex;flex-direction:column;gap:6px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13px;margin-top:8px}
+.legend .lg{margin-right:6px;width:14px;height:14px;border-radius:4px}
+.lg.m{background:var(--ok)}.lg.p{background:var(--info)}.lg.l{background:var(--surface);border:2px dashed var(--btn-line)}
+.eqgrid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,330px),1fr));gap:22px;margin-top:14px}
+.eqblk{display:flex;flex-direction:column;gap:12px;min-width:0}
+.eqr2{display:flex;flex-direction:column;gap:5px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+.eqr2:last-child{border-bottom:0}
+.eql{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;justify-content:space-between}
+.verd{font-size:12px;font-weight:700;padding:1px 8px;border-radius:6px}
+.verd.ok{background:var(--ok-soft);color:var(--ok)}.verd.warn{background:var(--warn-soft);color:var(--warn)}.verd.bad{background:var(--bad-soft);color:var(--bad)}.verd.info{background:var(--info-soft);color:var(--info)}
+.eqbar{display:flex;height:30px;border-radius:8px;overflow:hidden;background:var(--surface-2);min-width:34px}
+.eqbar i{display:flex;align-items:center;justify-content:center;min-width:24px;font-style:normal;font-size:13px;font-weight:800}
+.eqbar i.m{background:var(--ok);color:#fff}.eqbar i.p{background:var(--info);color:#fff}
+.eqbar i.l{background:var(--surface);color:var(--ink-2);border:2px dashed var(--btn-line);border-radius:6px}
+.eqn{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:center;color:var(--ink-2)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .eqbar i.m,:root:not([data-theme="light"]) .eqbar i.p{color:#0c1517}}
+:root[data-theme="dark"] .eqbar i.m,:root[data-theme="dark"] .eqbar i.p{color:#0c1517}
+
+/* fase del progetto: un indicatore a tratti, volutamente diverso dalla barra delle schede (che è cliccabile) */
+.status{padding-top:2px}
+.railhd{margin-top:10px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2);font-weight:600}
+.rail{border:0;background:none;border-radius:0;overflow:visible;gap:8px;margin:6px 0 0;counter-reset:st}
+.rail li{counter-increment:st;border-left:0!important;background:none!important;text-align:left}
+.rail li>*{padding:6px 2px 0;border-top:4px solid var(--line);border-radius:2px;color:var(--ink-2);font-size:12.5px;text-align:left}
+.rail li>*::before{content:counter(st) ". ";font-weight:700}
+.rail li.done>*{border-top-color:var(--ok);color:var(--ok)}
+.rail li.done>*::before{content:"✓ "}
+.rail li.next>*{border-top-color:color-mix(in srgb,var(--polenta) 55%,var(--line));color:var(--ink)}
+.rail li.now>*{border-top-color:var(--polenta);color:var(--ink);font-weight:700}
+.rail button:hover{background:none;border-top-color:var(--ink)}
+#sg-eq,#sg-list{scroll-margin-top:76px} /* la barra delle schede resta fissa in alto: non deve coprire il titolo */
+.hs-eq{align-self:flex-start}
+
 </style>
 <div id="app"><p class="boot">Carico Gran Bouffe…</p></div>
 <div id="modal" hidden></div>
@@ -615,7 +675,7 @@ function errMsg(e){
   if(c==='revoked')return 'Accesso alla pagina revocato.';
   return 'Salvataggio non riuscito'+(e&&e.message?': '+e.message:'.');
 }
-const BUILD='musqs7iq';
+const BUILD='mut6g47a';
 const BACKUP_EVERY=window.GB_BACKUP_EVERY||15*60*1000,BACKUP_KEEP=60;
 function saveHtml(){
   if(S.offline)return '<span class="sv warn">Offline: le modifiche restano in coda</span>';
@@ -850,6 +910,58 @@ const EXTRA={
 };
 SUG.forEach(s=>Object.assign(s,EXTRA[s.id]||{}));
 const sugById=id=>SUG.find(s=>s.id===id);
+
+/* ============ foto dei piatti del catalogo Suggerimenti ============
+   Dove esiste una foto in una fonte affidabile: indirizzo dell’immagine + pagina d’origine (come per le proposte).
+   Altrimenti: immagine creata con AI a partire dalla ricetta (ai:true), salvata in docs/img/ai e segnalata ovunque con il badge «Creata con AI». */
+const AI_BASE="https://marcofurioferrario.github.io/Claude-projects/img/ai/";
+const SUG_FOTO={
+  strangolapreti:{url:"https://www.cucchiaio.it/content/cucchiaio/it/ricette/2009/12/ricetta-strangolapreti/jcr:content/page_images/ogImage.img10.jpg/1756979111510.jpg",pagina:"https://www.cucchiaio.it/ricetta/ricetta-strangolapreti/",fonte:"Cucchiaio d’Argento",data:"2026-10-04"},
+  vicentina:{url:"https://www.cucchiaio.it/content/cucchiaio/it/ricette/2016/10/baccala-alla-vicentina/jcr:content/imagePreview.img10.jpg/1476289521568.jpg",pagina:"https://www.cucchiaio.it/ricetta/baccala-alla-vicentina/",fonte:"Cucchiaio d’Argento",data:"2026-10-04"},
+  casunziei:{url:"https://www.cucchiaio.it/content/cucchiaio/it/ricette/2009/12/ricetta-cassunziei-ampezzani/jcr:content/imagePreview.img10.jpg/1426090284685.jpg",pagina:"https://www.cucchiaio.it/ricetta/ricetta-cassunziei-ampezzani/",fonte:"Cucchiaio d’Argento",data:"2026-10-04"},
+  fasioi:{url:"https://www.cucchiaio.it/content/cucchiaio/it/ricette/2009/11/ricetta-pasta-fagioli/jcr:content/page_images/ogImage.img10.jpg/1672670693825.jpg",pagina:"https://www.cucchiaio.it/ricetta/ricetta-pasta-fagioli/",fonte:"Cucchiaio d’Argento",data:"2026-10-04"},
+  schlutz:{url:"https://www.suedtirol.info/content/dam/idm/assets/images/recipes/s/schlutzkrapfen-suedtirol.jpg/_jcr_content/renditions/web-rendition-6.webp",pagina:"https://www.suedtirol.info/de/de/essen-und-trinken/plp-rezept/pdp-rezept.29D7873B-602C-4E41-AC13-4A7A07D7BFF0.schlutzkrapfen-rezept---original-aus-suedtirol",fonte:"Alto Adige · Südtirol Info",data:"2026-10-04"},
+  blecs:{url:"https://www.turismofvg.it/proxyvfs.axd/image_hd/r297032/file-jpg?v=357726&ext=.jpg",pagina:"https://www.turismofvg.it/it/fvglivexperience/ricetta-autunnale-friulana-blecs-con-zucca-e-formadi-frant",fonte:"Turismo FVG",data:"2026-10-04"},
+  busara:{url:"https://www.cucchiaio.it/content/cucchiaio/it/ricette/2009/12/ricetta-scampi-buzara/jcr:content/imagePreview.img10.jpg/1410274959430.jpg",pagina:"https://www.cucchiaio.it/ricetta/ricetta-scampi-buzara/",fonte:"Cucchiaio d’Argento",data:"2026-10-04"},
+  boreto:{url:"https://www.turismofvg.it/proxyvfs.axd/image_hd/r206362/file-jpg?v=238118&ext=.jpg",pagina:"https://www.turismofvg.it/it/calendario-2022/agosto/boreto-alla-graisana-+-il-vino-perfetto-che-le-accompagna",fonte:"Turismo FVG",data:"2026-10-04"},
+  zaleti:{url:"https://www.cucchiaio.it/content/cucchiaio/it/ricette/2013/11/ricetta-zaeti/jcr:content/header-par/image_single.img10.jpg/1410320137833.jpg",pagina:"https://www.cucchiaio.it/ricetta/ricetta-zaeti/",fonte:"Cucchiaio d’Argento",data:"2026-10-04"},
+  fregolotta:{url:"https://www.cucchiaio.it/content/cucchiaio/it/ricette/2009/12/ricetta-torta-fregolotta/jcr:content/header-par/image_single.img10.jpg/1519904975240.jpg",pagina:"https://www.cucchiaio.it/ricetta/ricetta-torta-fregolotta/",fonte:"Cucchiaio d’Argento",data:"2026-10-04"},
+  putizza:{url:"https://www.cucchiaio.it/content/cucchiaio/it/ricette/2009/12/ricetta-putizza/jcr:content/header-par/image_single.img10.jpg/1410281991454.jpg",pagina:"https://www.cucchiaio.it/ricetta/ricetta-putizza/",fonte:"Cucchiaio d’Argento",data:"2026-10-04"},
+  toc:{url:AI_BASE+"toc.jpg",ai:true,fonte:"Immagine creata con AI",autore:"Pollinations.AI",prompt:"Toc’ in braide: polenta morbida con fonduta di Montasio e burro nocciola, in una scodella rustica",data:"2026-10-04"},
+  pastissada:{url:AI_BASE+"pastissada.jpg",ai:true,fonte:"Immagine creata con AI",autore:"Pollinations.AI",prompt:"Pastissada de caval: stufato di carne in vino rosso e spezie, con polenta",data:"2026-10-04"},
+  schie:{url:AI_BASE+"schie.jpg",ai:true,fonte:"Immagine creata con AI",autore:"Pollinations.AI",prompt:"Schie con polenta bianca: gamberetti di laguna fritti su polenta morbida",data:"2026-10-04"},
+  bobici:{url:AI_BASE+"bobici.jpg",ai:true,fonte:"Immagine creata con AI",autore:"Pollinations.AI",prompt:"Minestra de bobiçi: zuppa di mais tenero, borlotti e patate con costine affumicate",data:"2026-10-04"},
+  seppie:{url:AI_BASE+"seppie.jpg",ai:true,fonte:"Immagine creata con AI",autore:"Pollinations.AI",prompt:"Seppie in nero alla veneziana: seppie nel loro nero con polenta alla griglia",data:"2026-10-04"},
+  brasato:{url:AI_BASE+"brasato.jpg",ai:true,fonte:"Immagine creata con AI",autore:"Pollinations.AI",prompt:"Brasato di manzo al Teroldego: manzo brasato in glassa scura di vino rosso, con polenta",data:"2026-10-04"},
+  /* piatti già proposti nelle proposte: stessa foto della proposta, così se la proposta viene tolta il piatto torna nei Suggerimenti con la sua foto */
+  sarde:{url:"https://www.cucchiaio.it/content/dam/cucchiaio/it/ricette/2009/11/ricetta-sarde-saor/CUC-sarde-in-saor-closed.jpg",pagina:"https://www.cucchiaio.it/ricetta/ricetta-sarde-saor/",fonte:"Cucchiaio d'Argento",data:"2026-10-03"},
+  mantecato:{url:"https://www.cucchiaio.it/content/dam/cucchiaio/it/ricette/2009/12/ricetta-baccala-mantecato/_MG_7844.jpg",pagina:"https://www.cucchiaio.it/ricetta/ricetta-baccala-mantecato/",fonte:"Cucchiaio d'Argento",data:"2026-10-03"},
+  frico:{url:"https://www.cucchiaio.it/content/cucchiaio/it/ricette/2020/10/frico/jcr:content/header-par/image-single.img10.jpg/1603357966970.jpg",pagina:"https://www.cucchiaio.it/ricetta/frico/",fonte:"Cucchiaio d'Argento",data:"2026-10-03"},
+  tortel:{url:"https://www.trentinoqualita.it/images/ricette/tortel.jpg",pagina:"https://www.trentinoqualita.it/it/ricette/tortel-di-patate_493_idri/",fonte:"Qualità Trentino",data:"2026-10-03"},
+  risibisi:{url:"https://www.cucchiaio.it/content/cucchiaio/it/ricette/2009/11/ricetta-risi-bisi/jcr:content/imagePreview.img10.jpg/1410265016797.jpg",pagina:"https://www.cucchiaio.it/ricetta/ricetta-risi-bisi/",fonte:"Cucchiaio d'Argento",data:"2026-10-03"},
+  bigolisalsa:{url:"https://www.cucchiaio.it/content/cucchiaio/it/ricette/2009/12/ricetta-bigoli-salsa-dacciughe/jcr:content/header-par/image_single.img10.jpg/1630939947206.jpg",pagina:"https://www.cucchiaio.it/ricetta/ricetta-bigoli-salsa-dacciughe/",fonte:"Cucchiaio d'Argento",data:"2026-10-03"},
+  canederli:{url:"https://www.cucchiaio.it/content/cucchiaio/it/ricette/2014/05/ricetta-canederli-speck-brodo/jcr:content/header-par/image_single.img10.jpg/1410328965361.jpg",pagina:"https://www.cucchiaio.it/ricetta/ricetta-canederli-speck-brodo/",fonte:"Cucchiaio d'Argento",data:"2026-10-03"},
+  cjarsons:{url:"https://www.turismofvg.it/proxyvfs.axd/image_hd/r295120/file-jpg?v=352927&ext=.jpg",pagina:"https://www.turismofvg.it/it/fvglivexperience/cjarsons-la-tradizione-della-carnia-in-un-piatto-di-pasta-ripiena",fonte:"Turismo FVG",data:"2026-10-03"},
+  jota:{url:"https://www.cucchiaio.it/content/cucchiaio/it/ricette/2009/12/ricetta-jota-triestina/jcr:content/header-par/image_single.img10.jpg/1410286575886.jpg",pagina:"https://www.cucchiaio.it/ricetta/ricetta-jota-triestina/",fonte:"Cucchiaio d'Argento",data:"2026-10-03"},
+  fegato:{url:"https://www.cucchiaio.it/content/cucchiaio/it/ricette/2009/11/ricetta-fegato-veneziana/jcr:content/page_images/ogImage.img10.jpg/1666713163451.jpg",pagina:"https://www.cucchiaio.it/ricetta/ricetta-fegato-veneziana/",fonte:"Cucchiaio d'Argento",data:"2026-10-03"},
+  gulasch:{url:"https://www.aifb.it/wp-content/uploads/2016/11/Gulash-triestino-5-800x534.jpg",pagina:"https://www.aifb.it/cultura-enogastronomica-italiana/piatti-tradizione-italiana/giornata-nazionale-del-gulash-triestino/",fonte:"AIFB · Calendario del cibo italiano",data:"2026-10-03"},
+  brovada:{url:"https://www.cucchiaio.it/content/cucchiaio/it/ricette/2009/12/ricetta-muset-brovade/jcr:content/imagePreview.img10.jpg/1410274633179.jpg",pagina:"https://www.cucchiaio.it/ricetta/ricetta-muset-brovade/",fonte:"Cucchiaio d'Argento",data:"2026-10-03"},
+  grostl:{url:"https://www.tirol.at/images/INpEGQlUSqE/rs:fill:1180:767/cb:/crop:6000:4000:nowe:0:0/gravity:fp:0.5:0.5/aHR0cHM6Ly93d3cudGlyb2wuYXQvZmlsZWFkbWluL3Rpcm9sL0t1bGluYXJpay9SZXplcHRlL1Rpcm9sZXJfR3IlQzMlQjZzdGwvR3IlQzMlQjZzdGxfVGlyb2xfV2VyYnVuZ19Lb3NjaGl0emtpX0thdGhyaW5fS2VpbmVfT3J0c2FuZ2FiZS0xLmpwZw",pagina:"https://www.tirol.at/aktivitaeten/kulinarik/rezepte/tiroler-groestl",fonte:"Tirol (turismo)",autore:"Kathrin Koschitzki / Tirol Werbung",data:"2026-10-03"},
+  tiramisu:{url:"https://www.cucchiaio.it/content/cucchiaio/it/ricette/2009/12/ricetta-tiramisu/jcr:content/header-par/image_single.img10.jpg/1448965006057.jpg",pagina:"https://www.cucchiaio.it/ricetta/ricetta-tiramisu/",fonte:"Cucchiaio d'Argento",data:"2026-10-03"},
+  gubana:{url:"https://www.turismofvg.it/proxyvfs.axd/image_hd/r163587/file-jpg?v=182035&ext=.jpg",pagina:"https://www.turismofvg.it/it/264707/la-ricetta-della-gubana-delle-valli-del-natisone-+-il-vino-perfetto-che-la-accompagna",fonte:"Turismo FVG",data:"2026-10-03"},
+  presnitz:{url:"https://www.turismofvg.it/proxyvfs.axd/image_hd/r176056/file-jpg?v=199038&ext=.jpg",pagina:"https://www.turismofvg.it/calendario-2021/settembre/presnitz",fonte:"Turismo FVG",data:"2026-10-03"},
+  strudel:{url:"https://www.cucchiaio.it/content/cucchiaio/it/ricette/2013/09/ricetta-strudel-mele/jcr:content/page_images/ogImage.img10.jpg/1669298078306.jpg",pagina:"https://www.cucchiaio.it/ricetta/ricetta-strudel-mele/",fonte:"Cucchiaio d’Argento",data:"2026-10-03"},
+  saraceno:{url:"https://www.genusslandsuedtirol.it/i/recipe/i106_1.jpg",pagina:"https://www.genusslandsuedtirol.it/de/cmspre/buchweizentorte/cmspre-recipe-106,46.html",fonte:"Il gusto dell'Alto Adige",data:"2026-10-03"},
+  granseola:{url:"https://www.cucchiaio.it/content/cucchiaio/it/ricette/2010/11/ricetta-granceola-succo-agrumi/jcr:content/header-par/image_single.img10.jpg/1410298602307.jpg",pagina:"https://www.cucchiaio.it/ricetta/ricetta-granceola-succo-agrumi/",fonte:"Cucchiaio d'Argento",data:"2026-10-03"},
+  salame:{url:"https://www.docfriuli.eu/wp-content/uploads/2024/02/salamp.jpg",pagina:"https://www.docfriuli.eu/piu-che-un-vino/salame-con-laceto/",fonte:"Consorzio DOC Friuli",data:"2026-10-03"},
+  tirtlan:{url:"https://www.alto-adige.com/media/3766/_mg_5912_b.jpg?rxy=0.5104895104895105,0.5433070866141733&width=1200&height=630&rnd=133522945317930000",pagina:"https://www.alto-adige.com/vacanze-gourmet-alto-adige/specialit%C3%A0-alto-adige/tirtlan",fonte:"Alto Adige (promozione del territorio)",data:"2026-10-03"},
+  peara:{url:"https://www.cucchiaio.it/content/cucchiaio/it/ricette/2012/12/ricetta-peara/jcr:content/header-par/image_single.img10.jpg/1410311264386.jpg",pagina:"https://www.cucchiaio.it/ricetta/ricetta-peara/",fonte:"Cucchiaio d'Argento",data:"2026-10-03"},
+  capriolo:{url:"https://www.cucchiaio.it/content/cucchiaio/it/ricette/2010/01/ricetta-capriolo-salsa/jcr:content/imagePreview.img10.jpg/1410274373721.jpg",pagina:"https://www.cucchiaio.it/ricetta/ricetta-capriolo-salsa/",fonte:"Cucchiaio d'Argento",data:"2026-10-03"},
+  kaiser:{url:"https://www.alto-adige.com/media/3526/mgm01048tosc.jpg?width=1200&height=630&rnd=133572988424070000",pagina:"https://www.alto-adige.com/vacanze-gourmet-alto-adige/specialit%C3%A0-alto-adige/kaiserschmarrn",fonte:"Alto Adige (promozione del territorio)",data:"2026-10-03"},
+  zelten:{url:"https://www.cucchiaio.it/content/cucchiaio/it/ricette/2009/12/ricetta-zelten/jcr:content/header-par/image_single.img10.jpg/1576593432884.jpg",pagina:"https://www.cucchiaio.it/ricetta/ricetta-zelten/",fonte:"Cucchiaio d’Argento",data:"2026-10-03"},
+  carnesalada:{url:AI_BASE+"carnesalada.jpg",ai:true,fonte:"Immagine creata con AI",autore:"Pollinations.AI",prompt:"Carne salada e fasoi: carne di manzo salata a fettine con fagioli borlotti, olio e cipolla",data:"2026-10-04"},
+  bigoliarna:{url:AI_BASE+"bigoliarna.jpg",ai:true,fonte:"Immagine creata con AI",autore:"Pollinations.AI",prompt:"Bigoli co’ l’arna: bigoli di farina integrale con ragù di anatra novella",data:"2026-10-04"}
+};
 
 /* ============ dal libro «Giorni Golosi» (Marco Ferrario, Trenta Editore, 2013) ============
    Riassunti e parafrasi delle pagine sulle tre regioni del Triveneto: le ricette citate (alcune con ricetta completa nel libro,
@@ -1274,6 +1386,8 @@ function sugRecipe(s){
   return S.recipes.find(r=>r.sugId===s.id)||S.recipes.find(r=>{const t=norm(r.title);return s.k.some(k=>t.indexOf(k)>=0);})||null;
 }
 const sugState=s=>{const r=sugRecipe(s);return r?(r.slot?'menu':'proposta'):'libera';};
+/* nei Suggerimenti restano solo i piatti non ancora proposti */
+const sugLibere=()=>SUG.filter(s=>sugState(s)==='libera');
 const sugFor=r=>(r.sugId&&sugById(r.sugId))||SUG.find(s=>s.k.some(k=>norm(r.title).indexOf(k)>=0))||null;
 const famMates=s=>s.f?SUG.filter(x=>x.f===s.f&&x.id!==s.id):[];
 function famDupes(){
@@ -1285,7 +1399,7 @@ function sugPre(s){
   const src=(s.src&&s.src[0])||{};
   return{sugId:s.id,title:s.t,category:s.c,region:s.r,link:src.u||'',
     vini:s.v?[{nome:s.v,bottiglie:0}]:[],fasi:(s.fasi||[]).map(f=>({label:f.label,ore:f.ore})),
-    verStato:s.weak?'da_sostituire':'da_verificare',verNota:s.weak||''};
+    verStato:s.weak?'da_sostituire':'da_verificare',verNota:s.weak||'',foto:SUG_FOTO[s.id]?Object.assign({},SUG_FOTO[s.id]):null};
 }
 
 /* ============ viste: accesso, testata, proposte ============ */
@@ -1309,28 +1423,33 @@ function vLogin(){
     <p class="hint">Il tuo nome viene ricordato su questo dispositivo con un cookie (dura un anno). Non raccogliamo altri dati personali.</p></div></div>`;
 }
 
-function vHeader(){
-  const st=S.settings,sg=stage(),idx=faseIdx(faseEff());
+function vStatus(){
+  const sg=stage(),idx=faseIdx(faseEff());
   const rail=FASI.map((s,i)=>{
     const cls=sg==='attesa'?(i===0?'done':i===1?'next':''):(i<idx?'done':i===idx?'now':'');
     const cur=cls==='now'||cls==='next'?'aria-current="step"':'';
     return `<li class="${cls}">${isOrg()?`<button data-act="fase" data-v="${s[0]}" ${cur}>${s[1]}</button>`:`<span ${cur}>${s[1]}</span>`}</li>`;
   }).join('');
   const sel=slotted().length,tot=totalCap(),nv=voters().length;
+  return `<div class="wrap status"><div class="railhd">Fase del progetto${isOrg()?' · tocca una fase per cambiarla':''}</div><ol class="rail" aria-label="Fasi del progetto">${rail}</ol>
+  <div class="stats">${(UI.tab==='suggerimenti'&&!UI.dish)?'':`<button class="pill-sug" data-act="tab" data-v="suggerimenti"><b class="num">${sugLibere().length}</b> ricette ancora da proporre <span aria-hidden="true">→</span></button>`}<span><b class="num">${nConf()}</b> confermati</span><span><b class="num">${S.recipes.length}</b> proposte</span>
+  <span><b class="num">${nv}</b> hanno votato</span><span><b class="num">${sel}</b>/${tot} piatti in menu</span></div></div>`;
+}
+function vHeader(){
+  const st=S.settings;
   return `<header class="wrap top">
     <div class="brand"><div class="mark">Gran Bouffe <i>${esc(st.tema||'Triveneto')}</i></div>
     <div class="sub">${esc(st.edizione||'')} edizione · dal film di Marco Ferreri, 1973</div></div>
     <div class="who">${me()?`<span>Ciao, <b>${esc(me().name)}</b>${isOrg()?' · organizzatore':''}</span> <button class="link" data-act="logout">Cambia nome</button>`:''} <span id="savestat">${saveHtml()}</span></div>
-  </header>
-  <div class="wrap"><ol class="rail" aria-label="Fasi del progetto">${rail}</ol>
-  <div class="stats">${(UI.tab==='suggerimenti'&&!UI.dish)?'':`<button class="pill-sug" data-act="tab" data-v="suggerimenti"><b class="num">${SUG.length}</b> ricette pronte da cui attingere <span aria-hidden="true">→</span></button>`}<span><b class="num">${nConf()}</b> confermati</span><span><b class="num">${S.recipes.length}</b> proposte</span>
-  <span><b class="num">${nv}</b> hanno votato</span><span><b class="num">${sel}</b>/${tot} piatti in menu</span></div></div>`;
+  </header>`;
 }
 
 function vNav(){
-  const tabs=[['suggerimenti','Suggerimenti',SUG.length],['libro','Il libro'],['proposte','Proposte',S.recipes.length],['voto','Votazioni'],['menu','Menu',slotted().length+'/'+totalCap()],['spesa','Spesa'],['programma','Programma'],['persone','Persone',nConf()]];
-  return `<nav class="tabs" aria-label="Sezioni"><div class="in">${tabs.map(t=>
-    `<button class="tab${t[0]==='suggerimenti'?' tab-sug':''}" data-act="tab" data-v="${t[0]}" ${(UI.tab===t[0]&&!UI.dish)||(UI.dish&&t[0]==='menu')?'aria-current="page"':''}>${t[1]}${t[2]!==undefined?`<span class="n">${t[2]}</span>`:''}</button>`).join('')}</div></nav>`;
+  const tabs=[['suggerimenti','Suggerimenti',sugLibere().length],['libro','Il libro'],['proposte','Proposte',S.recipes.length],['voto','Votazioni'],['menu','Menu',slotted().length+'/'+totalCap()],['spesa','Spesa'],['programma','Programma'],['persone','Persone',nConf()]];
+  return `<nav class="tabs" aria-label="Sezioni del sito"><button class="tabarr l" data-act="tabs-scroll" data-d="-1" aria-label="Mostra le schede a sinistra" hidden>‹</button>
+    <div class="in" role="tablist">${tabs.map(t=>
+    `<button class="tab${t[0]==='suggerimenti'?' tab-sug':''}" role="tab" data-act="tab" data-v="${t[0]}" ${(UI.tab===t[0]&&!UI.dish)||(UI.dish&&t[0]==='menu')?'aria-current="page" aria-selected="true"':'aria-selected="false"'}>${t[1]}${t[2]!==undefined?`<span class="n">${t[2]}</span>`:''}</button>`).join('')}</div>
+    <button class="tabarr r" data-act="tabs-scroll" data-d="1" aria-label="Mostra le altre schede" hidden>›</button></nav>`;
 }
 
 /* --- proposte --- */
@@ -1393,13 +1512,13 @@ async function ownerToggle(id){
 A['owner-toggle']=t=>ownerToggle(t.dataset.id);
 /* Le due strade per proporre un piatto, una accanto all'altra: dal catalogo oppure fuori elenco. */
 function vChoose(){
-  const libere=SUG.filter(x=>sugState(x)==='libera').length,open=canPropose();
+  const libere=sugLibere().length,open=canPropose();
   const sg=stage(),motivo={attesa:'la scadenza è passata',voto:'sono aperte le votazioni'}[sg]||'il menu è in definizione';
   const why=!open?`<div class="note"><b>Le proposte sono chiuse:</b> ${motivo}. Un organizzatore può ancora aggiungere piatti o spostare la scadenza.</div>`:'';
   return `${why}<div class="choose" role="group" aria-label="Come proporre un piatto">
     <div class="opt a"><span class="optn" aria-hidden="true">A</span>
       <h3>Scegli tra i Suggerimenti</h3>
-      <p>${SUG.length} piatti del Triveneto già pronti, con link, vino e tempi. <b class="num">${libere}</b> sono ancora da proporre: il modulo si compila da solo.</p>
+      <p><b class="num">${libere}</b> piatti del Triveneto ancora da proporre, con foto, link, vino e tempi: scegli e il modulo si compila da solo.</p>
       <button class="btn primary big" data-act="tab" data-v="suggerimenti">Sfoglia i Suggerimenti <span aria-hidden="true">→</span></button></div>
     <div class="or" aria-hidden="true"><span>oppure</span></div>
     <div class="opt b"><span class="optn" aria-hidden="true">B</span>
@@ -1749,7 +1868,8 @@ A['copy-carta']=()=>copyText(cartaText(),'Carta copiata: incollala dove vuoi');
 const LV_ORD={A:0,B:1,C:2,'':3};
 const lvBadge=lv=>lv?badge(LIVELLI[lv].t,LIVELLI[lv].cls):badge('Livello da assegnare','muted');
 
-function sugList(){return SUG.map(s=>({s,st:sugState(s),r:sugRecipe(s)}));}
+/* Nei Suggerimenti compaiono solo i piatti non ancora proposti: appena uno viene proposto sparisce dall'elenco. */
+function sugList(){return sugLibere().map(s=>({s,st:'libera',r:null}));}
 function filterSug(all){
   const q=norm(UI.sq);
   const l=all.filter(x=>{
@@ -1758,7 +1878,6 @@ function filterSug(all){
     if(UI.sreg&&s.r!==UI.sreg)return false;
     if(UI.swt&&s.wt!==UI.swt)return false;
     if(UI.slv&&(s.lv||'-')!==UI.slv)return false;
-    if(UI.sst&&x.st!==UI.sst)return false;
     if(q&&norm([s.t,s.ln,s.i,s.v,s.r,s.rl,s.d].join(' ')).indexOf(q)<0)return false;
     return true;
   });
@@ -1769,34 +1888,14 @@ function filterSug(all){
     az:byT};
   return l.sort(cmp[UI.ssort]||cmp.cat);
 }
-function eqHtml(rows){
-  const max=Math.max(1,...rows.map(r=>r.l+r.p+r.m));
-  return `<div class="eq">${rows.map(r=>{
-    const t=r.l+r.p+r.m;
-    return `<div class="eqr"><span>${esc(r.label)}</span><div class="eqb" style="width:${Math.max(6,t/max*100)}%" role="img" aria-label="${esc(r.label)}: ${r.m} approvate, ${r.p} proposte, ${r.l} da proporre"><i class="m" style="flex:${r.m}"></i><i class="p" style="flex:${r.p}"></i><i class="l" style="flex:${r.l}"></i></div><span class="num small muted">${r.m} · ${r.p} · ${r.l}</span></div>`;
-  }).join('')}</div>`;
-}
-function eqRows(all,labels,key){
-  return labels.map(([k,lab])=>{
-    const xs=all.filter(x=>x.s[key]===k);
-    return{label:lab,m:xs.filter(x=>x.st==='menu').length,p:xs.filter(x=>x.st==='proposta').length,l:xs.filter(x=>x.st==='libera').length};
-  });
-}
-function sugFlag(x){
-  if(x.st==='menu')return badge('Approvata · '+slotLabel(x.r.slot),'ok');
-  if(x.st==='proposta')return badge(['menu','cucina'].includes(faseEff())?'Proposta · non selezionata':'Già proposta','info');
-  return badge('Da proporre','muted');
-}
 function sugCard(x,grouped){
-  const s=x.s,r=x.r,c=catOf(s.c);
-  const mates=x.st==='libera'?famMates(s).map(m=>({m,st:sugState(m)})).filter(y=>y.st!=='libera'):[];
+  const s=x.s,c=catOf(s.c);
+  const mates=famMates(s).map(m=>({m,st:sugState(m)})).filter(y=>y.st!=='libera');
   const showLn=s.ln&&norm(s.ln)!==norm(s.t);
   const srcs=s.src.map(u=>`<li><a href="${esc(safeHref(u.u))}" target="_blank" rel="noopener noreferrer">${esc(u.l)} ↗</a>${u.n?` <span class="small muted">(${esc(u.n)})</span>`:''}</li>`).join('');
-  const act=x.st==='libera'
-    ?`<button class="btn sm primary" data-act="sug-propose" data-id="${esc(s.id)}" ${canPropose()?'':'disabled'}>Proponi questo piatto</button>`
-    :`<span class="small muted">Proposta da ${esc(pname(r.proposerId))}</span><button class="btn sm" data-act="sug-open" data-id="${esc(s.id)}">${r.slot?'Apri la scheda':'Vedi la proposta'}</button>`;
-  return `<article class="card sg ${x.st}">
-    <div class="row spread"><div class="row" style="gap:6px">${grouped?'':chipCat(s.c)}<span class="chip reg" style="--h:${REG_H[s.r]||0}">${esc(REG_SHORT[s.r]||s.r)}</span></div>${sugFlag(x)}</div>
+  return `<article class="card sg libera">
+    ${sugFotoFig(s)}
+    <div class="row" style="gap:6px">${grouped?'':chipCat(s.c)}<span class="chip reg" style="--h:${REG_H[s.r]||0}">${esc(REG_SHORT[s.r]||s.r)}</span></div>
     <h3>${esc(s.t)}</h3>${(showLn||s.rl)?`<p class="small muted" style="margin-top:-4px">${showLn?`<i>${esc(s.ln)}</i>`:''}${showLn&&s.rl?' · ':''}${esc(s.rl||'')}</p>`:''}
     <p class="small">${esc(s.d)}</p>
     <dl class="kv"><dt>Ingredienti</dt><dd>${esc(s.i)}</dd>
@@ -1811,47 +1910,103 @@ function sugCard(x,grouped){
         ${s.tempi?`<p class="small"><b>Tempi.</b> ${esc(s.tempi)}</p>`:''}
         ${s.mais?`<p class="small"><b>Polenta o farina.</b> ${esc(s.mais)}</p>`:''}
         ${s.f?`<p class="small muted">Famiglia: ${esc(FAM[s.f])}.</p>`:''}</div></details>
-    <div class="row spread" style="margin-top:auto">${act}</div></article>`;
+    <div class="row spread" style="margin-top:auto"><button class="btn sm primary" data-act="sug-propose" data-id="${esc(s.id)}" ${canPropose()?'':'disabled'}>Proponi questo piatto</button></div></article>`;
+}
+
+/* ---- equilibrio: cosa abbiamo già e cosa manca (regioni, portate, vini) ---- */
+function eqRowsData(){
+  const lib=sugLibere(),all=SUG.map(s=>({s,st:sugState(s)})),fm=fmtNow(),q=fm.libero?null:quotas(totalCap());
+  const mk=(k,label,tot,menu,libere,extra)=>Object.assign({k,label,tot,menu,libere},extra||{});
+  const reg=REGIONI.map(r=>{const rs=S.recipes.filter(x=>x.region===r);return mk(r,r,rs.length,rs.filter(x=>x.slot).length,lib.filter(s=>s.r===r).length);});
+  const cat=CATS.map(c=>{const rs=S.recipes.filter(x=>x.category===c.key);return mk(c.key,c.label,rs.length,rs.filter(x=>x.slot).length,lib.filter(s=>s.c===c.key).length,{q:q?q[c.key]:null});});
+  const wt=WTYPES.map(w=>{const xs=all.filter(x=>x.s.wt===w);return mk(w,w,xs.filter(x=>x.st!=='libera').length,xs.filter(x=>x.st==='menu').length,xs.filter(x=>x.st==='libera').length);});
+  /* verdetti in parole: regioni e (senza quote) portate si confrontano con la media; con un formato a quote le portate con i posti nel menu */
+  const media=rows=>rows.reduce((a,r)=>a+r.tot,0)/Math.max(1,rows.length);
+  const vs=(rows,m)=>rows.forEach(r=>{
+    if(r.q!=null){
+      if(r.tot<r.q)r.v={k:'manca',c:'bad',t:`Ne mancano almeno ${r.q-r.tot}: ${r.tot} proposte per ${r.q} posti`};
+      else if(r.tot<r.q*1.5)r.v={k:'poche',c:'warn',t:`Poca scelta: ${r.tot} proposte per ${r.q} posti`};
+      else if(r.tot>=r.q*4)r.v={k:'molte',c:'info',t:`Molte: ${r.tot} proposte per ${r.q} posti`};
+      else r.v={k:'ok',c:'ok',t:`A posto: ${r.tot} proposte per ${r.q} posti`};
+    }else if(!(m>0))r.v={k:'zero',c:'info',t:'Nessuna proposta ancora'};
+    else{
+      if(r.tot<m*0.6)r.v={k:'poche',c:'warn',t:'Poche rispetto alle altre'};
+      else if(r.tot>m*1.6)r.v={k:'molte',c:'info',t:'Tante rispetto alle altre'};
+      else r.v={k:'ok',c:'ok',t:'Equilibrata'};
+    }
+  });
+  vs(reg,media(reg));vs(cat,media(cat));
+  return{reg,cat,wt,q,fm};
+}
+function eqBlock(titolo,sotto,rows,key){
+  const max=Math.max(1,...rows.map(r=>r.tot+r.libere));
+  return `<div class="eqblk"><h4>${esc(titolo)}</h4><p class="small muted">${esc(sotto)}</p>
+    ${rows.map(r=>{
+      const prop=r.tot-r.menu,w=(r.tot+r.libere)/max*100;
+      const seg=(n,cls,lab)=>n?`<i class="${cls}" style="flex:${n}" title="${esc(lab+': '+n)}"><b>${n}</b></i>`:'';
+      return `<div class="eqr2"><div class="eql"><b>${esc(r.label)}</b>${r.v?`<span class="verd ${r.v.c}">${esc(r.v.t)}</span>`:''}</div>
+        <div class="eqbar" style="width:${Math.max(8,w)}%" role="img" aria-label="${esc(r.label)}: ${r.menu} in menu, ${prop} proposti, ${r.libere} ancora da proporre">${seg(r.menu,'m','In menu')}${seg(prop,'p','Proposti')}${seg(r.libere,'l','Ancora da proporre')}</div>
+        <div class="eqn small"><span><b class="num">${r.tot}</b> proposti${r.menu?` (${r.menu} in menu)`:''}</span><span><b class="num">${r.libere}</b> ancora da proporre</span>
+        ${r.libere?`<button class="btn sm" data-act="eq-filtra" data-k="${key}" data-v="${esc(r.k)}">Vedi i ${r.libere} da proporre</button>`:''}</div></div>`;
+    }).join('')}</div>`;
+}
+function vEquilibrio(){
+  const d=eqRowsData();
+  const manca=d.cat.filter(r=>r.v&&r.v.k==='manca').map(r=>`${r.label} (${r.tot} su ${r.q})`),tante=d.cat.filter(r=>r.v&&r.v.k==='molte').map(r=>r.q!=null?`${r.label} (${r.tot} per ${r.q} posti)`:`${r.label} (${r.tot} proposte)`);
+  const regPoche=d.reg.filter(r=>r.v&&r.v.k==='poche').map(r=>r.label),catPoche=d.cat.filter(r=>r.v&&r.v.k==='poche').map(r=>r.label);
+  const righe=[
+    manca.length?`<b>Ne servono altre:</b> ${esc(manca.join(', '))}.`:'',
+    tante.length?`<b>Ce ne sono molte:</b> ${esc(tante.join(', '))}: la scelta sarà dura, meglio un voto per categoria.`:'',
+    catPoche.length?`<b>Portate con poca scelta:</b> ${esc(catPoche.join(', '))}.`:'',
+    regPoche.length?`<b>Regioni con poche proposte:</b> ${esc(regPoche.join(', '))}.`:'',
+    !S.recipes.length?'Ancora nessuna proposta: le barre tratteggiate sono i piatti dei Suggerimenti che aspettano di essere proposti.':'',
+    S.recipes.length&&!manca.length&&!tante.length&&!regPoche.length&&!catPoche.length?'Per ora le proposte sono ben distribuite.':''
+  ].filter(Boolean);
+  return `<section class="panel eq" id="sg-eq"><h3>Equilibrio: regioni, portate e vini</h3>
+    <p class="small muted" style="margin-top:6px">Quanti piatti abbiamo già (proposti e in menu) e quanti restano ancora da proporre nei Suggerimenti, così vedi dove il banchetto è sbilanciato. Formato del menu in uso: <b>${esc(d.fm.nome)}</b>, ${d.fm.tot} piatti.</p>
+    <div class="legend"><span><i class="lg m"></i> In menu</span><span><i class="lg p"></i> Proposti, non ancora in menu</span><span><i class="lg l"></i> Ancora da proporre (nei Suggerimenti)</span></div>
+    <div class="note" style="margin-top:10px">${righe.join('<br>')}</div>
+    <div class="eqgrid2">${eqBlock('Per regione','Tutte le proposte, per regione indicata.',d.reg,'reg')}${eqBlock('Per portata',d.q?'Con i posti che il formato lascia a ogni portata nel menu.':'Il formato scelto non fissa quote per portata.',d.cat,'cat')}${eqBlock('Per tipo di vino','Solo i piatti del catalogo, per abbinamento di vino.',d.wt,'wt')}</div></section>`;
 }
 function vSugg(){
-  const all=sugList(),list=filterSug(all);
-  const n={libera:0,proposta:0,menu:0};all.forEach(x=>n[x.st]++);
-  const regRows=eqRows(all,REGIONI.map(r=>[r,r]),'r'),catRows=eqRows(all,CATS.filter(c=>SUG.some(s=>s.c===c.key)).map(c=>[c.key,c.label]),'c'),wtRows=eqRows(all,WTYPES.map(w=>[w,w]),'wt');
-  const chips=[['','Tutte']].concat(CATS.filter(c=>SUG.some(s=>s.c===c.key)).map(c=>[c.key,c.label])).map(c=>`<button class="fchip" aria-pressed="${UI.scat===c[0]}" data-act="scat" data-v="${c[0]}">${esc(c[1])}</button>`).join('');
+  const all=sugList(),list=filterSug(all),lib=all.length;
+  const gia=SUG.length-lib,inMenu=SUG.filter(s=>sugState(s)==='menu').length;
+  const catsLib=CATS.filter(c=>all.some(x=>x.s.c===c.key));
+  const chips=[['','Tutte']].concat(catsLib.map(c=>[c.key,c.label])).map(c=>`<button class="fchip" aria-pressed="${UI.scat===c[0]}" data-act="scat" data-v="${c[0]}">${esc(c[1])}</button>`).join('');
   const opt=(v,cur,lab)=>`<option value="${esc(v)}" ${cur===v?'selected':''}>${esc(lab)}</option>`;
   let body;
-  if(!list.length)body=`<div class="empty"><h3>Nessun piatto con questi filtri</h3><button class="btn" data-act="sclear">Azzera filtri</button></div>`;
+  if(!lib)body=`<div class="empty"><h3>Tutti i piatti del catalogo sono già stati proposti</h3><p>Se ne hai in mente un altro, proponilo dalla scheda Proposte.</p><button class="btn" data-act="tab" data-v="proposte">Vai alle Proposte</button></div>`;
+  else if(!list.length)body=`<div class="empty"><h3>Nessun piatto con questi filtri</h3><button class="btn" data-act="sclear">Azzera filtri</button></div>`;
   else if(UI.ssort==='cat')body=CATS.map(c=>[c,list.filter(x=>x.s.c===c.key)]).filter(g=>g[1].length)
     .map(([c,xs])=>`<div><h3 class="grp" style="--h:${c.h}">${esc(c.label)} <span class="muted small num">${xs.length}</span></h3><div class="cards">${xs.map(x=>sugCard(x,true)).join('')}</div></div>`).join('');
   else body=`<div class="cards">${list.map(x=>sugCard(x,false)).join('')}</div>`;
-  const weakN=SUG.filter(s=>s.weak).length;
+  const weakN=sugLibere().filter(s=>s.weak).length;
   return `<section class="view">
     <div class="hero-sug">
-      <div class="hs-l"><h2><span class="hs-num" aria-hidden="true">${SUG.length}</span><span><span class="sr">${SUG.length} </span>ricette già pronte da cui attingere</span></h2>
-        <p>Piatti tradizionali del Triveneto con fonte, vino in abbinamento e note di esecuzione. Ne scegli uno e lo proponi con un tocco: link, vino e tempi sono già compilati.</p></div>
-      <div class="hs-r"><div class="hs-meta"><span><b class="num">${n.libera}</b> da proporre</span><span><b class="num">${n.proposta}</b> già proposti</span><span><b class="num">${n.menu}</b> approvati in menu</span></div>
-        <div class="hs-regs" role="group" aria-label="Filtra per regione">${REGIONI.map(r=>`<button class="chip reg" style="--h:${REG_H[r]}" aria-pressed="${UI.sreg===r}" data-act="sreg" data-v="${esc(r)}">${esc(REG_SHORT[r])} <span class="num">${SUG.filter(x=>x.r===r).length}</span></button>`).join('')}</div></div>
+      <div class="hs-l"><h2><span class="hs-num" aria-hidden="true">${lib}</span><span><span class="sr">${lib} </span>ricette ancora da proporre</span></h2>
+        <p>Piatti tradizionali del Triveneto con foto, fonte, vino in abbinamento e note di esecuzione. Ne scegli uno e lo proponi con un tocco: link, foto, vino e tempi sono già compilati. Quelli già proposti spariscono da questo elenco.</p></div>
+      <div class="hs-r"><div class="hs-meta"><span><b class="num">${lib}</b> da proporre</span><span><b class="num">${gia}</b> già proposti${inMenu?` (${inMenu} in menu)`:''}</span></div>
+        <button class="btn sm hs-eq" data-act="eq-go">Cosa manca? Vedi l’equilibrio ↓</button>
+        <div class="hs-regs" role="group" aria-label="Filtra per regione">${REGIONI.map(r=>`<button class="chip reg" style="--h:${REG_H[r]}" aria-pressed="${UI.sreg===r}" data-act="sreg" data-v="${esc(r)}">${esc(REG_SHORT[r])} <span class="num">${all.filter(x=>x.s.r===r).length}</span></button>`).join('')}</div></div>
     </div>
     <div class="filters">
       <div class="field wide"><label for="sq">Cerca piatto, ingrediente o vino</label><input type="search" id="sq" data-in="sq" value="${esc(UI.sq)}" placeholder="es. polenta, Soave, anatra…"></div>
       <div class="field"><label for="swt">Tipo di vino</label><select id="swt" data-chg="swt"><option value="">Tutti</option>${WTYPES.map(w=>opt(w,UI.swt,w)).join('')}</select></div>
-      <div class="field"><label for="sst">Stato</label><select id="sst" data-chg="sst"><option value="">Tutti</option>${opt('libera',UI.sst,'Da proporre')}${opt('proposta',UI.sst,'Già proposti')}${opt('menu',UI.sst,'Approvati')}</select></div>
       <div class="field"><label for="slv">Livello fonte</label><select id="slv" data-chg="slv"><option value="">Tutti</option>${['A','B','C'].map(l=>opt(l,UI.slv,LIVELLI[l].t)).join('')}${opt('-',UI.slv,'Da assegnare')}</select></div>
       <div class="field"><label for="ssort">Ordina per</label><select id="ssort" data-chg="ssort">${opt('cat',UI.ssort,'Portata')}${opt('lv',UI.ssort,'Livello della fonte')}${opt('reg',UI.ssort,'Regione')}${opt('az',UI.ssort,'Nome')}</select></div>
     </div>
     <div class="filterchips">${chips}</div>
-    <p class="small muted">Mostro <b class="num">${list.length}</b> piatti su ${SUG.length}.</p>
+    <p class="small muted" id="sg-list">Mostro <b class="num">${list.length}</b> piatti su ${lib} ancora da proporre.</p>
     ${body}
-    <details class="panel" id="sg-eq" ${isOpen('sg-eq')}><summary style="cursor:pointer;font-weight:600">Equilibrio del catalogo: regioni, portate e vini</summary>
-      <div class="eqgrid" style="margin-top:12px"><div><h4>Per regione</h4>${eqHtml(regRows)}</div><div><h4>Per portata</h4>${eqHtml(catRows)}</div><div><h4>Per tipo di vino</h4>${eqHtml(wtRows)}</div></div>
-      <p class="small muted" style="margin-top:12px"><span class="lg m"></span> approvati · <span class="lg p"></span> già proposti · <span class="lg l"></span> da proporre. I numeri sono approvati · proposti · da proporre.</p></details>
+    ${vEquilibrio()}
     <details class="panel" id="sg-tips" ${isOpen('sg-tips')}><summary style="cursor:pointer;font-weight:600">Consigli di regia per il banchetto</summary>
       <div class="cols" style="margin-top:12px"><div><h4>Tre farine di mais</h4><p class="small">Biancoperla per il pesce di laguna (schie, seppie, boreto); gialla fine per gli intingoli friulani (toc' in braide, salame all'aceto, blecs); Storo o Marano a grana rustica per selvaggina e brasati.</p></div>
       <div><h4>Le 24 ore</h4><p class="small">Brasato al Teroldego, pearà, base dei fasioi e seppie in nero migliorano se fatti il giorno prima: l'energia dell'ultimo momento va a fritture e pasta fresca.</p></div>
       <div><h4>Equilibrio e acidità</h4><p class="small">Aceto caldo (boreto, salame), crauti (tirtlan) e mirtilli rossi (capriolo, kaiserschmarrn) ripuliscono il palato tra una portata e l'altra. Evita troppi piatti simili: te lo segnalo qui e nel menu.</p></div></div></details>
-    <details class="panel" id="sg-lv" ${isOpen('sg-lv')}><summary style="cursor:pointer;font-weight:600">Come leggere i livelli delle fonti</summary>
+    <details class="panel" id="sg-lv" ${isOpen('sg-lv')}><summary style="cursor:pointer;font-weight:600">Come leggere i livelli delle fonti e le foto</summary>
       <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px">${['A','B','C'].map(l=>`<p class="small">${lvBadge(l)} ${esc(LIVELLI[l].d)}</p>`).join('')}
-      <p class="small">${badge('Livello da assegnare','muted')} I 22 piatti della seconda rassegna non hanno ancora un livello: i loro link vanno controllati. In ${weakN} casi il link è generico o rimanda a un altro piatto, e sono segnati "Link da sostituire".</p>
+      <p class="small">${badge('Livello da assegnare','muted')} I piatti della seconda rassegna non hanno ancora un livello: i loro link vanno controllati.${weakN?` In ${weakN} casi il link è generico o rimanda a un altro piatto, e sono segnati "Link da sostituire".`:''}</p>
+      <p class="small">${badge('Creata con AI','warn')} Dove non c'è una foto in una fonte affidabile l'immagine è stata creata con l'intelligenza artificiale a partire dalla ricetta: è un'illustrazione, non il piatto vero, e può avere dettagli sbagliati. Si può sostituire con una foto vera dalla scheda del piatto.</p>
       <p class="small muted">Le fonti sono quelle dei due documenti del gruppo; i volumi cartacei di riferimento non sono stati consultati. I vini senza la scritta "suggerito" vengono dal documento, gli altri sono abbinamenti proposti per completare il catalogo.</p></div></details>
   </section>`;
 }
@@ -1860,17 +2015,17 @@ A['sug-propose']=t=>{
   if(!canPropose()){toast('Le proposte sono chiuse.','err');return;}
   openRecipeEditor(null,sugPre(s));
 };
-A['sug-open']=t=>{
-  const s=sugById(t.dataset.id),r=s&&sugRecipe(s);if(!r)return;
-  if(r.slot){UI.navigated=true;UI.dish=r.id;UI.tab='menu';setHash('piatto-'+r.id);}
-  else{UI.navigated=true;UI.dish=null;UI.tab='proposte';UI.q=r.title;UI.cat='';UI.reg='';UI.ver='';UI.mine=false;setHash('proposte');}
-  render();window.scrollTo(0,0);
+A['eq-go']=()=>{const e=document.getElementById('sg-eq');if(e)e.scrollIntoView({block:'start',behavior:'smooth'});};
+A['eq-filtra']=t=>{
+  UI.sq='';UI.scat='';UI.sreg='';UI.swt='';UI.slv='';
+  const k=t.dataset.k,v=t.dataset.v;if(k==='reg')UI.sreg=v;else if(k==='cat')UI.scat=v;else if(k==='wt')UI.swt=v;
+  render();const e=document.getElementById('sg-list');if(e)e.scrollIntoView({block:'start'});
 };
 A.scat=t=>{UI.scat=t.dataset.v;render();};
-A.sclear=()=>{UI.sq='';UI.scat='';UI.sreg='';UI.swt='';UI.slv='';UI.sst='';render();};
+A.sclear=()=>{UI.sq='';UI.scat='';UI.sreg='';UI.swt='';UI.slv='';render();};
 IN.sq=t=>{UI.sq=t.value;render();};
 A.sreg=t=>{UI.sreg=UI.sreg===t.dataset.v?'':t.dataset.v;render();};
-['swt','sst','slv','ssort'].forEach(k=>{CH[k]=t=>{UI[k]=t.value;render();};});
+['swt','slv','ssort'].forEach(k=>{CH[k]=t=>{UI[k]=t.value;render();};});
 
 /* ============ "Il libro": ricette e considerazioni di «Giorni Golosi», collegate alle proposte ============ */
 const ingTxt=i=>{
@@ -2160,20 +2315,24 @@ A['rm-person']=async t=>{
    senza copiarla, e sotto compaiono sempre il nome della fonte e il link alla pagina d'origine. */
 const fotoOf=r=>{const f=r&&r.foto;return f&&isUrl(f.url)?f:null;};
 const canFoto=r=>!!S.meId&&(canEditRecipe(r)||ownersOf(r).includes(S.meId));
-const fotoKey=(r,f)=>r.id+'|'+f.url;
-function fotoFig(r,cls){
-  const f=fotoOf(r);if(!f)return '';
+const fotoKey=(k,f)=>k+'|'+f.url;
+/* html di una foto (di una proposta o di un piatto del catalogo). Le immagini create con AI portano sempre il badge «Creata con AI». */
+function fotoMarkup(f,alt,key,cls){
   const pg=isUrl(f.pagina)?f.pagina:'',nome=f.fonte||domain(pg||f.url);
-  const cap=`${pg?`<a href="${esc(safeHref(pg))}" target="_blank" rel="noopener noreferrer">${esc(nome)} ↗</a>`:esc(nome)}${f.autore?' · '+esc(f.autore):''}${pg?wlMark(pg):''}`;
-  if(UI.fotoKo&&UI.fotoKo[fotoKey(r,f)])return `<div class="foto ko ${cls||''}"><span>La foto non si carica da qui. ${pg?`Aprila alla fonte: ${cap}`:''}</span></div>`;
-  return `<figure class="foto ${cls||''}"><img src="${esc(f.url)}" alt="${esc('Foto: '+r.title)}" loading="lazy" decoding="async" referrerpolicy="no-referrer" data-foto="${esc(r.id)}">
-    <figcaption>Foto: ${cap}</figcaption></figure>`;
+  const cap=f.ai
+    ?`<b>Immagine creata con AI</b> a partire dalla ricetta${f.autore?' ('+esc(f.autore)+')':''}: non è una foto del piatto vero.`
+    :`Foto: ${pg?`<a href="${esc(safeHref(pg))}" target="_blank" rel="noopener noreferrer">${esc(nome)} ↗</a>`:esc(nome)}${f.autore?' · '+esc(f.autore):''}${pg?wlMark(pg):''}`;
+  if(UI.fotoKo&&UI.fotoKo[fotoKey(key,f)])return `<div class="foto ko ${cls||''}"><span>${f.ai?'L’immagine creata con AI non si carica.':`La foto non si carica da qui. ${pg?`Aprila alla fonte: ${cap}`:''}`}</span></div>`;
+  return `<figure class="foto ${cls||''}${f.ai?' ai':''}">${f.ai?`<span class="aib" title="Immagine creata con AI, non è una foto del piatto vero">Creata con AI</span>`:''}<img src="${esc(f.url)}" alt="${esc(alt)}" loading="lazy" decoding="async" referrerpolicy="no-referrer" data-foto="${esc(key)}">
+    <figcaption>${cap}</figcaption></figure>`;
 }
+const fotoFig=(r,cls)=>{const f=fotoOf(r);return f?fotoMarkup(f,'Foto: '+r.title,r.id,cls):'';};
+const sugFotoFig=s=>{const f=SUG_FOTO[s.id];return f?fotoMarkup(f,'Foto: '+s.t,'sug:'+s.id,'thumb'):'';};
 /* immagine che non si carica (sito che blocca il collegamento diretto, indirizzo cambiato): niente icona rotta, si mostra il link alla fonte */
 document.addEventListener('error',e=>{
   const im=e.target;if(!im||im.tagName!=='IMG'||!im.dataset||!im.dataset.foto)return;
-  const r=R(im.dataset.foto),f=fotoOf(r);if(!f)return;
-  UI.fotoKo=UI.fotoKo||{};UI.fotoKo[fotoKey(r,f)]=1;schedule();
+  const key=im.dataset.foto,f=key.indexOf('sug:')===0?SUG_FOTO[key.slice(4)]:fotoOf(R(key));if(!f)return;
+  UI.fotoKo=UI.fotoKo||{};UI.fotoKo[fotoKey(key,f)]=1;schedule();
 },true);
 
 /* nella scheda del piatto: la foto, oppure il riquadro per aggiungerla */
@@ -2270,7 +2429,7 @@ function openRecipeEditor(id,pre){
   const r=id?R(id):null;
   if(!S.meId){toast('Scegli prima il tuo nome.','err');return;}
   DR={id:id||null,title:r?r.title:'',category:r?r.category:(UI.cat||'primi'),region:r?r.region||'':'',link:r?r.link:'',note:r?r.note||'':'',
-    ownerIds:r?ownersOf(r):[S.meId],ver:Object.assign({stato:'da_verificare',linkAutorevole:'',fonte:'',nota:''},r&&r.verifica||{}),sugId:'',fasi:[],vini:[],verStato:'da_verificare',verNota:''};
+    ownerIds:r?ownersOf(r):[S.meId],ver:Object.assign({stato:'da_verificare',linkAutorevole:'',fonte:'',nota:''},r&&r.verifica||{}),sugId:'',fasi:[],vini:[],verStato:'da_verificare',verNota:'',foto:null};
   if(pre&&!id)Object.assign(DR,pre);
   const org=isOrg();
   openModal(`<header><div><h3>${id?'Modifica proposta':'Proponi un piatto'}</h3><p class="hint">${id?'Proposto da '+esc(pname(r.proposerId)):'Proponente: '+esc(me().name)}</p></div><button class="btn sm" data-act="modal-close">Annulla</button></header>
@@ -2310,8 +2469,9 @@ A['save-recipe']=async()=>{
     if(isOrg()&&DR.ver.linkAutorevole&&!isUrl(DR.ver.linkAutorevole))return err('Il link alla fonte autorevole non è valido.');
     ok=await write('update','recipes/'+DR.id,patch);
   }else{
-    ok=await write('set','recipes/'+uid('r'),{title,category:DR.category,region:DR.region,link,note:DR.note.trim(),proposerId:S.meId,ownerIds:DR.ownerIds,teamIds:[],
-      createdAt:Date.now(),verifica:{stato:DR.verStato||'da_verificare',nota:DR.verNota||''},sugId:DR.sugId||'',slot:'',serves:4,porzione:'normale',ingredients:[],steps:[],fasi:DR.fasi||[],preparabileACasa:false,vini:DR.vini||[],consigli:''});
+    const fo=DR.foto&&isUrl(DR.foto.url)?{url:DR.foto.url,pagina:DR.foto.pagina||'',fonte:DR.foto.fonte||'',autore:DR.foto.autore||'',data:DR.foto.data||'',ai:!!DR.foto.ai}:null;
+    ok=await write('set','recipes/'+uid('r'),Object.assign({title,category:DR.category,region:DR.region,link,note:DR.note.trim(),proposerId:S.meId,ownerIds:DR.ownerIds,teamIds:[],
+      createdAt:Date.now(),verifica:{stato:DR.verStato||'da_verificare',nota:DR.verNota||''},sugId:DR.sugId||'',slot:'',serves:4,porzione:'normale',ingredients:[],steps:[],fasi:DR.fasi||[],preparabileACasa:false,vini:DR.vini||[],consigli:''},fo?{foto:fo}:{}));
   }
   if(ok){closeModal();toast(DR.id?'Proposta aggiornata':'Proposta aggiunta');DR=null;}
 };
@@ -2631,19 +2791,38 @@ function build(){
   if(!UI.migrated&&isOrg()&&!S.readOnly&&S.legacyCats&&Object.keys(S.legacyCats).length){UI.migrated=true;migrateCats();}
   const views={proposte:vProposte,suggerimenti:vSugg,libro:vLibro,voto:vVoto,menu:vMenu,spesa:vSpesa,programma:vProgramma,persone:vPersone};
   const view=UI.dish?vPiatto():(views[UI.tab]||vProposte)();
-  return vHeader()+vBand()+vNav()+`<main class="wrap">${S.offline?`<div class="note warn" style="margin-top:16px"><b>Sei offline.</b> Puoi continuare: le modifiche restano in coda e si salvano appena torna la connessione. Non chiudere la pagina.</div>`:''}${S.readOnly?`<div class="note bad" style="margin-top:16px"><b>Sola lettura.</b> Puoi guardare tutto ma non modificare: chiedi a Marco di darti accesso come collaboratore.</div>`:''}${view}</main>`;
+  return vHeader()+vNav()+vStatus()+vBand()+`<main class="wrap">${S.offline?`<div class="note warn" style="margin-top:16px"><b>Sei offline.</b> Puoi continuare: le modifiche restano in coda e si salvano appena torna la connessione. Non chiudere la pagina.</div>`:''}${S.readOnly?`<div class="note bad" style="margin-top:16px"><b>Sola lettura.</b> Puoi guardare tutto ma non modificare: chiedi a Marco di darti accesso come collaboratore.</div>`:''}${view}</main>`;
 }
 function render(){
   const root=$('#app');if(!root)return;
   const ae=document.activeElement;
   const fid=ae&&ae.id&&root.contains(ae)?ae.id:null;
   const sel=fid&&ae.selectionStart!=null?[ae.selectionStart,ae.selectionEnd]:null;
+  const tsOld=$('.tabs .in',root),tl=tsOld?tsOld.scrollLeft:0;
   let html;
   try{html=build();}catch(e){console.error(e);html=`<div class="wrap"><div class="note bad" style="margin-top:24px">Errore di visualizzazione: ${esc(e.message)}</div></div>`;}
   if(S.newVersion)html=`<div class="upd" role="status"><span><b>Nuova versione disponibile.</b> Aggiorna per vedere le novità.</span> <button class="btn sm primary" data-act="reload-new">Aggiorna ora</button></div>`+html;
   root.innerHTML=html;
+  tabsFix(tl);
   if(fid){const n=document.getElementById(fid);if(n){n.focus();try{if(sel)n.setSelectionRange(sel[0],sel[1]);}catch(e){}}}
 }
+/* barra delle schede: resta dove l'utente l'ha scorsa, la scheda attiva è sempre visibile, le frecce compaiono solo se c'è altro da scorrere */
+function tabsArrows(){
+  const n=$('.tabs .in'),bar=$('.tabs');if(!n||!bar)return;
+  const l=$('.tabarr.l',bar),r=$('.tabarr.r',bar),canL=n.scrollLeft>2,canR=n.scrollLeft+n.clientWidth<n.scrollWidth-2;
+  if(l)l.hidden=!canL;if(r)r.hidden=!canR;
+  bar.classList.toggle('can-l',canL);bar.classList.toggle('can-r',canR);
+}
+function tabsFix(left){
+  const n=$('.tabs .in');if(!n)return;
+  n.scrollLeft=left||0;
+  const a=$('.tab[aria-current="page"]',n);
+  if(a){const lo=a.offsetLeft-28,hi=a.offsetLeft+a.offsetWidth+28;if(lo<n.scrollLeft)n.scrollLeft=Math.max(0,lo);else if(hi>n.scrollLeft+n.clientWidth)n.scrollLeft=hi-n.clientWidth;}
+  tabsArrows();
+}
+A['tabs-scroll']=t=>{const n=$('.tabs .in');if(n)n.scrollBy({left:num(t.dataset.d)*Math.max(160,n.clientWidth*0.6),behavior:'smooth'});};
+document.addEventListener('scroll',e=>{if(e.target&&e.target.classList&&e.target.classList.contains('in')&&e.target.parentElement&&e.target.parentElement.classList.contains('tabs'))tabsArrows();},true);
+window.addEventListener('resize',tabsArrows);
 let raf=0;
 function schedule(){if(raf)return;raf=requestAnimationFrame(()=>{raf=0;render();});}
 

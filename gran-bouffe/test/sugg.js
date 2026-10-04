@@ -1,5 +1,8 @@
 // Prova della sezione Suggerimenti (artifact, db finto in memoria). Dati inventati solo per il test.
 const {run,seed}=require('./harness');
+const SUG=new Function(require('fs').readFileSync(require('path').join(__dirname,'..','src','js','05-sugg-data.js'),'utf8')+';return SUG;')(); // catalogo (dati statici), per confrontare i numeri a video
+const PROPOSTI=['Tiramisù','Jota triestina','Gubana','Presnitz triestino','Bigoli in salsa','Sarde in saor']; // titoli già proposti nei dati di prova
+
 const out=require('path').join(__dirname,'shots');require('fs').mkdirSync(out,{recursive:true});
 const R=(id,title,category,region,extra)=>[`recipes/${id}`,Object.assign({title,category,region,link:'https://example.org/'+id,note:'',proposerId:'p_marco-furio',ownerIds:['p_marco-furio'],teamIds:[],createdAt:Date.now(),
   verifica:{stato:'da_verificare'},slot:'',serves:4,porzione:'normale',ingredients:[],steps:[],fasi:[],preparabileACasa:false,vini:[],consigli:''},extra||{})];
@@ -21,35 +24,66 @@ const recipes=[
   // home: Suggerimenti è la prima scheda, colorata, ed è la pagina d'ingresso
   (await d.$$eval('.tab',e=>e[0].textContent.startsWith('Suggerimenti')&&e[0].classList.contains('tab-sug')))?pass('Suggerimenti è la prima scheda ed è colorata'):fail('ordine schede');
   await d.waitForSelector('.hero-sug');
-  (await d.textContent('.hs-num'))==='44'&&(await d.textContent('.hero-sug')).includes('ricette già pronte da cui attingere')?pass('home: banda "44 ricette già pronte da cui attingere"'):fail('hero');
+  const lib0=SUG.filter(s=>!PROPOSTI.includes(s.t));
+  lib0.length===38?pass('catalogo di 44 piatti, 6 già proposti (4 in menu): ne restano 38'):fail('libere '+lib0.length);
+  (await d.textContent('.hs-num'))==='38'&&(await d.textContent('.hero-sug')).includes('ricette ancora da proporre')?pass('home: banda "38 ricette ancora da proporre"'):fail('hero');
   (await d.$('.pill-sug'))===null?pass('nessuna pillola ridondante mentre sei già nei Suggerimenti'):fail('pillola doppia');
   await d.click('.tab:has-text("Proposte")');await d.waitForSelector('.choose');
-  (await d.textContent('.pill-sug')).includes('44 ricette pronte')&&(await d.textContent('.choose .opt.a')).includes('44 piatti del Triveneto già pronti')?pass('Proposte: pillola in testata e strada A con "44 piatti già pronti"'):fail('choose');
+  (await d.textContent('.pill-sug')).includes('38 ricette ancora da proporre')&&(await d.textContent('.choose .opt.a')).includes('38 piatti del Triveneto ancora da proporre')?pass('Proposte: pillola in testata e strada A con "38 piatti ancora da proporre"'):fail('choose');
   await d.screenshot({path:out+'/25-proposte-promo.png',clip:{x:0,y:0,width:1280,height:700}});
   await d.click('.choose .opt.a [data-act=tab]');await d.waitForSelector('.hero-sug');
   await d.screenshot({path:out+'/26-suggerimenti-hero.png',clip:{x:0,y:0,width:1280,height:900}});
   await d.waitForSelector('.card.sg');
-  await d.click('.hs-regs [data-v="Veneto"]');(await d.$$eval('.card.sg',e=>e.length))===17?pass('chip regione Veneto: 17 piatti'):fail('chip regione');
-  await d.click('.hs-regs [data-v="Veneto"]');(await d.$$eval('.card.sg',e=>e.length))===44?pass('secondo tocco: filtro tolto'):fail('chip toggle');
+  const titles=()=>d.$$eval('.card.sg h3',e=>e.map(x=>x.textContent));
+  const t0=await titles();
+  t0.length===38&&PROPOSTI.every(x=>!t0.includes(x))
+    ?pass('le schede già proposte (Tiramisù, Jota, Gubana, Presnitz, Bigoli, Sarde in saor) non compaiono più'):fail('schede proposte ancora presenti '+t0.length);
+  (await d.$$eval('.card.sg',e=>e.filter(c=>/Già proposta|Approvata/.test(c.textContent)).length))===0?pass('nessun segno di stato sulle card: sono tutte da proporre'):fail('segni di stato');
+  (await d.$('#sst'))===null?pass('il filtro "Stato" non serve più'):fail('filtro stato');
+  const venL=lib0.filter(s=>s.r==='Veneto').length;
+  await d.click('.hs-regs [data-v="Veneto"]');(await d.$$eval('.card.sg',e=>e.length))===venL?pass('chip regione Veneto: '+venL+' piatti ancora da proporre'):fail('chip regione');
+  await d.click('.hs-regs [data-v="Veneto"]');(await d.$$eval('.card.sg',e=>e.length))===38?pass('secondo tocco: filtro tolto'):fail('chip toggle');
   const tot=await d.$$eval('.hs-meta b',e=>e.map(x=>x.textContent));
-  tot.join(',')==='38,2,4'?pass('contatori: 38 da proporre, 2 proposti, 4 approvati'):fail('contatori '+tot);
+  tot.join(',')==='38,6'?pass('contatori: 38 da proporre, 6 già proposti'):fail('contatori '+tot);
+  (await d.textContent('.hs-meta')).includes('(4 in menu)')?pass('...di cui 4 in menu'):fail('in menu');
   const card=t=>`.card.sg:has(h3:text-is("${t}"))`;
-  (await d.textContent(card('Tiramisù')+' .badge')).includes('Approvata · Domenica pranzo')?pass('flag Approvata su Tiramisù (riconosciuto anche se proposto a mano senza accento)'):fail('flag tiramisu');
-  (await d.textContent(card('Sarde in saor')+' .badge')).includes('Già proposta')?pass('flag Già proposta su Sarde in saor'):fail('flag sarde');
-  (await d.textContent(card('Putizza goriziana e triestina')+' .sim')).includes('Gubana')?pass('Putizza: avviso "simile a Gubana e Presnitz"'):fail('simile');
+  (await d.textContent(card('Putizza goriziana e triestina')+' .sim')).includes('Gubana')?pass('Putizza: avviso "simile a Gubana e Presnitz" (già in menu)'):fail('simile');
+  // foto: tutte le card hanno la foto, le sei create con AI sono segnalate
+  const nofoto=await d.$$eval('.card.sg',e=>e.filter(c=>!c.querySelector('.foto')).length);
+  nofoto===0?pass('ogni scheda dei Suggerimenti ha la sua foto'):fail('schede senza foto '+nofoto);
+    const ai=await d.$$eval('.card.sg .foto.ai',e=>e.map(f=>({t:f.closest('.card').querySelector('h3').textContent,b:f.querySelector('.aib').textContent,c:f.querySelector('figcaption').textContent,s:f.querySelector('img').getAttribute('src')})));
+  ai.length===8&&ai.every(x=>x.b==='Creata con AI'&&x.c.includes('non è una foto del piatto vero')&&/^https:\/\/marcofurioferrario\.github\.io\/Claude-projects\/img\/ai\/[a-z]+\.jpg$/.test(x.s))
+    ?pass('8 immagini create con AI, tutte con il segno "Creata con AI" e la didascalia ('+ai.map(x=>x.t.split(' ')[0]).join(', ')+')'):fail('foto AI '+JSON.stringify(ai));
+  const reali=await d.$$eval('.card.sg .foto:not(.ai)',e=>e.map(f=>({c:f.querySelector('figcaption').textContent,a:f.querySelector('figcaption a')&&f.querySelector('figcaption a').getAttribute('href')})));
+  reali.length===30&&reali.every(x=>x.c.includes('✓ affidabile')&&/^https:\/\//.test(x.a))?pass('30 foto vere da fonti in lista, con link alla pagina e "✓ affidabile"'):fail('foto vere '+reali.length+' '+JSON.stringify(reali.filter(x=>!x.c.includes('✓ affidabile')).slice(0,3)));
   await d.screenshot({path:out+'/20-suggerimenti-desktop.png',clip:{x:0,y:0,width:1280,height:1500},fullPage:true});
   // filtri
-  await d.selectOption('#sst','menu');
-  (await d.$$eval('.card.sg',e=>e.length))===4?pass('filtro Stato=Approvati: 4 piatti'):fail('filtro stato');
-  await d.selectOption('#sst','');await d.fill('#sq','soave');
-  const ns=await d.$$eval('.card.sg',e=>e.length);ns>=4?pass('ricerca per vino "soave": '+ns+' piatti'):fail('ricerca vino '+ns);
-  await d.fill('#sq','anatra');(await d.$$eval('.card.sg h3',e=>e.map(x=>x.textContent))).includes('Bigoli co\' l\'arna')?pass('ricerca per ingrediente "anatra"'):fail('ricerca ingrediente');
+  await d.fill('#sq','soave');
+  const ns=await d.$$eval('.card.sg',e=>e.length);ns>=3?pass('ricerca per vino "soave": '+ns+' piatti'):fail('ricerca vino '+ns);
+  await d.fill('#sq','anatra');(await titles()).includes('Bigoli co\' l\'arna')?pass('ricerca per ingrediente "anatra"'):fail('ricerca ingrediente');
   await d.fill('#sq','');await d.selectOption('#slv','C');
-  (await d.$$eval('.card.sg',e=>e.length))===5?pass('filtro livello C: 5 piatti (come nel documento)'):fail('livello C');
-  await d.selectOption('#slv','-');(await d.$$eval('.card.sg',e=>e.length))===22?pass('livello da assegnare: 22 piatti'):fail('livello da assegnare');
+  const nC=lib0.filter(s=>s.lv==='C').length;
+  (await d.$$eval('.card.sg',e=>e.length))===nC?pass('filtro livello C: '+nC+' piatti ancora da proporre'):fail('livello C');
+  await d.selectOption('#slv','-');const nD=lib0.filter(s=>!s.lv).length;(await d.$$eval('.card.sg',e=>e.length))===nD?pass('livello da assegnare: '+nD+' piatti'):fail('livello da assegnare');
   await d.selectOption('#slv','');await d.selectOption('#swt','Passito / Dolce');
-  (await d.$$eval('.card.sg',e=>e.length))===9?pass('tipo di vino Passito/Dolce: 9 piatti'):fail('tipo vino');
+  const nW=lib0.filter(s=>s.wt==='Passito / Dolce').length;(await d.$$eval('.card.sg',e=>e.length))===nW?pass('tipo di vino Passito/Dolce: '+nW+' piatti'):fail('tipo vino');
   await d.selectOption('#swt','');
+  // equilibrio: regioni, portate, vini
+  await d.waitForSelector('#sg-eq .eqblk');
+  (await d.$$eval('#sg-eq .eqblk h4',e=>e.map(x=>x.textContent))).join('|')==='Per regione|Per portata|Per tipo di vino'?pass('Equilibrio: tre blocchi, regioni, portate e vini'):fail('blocchi equilibrio');
+  (await d.$('#sg-eq details'))===null&&(await d.$$('#sg-eq .legend span')).length===3?pass('Equilibrio sempre aperto, con legenda a tre colori (in menu, proposti, ancora da proporre)'):fail('legenda');
+  const rows=await d.$$eval('#sg-eq .eqblk',b=>b.map(x=>[...x.querySelectorAll('.eqr2')].map(r=>({l:r.querySelector('.eql b').textContent,v:(r.querySelector('.verd')||{}).textContent||'',n:r.querySelector('.eqn').textContent.replace(/\s+/g,' ').trim()}))));
+  rows[0].length===3&&rows[1].length===5&&rows[2].length===new Set(SUG.map(s=>s.wt)).size?pass('righe: 3 regioni, 5 portate, tutti i tipi di vino'):fail('righe '+rows.map(r=>r.length));
+  const dolci=rows[1].find(r=>r.l.startsWith('Dolci'));
+  const dolciN=[await d.evaluate(()=>[...__db.data.entries()].filter(e=>e[0].startsWith('recipes/')&&e[1].category==='dolci').length),lib0.filter(s=>s.c==='dolci').length];
+  dolci.n.includes(dolciN[0]+' proposti')&&dolci.n.includes(dolciN[1]+' ancora da proporre')?pass('Dolci: '+dolciN[0]+' proposti, '+dolciN[1]+' ancora da proporre (numeri scritti, non solo barre)'):fail('dolci '+JSON.stringify(dolci));
+  rows[1].every(r=>r.v)&&rows[0].every(r=>r.v)?pass('ogni regione e portata ha un verdetto in parole ('+rows[1].map(r=>r.v).join(' / ')+')'):fail('verdetti '+JSON.stringify(rows.slice(0,2)));
+  !/null|undefined|NaN/.test(await d.textContent('#sg-eq'))?pass('nessun «null» o «NaN» nei testi dell’Equilibrio'):fail('testo equilibrio sporco');
+  await d.click('#sg-eq .eqblk:nth-of-type(2) [data-act=eq-filtra][data-v=dolci]').catch(async()=>{await d.click('#sg-eq [data-act=eq-filtra][data-k=cat][data-v=dolci]');});
+  const nDolciLib=lib0.filter(s=>s.c==='dolci').length;
+  (await d.$$eval('.card.sg',e=>e.length))===nDolciLib&&(await d.$eval('.filterchips .fchip[aria-pressed=true]',e=>e.textContent))==='Dolci'?pass('"Vedi i '+nDolciLib+' da proporre" filtra l\'elenco sui dolci'):fail('eq-filtra');
+  await d.click('[data-act=sclear]').catch(()=>{});await d.click('.filterchips .fchip:has-text("Tutte")');
+  await d.screenshot({path:out+'/27-equilibrio.png',clip:await d.$eval('#sg-eq',e=>{const b=e.getBoundingClientRect();return{x:0,y:b.top+scrollY,width:1280,height:Math.min(b.height,1400)};}),fullPage:true});
   // proponi dal catalogo
   await d.click('[data-act=sug-propose][data-id=brasato]');await d.waitForSelector('#ed-title');
   const pre=await d.evaluate(()=>({t:document.querySelector('#ed-title').value,c:document.querySelector('#ed-cat').value,r:document.querySelector('#ed-reg').value,l:document.querySelector('#ed-link').value}));
@@ -60,8 +94,13 @@ const recipes=[
   const br=await d.evaluate(()=>[...__db.data.entries()].map(e=>e[1]).find(v=>v&&v.sugId==='brasato'));
   br.vini[0].bottiglie===0&&br.fasi.length===2&&br.verifica.stato==='da_sostituire'&&br.verifica.nota.includes('carne salada')&&br.proposerId==='p_marco-furio'&&br.ownerIds.length===1
     ?pass('proposta con sugId, vino (0 bottiglie), 2 fasi e link segnato "da sostituire"'):fail('proposta da sug '+JSON.stringify(br));
-  await d.waitForFunction(()=>{const c=[...document.querySelectorAll('.card.sg')].find(x=>x.querySelector('h3').textContent.startsWith('Brasato'));return c&&c.querySelector('.badge').textContent.includes('Già proposta');},null,{timeout:5000}).catch(()=>{});
-  (await d.textContent(card('Brasato di manzo al Teroldego')+' .badge')).includes('Già proposta')?pass('il piatto diventa "Già proposta" e non si può riproporre'):fail('flag dopo proposta');
+  br.foto&&br.foto.ai===true&&/img\/ai\/brasato\.jpg$/.test(br.foto.url)&&br.foto.fonte==='Immagine creata con AI'?pass('la proposta eredita l’immagine AI, ancora segnata come tale (foto.ai = true)'):fail('foto proposta '+JSON.stringify(br.foto));
+  await d.waitForFunction(()=>!([...document.querySelectorAll('.card.sg h3')].some(x=>x.textContent.startsWith('Brasato'))),null,{timeout:5000}).catch(()=>{});
+  const t1=await titles();
+  !t1.some(x=>x.startsWith('Brasato'))&&t1.length===37?pass('il piatto proposto sparisce subito dai Suggerimenti (37 rimasti)'):fail('dopo proposta '+t1.length);
+  (await d.textContent('.hs-num'))==='37'&&(await d.textContent('.hs-meta')).replace(/\s+/g,' ').includes('7 già proposti')?pass('i contatori si aggiornano: 37 da proporre, 7 già proposti'):fail('contatori dopo proposta '+await d.textContent('.hs-meta'));
+  const bras=await d.$$eval('#sg-eq .eqr2',e=>e.map(r=>r.querySelector('.eql b').textContent+': '+r.querySelector('.eqn').textContent.replace(/\s+/g,' ').trim()));
+  bras.some(x=>x.startsWith('Secondi')&&/ancora da proporre/.test(x))?pass('anche l’Equilibrio si aggiorna (Secondi)'):fail('equilibrio dopo proposta');
   // suggerimenti nell'editor delle proposte
   await d.click('.tab:has-text("Proposte")');await d.click('[data-act=new-recipe]');await d.waitForSelector('#ed-title');
   await d.selectOption('#ed-cat','secondi');
@@ -86,13 +125,17 @@ const recipes=[
   await d.click('.tab:has-text("Menu")');await d.click('.dish .nm:has-text("Tiramisu")');await d.waitForSelector('.hero');
   (await d.textContent('.view')).includes('abbinamento suggerito')?pass('scheda: vino senza bottiglie mostrato come abbinamento'):fail('scheda vino');
   // apri dalla card
-  await d.click('.tab:has-text("Suggerimenti")');await d.click(card('Tiramisù')+' [data-act=sug-open]');await d.waitForSelector('.hero');pass('"Apri la scheda" dal suggerimento');
+  // nelle Proposte la card del piatto con immagine AI porta il segno
+  await d.click('.tab:has-text("Proposte")');await d.waitForSelector('.card');
+  const pc=`.card:has(h3:text-is("Brasato di manzo al Teroldego"))`;
+  await d.locator(pc).scrollIntoViewIfNeeded();
+  (await d.textContent(pc+' .foto.ai .aib'))==='Creata con AI'?pass('Proposte: la card del Brasato mostra il segno "Creata con AI"'):fail('badge AI in Proposte');
   // mobile + scuro
   const m=await mk(390,844,true);await m.waitForSelector('.login');
   await m.evaluate(({s,recipes})=>{s.forEach(w=>__db.data.set(w.collection+'/'+w.doc_id,w.data));recipes.forEach(r=>__db.data.set(r[0],r[1]));__db.notify();},{s:seed,recipes});
   await m.click('.names .btn:has-text("Teo")');await m.waitForSelector('.rail');await m.click('.tab:has-text("Suggerimenti")');await m.waitForSelector('.card.sg');
-  await m.evaluate(()=>document.querySelector('#sg-eq summary').click());await m.waitForSelector('.eq');
   await m.screenshot({path:out+'/23-suggerimenti-mobile-scuro.png'});
+  await m.evaluate(()=>document.querySelector('#sg-eq').scrollIntoView());await m.screenshot({path:out+'/28-equilibrio-mobile-scuro.png'});
   await m.evaluate(()=>window.scrollTo(0,1500));await m.screenshot({path:out+'/24-suggerimenti-mobile-cards.png'});
   const ov=await m.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);ov<=1?pass('mobile: nessuno scroll orizzontale'):fail('overflow '+ov);
   console.log(errors.length?'ERRORI:\n'+errors.join('\n'):'nessun errore di console');
