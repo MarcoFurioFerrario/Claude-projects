@@ -29,7 +29,7 @@ function vRank(cat){
       <div class="small muted">${r.region?esc(r.region)+' · ':''}proposta da ${esc(pname(r.proposerId))} · <a href="${esc(safeHref(r.link))}" target="_blank" rel="noopener noreferrer">ricetta ↗</a></div></div>
       <label class="pp"><span class="sr">Posizione di ${esc(r.title)}</span><select id="rk-${esc(id)}" data-chg="rkpos" data-id="${esc(id)}" ${open?'':'disabled'}>${opts(pos)}</select></label></div>`;
   };
-  const slots=d.slots.map((id,i)=>`<li class="slot ${id?'on':''}" data-slot="${i}"><div class="pos num">${i+1}</div>${id?row(id,i+1):`<div class="slot-empty">${open?'Trascina qui un piatto o sceglilo dall’elenco sotto':'Posizione libera'}</div>`}</li>`).join('');
+  const slots=d.slots.map((id,i)=>`<li class="rkslot ${id?'on':''}" data-slot="${i}"><div class="pos num">${i+1}</div>${id?row(id,i+1):`<div class="rkempty">${open?'Trascina qui un piatto o sceglilo dall’elenco sotto':'Posizione libera'}</div>`}</li>`).join('');
   const pool=d.pool.map(r=>`<li>${row(r.id,0)}</li>`).join('');
   let status;
   if(d.dirty)status=badge('Modifiche non salvate','warn');
@@ -42,7 +42,7 @@ function vRank(cat){
   const canSave=open&&d.filled>0&&(d.dirty||!d.saved);
   return `<div class="rankbox rank">
     <p class="small muted rkinfo">In “${esc(catOf(cat).label)}” classifichi fino a <b class="num">${n}</b> piatti: 1° posto = <b class="num">${rankPts(cat,1)}</b> punti, ${n}° = <b class="num">${rankPts(cat,n)}</b>; fuori classifica 0. Se scegli una posizione già occupata, il piatto che c’era scende alla prima posizione libera sotto, oppure esce.</p>
-    <ol class="slots" aria-label="La tua classifica">${slots}</ol>
+    <ol class="rkslots" aria-label="La tua classifica">${slots}</ol>
     <div class="pool" data-drop="pool"><h4>Fuori classifica <span class="num muted">${d.pool.length}</span></h4>
       ${d.pool.length?`<ul class="poolist">${pool}</ul>`:'<p class="small muted">Hai messo in classifica tutte le proposte.</p>'}</div>
     ${hints.length?`<p class="small muted">${hints.join(' ')}</p>`:''}

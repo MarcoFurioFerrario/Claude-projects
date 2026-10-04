@@ -480,11 +480,11 @@ button.chip.reg[aria-pressed="true"]{outline:3px solid var(--polenta);outline-of
 /* voto a posizioni: slot numerati + elenco "fuori classifica", trascinamento dalla maniglia */
 .rankbox{display:flex;flex-direction:column;gap:12px}
 .rkinfo{margin:0}
-.slots{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
-.slot{display:grid;grid-template-columns:34px minmax(0,1fr);gap:10px;align-items:center;border:2px dashed var(--line);border-radius:var(--r);padding:6px 8px;background:var(--surface-2);transition:border-color .12s,background .12s}
-.slot.on{border-style:solid;border-color:var(--line);background:var(--surface)}
-.slot .pos{font-family:var(--font-display);font-size:22px;color:var(--accent);text-align:center}
-.slot-empty{padding:10px 4px;color:var(--ink-2);font-size:13px}
+.rkslots{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.rkslot{display:grid;grid-template-columns:34px minmax(0,1fr);gap:10px;align-items:center;border:2px dashed var(--line);border-radius:var(--r);padding:6px 8px;background:var(--surface-2);transition:border-color .12s,background .12s}
+.rkslot.on{border-style:solid;border-color:var(--line);background:var(--surface)}
+.rkslot .pos{font-family:var(--font-display);font-size:22px;color:var(--accent);text-align:center}
+.rkempty{padding:10px 4px;color:var(--ink-2);font-size:13px}
 .dr{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;min-width:0}
 .dr .t{font-weight:600;overflow-wrap:anywhere}
 .dr .pp select{max-width:100%;min-width:122px}
@@ -495,7 +495,7 @@ button.chip.reg[aria-pressed="true"]{outline:3px solid var(--polenta);outline-of
 .pool h4{margin:0 0 8px}
 .poolist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
 .poolist li{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:8px}
-.slot.over,.pool.over{border-color:var(--accent);border-style:solid;background:var(--accent-soft)}
+.rkslot.over,.pool.over{border-color:var(--accent);border-style:solid;background:var(--accent-soft)}
 .dr.lifted{opacity:.35}
 .dr.ghost{background:var(--surface);border:1px solid var(--accent);border-radius:var(--r);padding:8px;box-shadow:0 10px 28px rgba(0,0,0,.28);opacity:.96;cursor:grabbing}
 body.dragging{user-select:none;-webkit-user-select:none;cursor:grabbing}
@@ -503,7 +503,7 @@ body.dragging{user-select:none;-webkit-user-select:none;cursor:grabbing}
   .dr{grid-template-columns:auto minmax(0,1fr)}
   .dr .pp{grid-column:1 / -1}
   .dr .pp select{width:100%}
-  .slot{grid-template-columns:26px minmax(0,1fr);padding:6px}
+  .rkslot{grid-template-columns:26px minmax(0,1fr);padding:6px}
 }
 
 </style>
@@ -701,7 +701,7 @@ function errMsg(e){
   if(c==='revoked')return 'Accesso alla pagina revocato.';
   return 'Salvataggio non riuscito'+(e&&e.message?': '+e.message:'.');
 }
-const BUILD='muu5daw6';
+const BUILD='muu87b4v';
 const BACKUP_EVERY=window.GB_BACKUP_EVERY||15*60*1000,BACKUP_KEEP=60;
 function saveHtml(){
   if(S.offline)return '<span class="sv warn">Offline: le modifiche restano in coda</span>';
@@ -1750,7 +1750,7 @@ function vRank(cat){
       <div class="small muted">${r.region?esc(r.region)+' · ':''}proposta da ${esc(pname(r.proposerId))} · <a href="${esc(safeHref(r.link))}" target="_blank" rel="noopener noreferrer">ricetta ↗</a></div></div>
       <label class="pp"><span class="sr">Posizione di ${esc(r.title)}</span><select id="rk-${esc(id)}" data-chg="rkpos" data-id="${esc(id)}" ${open?'':'disabled'}>${opts(pos)}</select></label></div>`;
   };
-  const slots=d.slots.map((id,i)=>`<li class="slot ${id?'on':''}" data-slot="${i}"><div class="pos num">${i+1}</div>${id?row(id,i+1):`<div class="slot-empty">${open?'Trascina qui un piatto o sceglilo dall’elenco sotto':'Posizione libera'}</div>`}</li>`).join('');
+  const slots=d.slots.map((id,i)=>`<li class="rkslot ${id?'on':''}" data-slot="${i}"><div class="pos num">${i+1}</div>${id?row(id,i+1):`<div class="rkempty">${open?'Trascina qui un piatto o sceglilo dall’elenco sotto':'Posizione libera'}</div>`}</li>`).join('');
   const pool=d.pool.map(r=>`<li>${row(r.id,0)}</li>`).join('');
   let status;
   if(d.dirty)status=badge('Modifiche non salvate','warn');
@@ -1763,7 +1763,7 @@ function vRank(cat){
   const canSave=open&&d.filled>0&&(d.dirty||!d.saved);
   return `<div class="rankbox rank">
     <p class="small muted rkinfo">In “${esc(catOf(cat).label)}” classifichi fino a <b class="num">${n}</b> piatti: 1° posto = <b class="num">${rankPts(cat,1)}</b> punti, ${n}° = <b class="num">${rankPts(cat,n)}</b>; fuori classifica 0. Se scegli una posizione già occupata, il piatto che c’era scende alla prima posizione libera sotto, oppure esce.</p>
-    <ol class="slots" aria-label="La tua classifica">${slots}</ol>
+    <ol class="rkslots" aria-label="La tua classifica">${slots}</ol>
     <div class="pool" data-drop="pool"><h4>Fuori classifica <span class="num muted">${d.pool.length}</span></h4>
       ${d.pool.length?`<ul class="poolist">${pool}</ul>`:'<p class="small muted">Hai messo in classifica tutte le proposte.</p>'}</div>
     ${hints.length?`<p class="small muted">${hints.join(' ')}</p>`:''}

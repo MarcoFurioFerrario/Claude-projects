@@ -13,7 +13,7 @@ const recipes=[...names.map((n,i)=>R('p'+(i+1),n+' di primi','primi')),
   await d.evaluate(({s,recipes})=>{s.forEach(w=>__db.data.set(w.collection+'/'+w.doc_id,w.data));recipes.forEach(r=>__db.data.set(r[0],r[1]));__db.data.get('settings/main').fase='voto';__db.notify();},{s:seed,recipes});
   await d.click('.names .btn:has-text("Fede")');await d.waitForSelector('.rail');
   await d.click('.tab:has-text("Votazioni")');await d.click('[data-act=vcat][data-v=primi]');await d.waitForSelector('.rankbox');
-  const slotsOf=()=>d.$$eval('.slots .slot',e=>e.map(s=>{const t=s.querySelector('.t');return t?t.textContent.replace(/\s+/g,' ').trim().replace(/ di primi$/,''):'—';}));
+  const slotsOf=()=>d.$$eval('.rkslots .rkslot',e=>e.map(s=>{const t=s.querySelector('.t');return t?t.textContent.replace(/\s+/g,' ').trim().replace(/ di primi$/,''):'—';}));
   const poolN=()=>d.$$eval('.pool .poolist li',e=>e.length);
   const pick=(id,p)=>d.selectOption('#rk-'+id,String(p));
   const draft=cat=>d.evaluate(c=>null,cat);
@@ -63,24 +63,24 @@ const recipes=[...names.map((n,i)=>R('p'+(i+1),n+' di primi','primi')),
   const drag=async(from,to,steps)=>{const a=await box(from),b=await box(to);
     await d.mouse.move(a.x+a.width/2,a.y+a.height/2);await d.mouse.down();await d.mouse.move(b.x+b.width/2,b.y+Math.min(b.height/2,20),{steps:steps||8});};
   s=await slotsOf();const free=s.indexOf('—');
-  await drag('.pool [data-grip=p6]',`.slot[data-slot="${free}"]`);
-  (await d.$('.dr.ghost'))&&(await d.$('.slot.over'))?pass('trascinando: compare l’ombra del piatto e il posto di arrivo si evidenzia'):fail('ghost/over');
+  await drag('.pool [data-grip=p6]',`.rkslot[data-slot="${free}"]`);
+  (await d.$('.dr.ghost'))&&(await d.$('.rkslot.over'))?pass('trascinando: compare l’ombra del piatto e il posto di arrivo si evidenzia'):fail('ghost/over');
   await d.screenshot({path:out+'/81-trascinamento.png'});
   await d.mouse.up();
   s=await slotsOf();s[free]==='Zeta'?pass('trascinato Zeta nel posto libero '+(free+1)+'°'):fail('drop '+s);
   // su un posto occupato: chi c'era scende
   const before=await slotsOf();
-  await drag('.pool [data-grip=p7]','.slot[data-slot="0"]');await d.mouse.up();
+  await drag('.pool [data-grip=p7]','.rkslot[data-slot="0"]');await d.mouse.up();
   s=await slotsOf();s[0]==='Eta'&&before[0]!=='—'&&s.includes(before[0])&&s.indexOf(before[0])>0?pass('trascinato Eta sul 1°: chi c’era scende al primo posto libero sotto'):fail('drop su occupato '+before+' → '+s);
   // trascinare nel riquadro "fuori classifica" toglie dalla classifica
-  await drag('.slot[data-slot="0"] [data-grip]','.pool h4');await d.mouse.up();
+  await drag('.rkslot[data-slot="0"] [data-grip]','.pool h4');await d.mouse.up();
   s=await slotsOf();!s.includes('Eta')?pass('trascinato nel riquadro «Fuori classifica»: il piatto esce dalla classifica'):fail('drop in pool '+s);
   // rilascio fuori da ogni zona: nessun cambiamento
   const b4=await slotsOf();
   await drag('.pool [data-grip=p8]','h2');await d.mouse.up();
   JSON.stringify(await slotsOf())===JSON.stringify(b4)?pass('rilascio fuori dalle zone: non cambia nulla'):fail('drop fuori');
   // durante il trascinamento un aggiornamento dal database non rompe nulla
-  await drag('.pool [data-grip=p8]','.slot[data-slot="5"]');
+  await drag('.pool [data-grip=p8]','.rkslot[data-slot="5"]');
   await d.evaluate(()=>{__db.notify();});await d.waitForTimeout(150);
   (await d.$('.dr.ghost'))?pass('un aggiornamento dei dati durante il trascinamento non lo interrompe'):fail('render durante drag');
   await d.mouse.up();s=await slotsOf();s[5]==='Theta'||s.includes('Theta')?pass('...e il rilascio funziona lo stesso'):fail('drop dopo render '+s);
@@ -123,17 +123,17 @@ const recipes=[...names.map((n,i)=>R('p'+(i+1),n+' di primi','primi')),
   await m.screenshot({path:out+'/83-voto-mobile.png',fullPage:true});
   const cdp=await m.context().newCDPSession(m);await cdp.send('Emulation.setTouchEmulationEnabled',{enabled:true,maxTouchPoints:1});
   const gb=await m.locator('.pool [data-grip=p2]').boundingBox();await m.locator('.pool [data-grip=p2]').scrollIntoViewIfNeeded();
-  const g2=await m.locator('.pool [data-grip=p2]').boundingBox();const tb=await m.locator('.slot[data-slot="2"]').boundingBox();
+  const g2=await m.locator('.pool [data-grip=p2]').boundingBox();const tb=await m.locator('.rkslot[data-slot="2"]').boundingBox();
   // per un tocco vero la destinazione deve essere visibile: porto in vista lo slot e riprendo la maniglia
-  await m.evaluate(()=>{const r=document.querySelector('.slot[data-slot="2"]').getBoundingClientRect();window.scrollBy(0,r.top-150);});
-  const g3=await m.locator('.pool [data-grip=p2]').boundingBox(),t3=await m.locator('.slot[data-slot="2"]').boundingBox();
+  await m.evaluate(()=>{const r=document.querySelector('.rkslot[data-slot="2"]').getBoundingClientRect();window.scrollBy(0,r.top-150);});
+  const g3=await m.locator('.pool [data-grip=p2]').boundingBox(),t3=await m.locator('.rkslot[data-slot="2"]').boundingBox();
   if(g3&&g3.y>0&&g3.y<800){
     const x=g3.x+g3.width/2,y=g3.y+g3.height/2,tx=t3.x+t3.width/2,ty=t3.y+t3.height/2;
     await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x,y}]});
     for(let i=1;i<=8;i++)await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:x+(tx-x)*i/8,y:y+(ty-y)*i/8}]});
     await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
     await m.waitForTimeout(200);
-    const ms=await m.$$eval('.slots .slot',e=>e.map(s=>{const t=s.querySelector('.t');return t?t.textContent.trim():'—';}));
+    const ms=await m.$$eval('.rkslots .rkslot',e=>e.map(s=>{const t=s.querySelector('.t');return t?t.textContent.trim():'—';}));
     ms[2].startsWith('Beta')?pass('telefono: trascinamento col dito dalla maniglia nello slot 3'):fail('touch '+ms);
   }else console.log('   (trascinamento col dito non verificabile in questa schermata: maniglia fuori vista)');
   console.log(errors.length?'ERRORI:\n'+errors.join('\n'):'nessun errore di console');

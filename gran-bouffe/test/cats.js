@@ -27,7 +27,7 @@ const recipes=[R('c1','Bigoli in salsa','primi'),R('c2','Jota triestina','zuppe'
   const vt=await d.$$eval('.filterchips .fchip',e=>e.map(x=>x.textContent.replace(/[✓\s\d]+$/,'').replace(/^✓\s*/,'').trim()));
   vt.length===7?pass('votazioni: 5 categorie (più i due interruttori)'):fail('chip voto '+vt);
   await d.click('[data-act=vcat][data-v=primi]');await d.waitForSelector('.rank');
-  const slotRows=await d.$$eval('.slots .t',e=>e.map(x=>x.textContent.replace(/\s+/g,' ').trim())),poolRows=await d.$$eval('.pool .t',e=>e.map(x=>x.textContent.replace(/\s+/g,' ').trim()));
+  const slotRows=await d.$$eval('.rkslots .t',e=>e.map(x=>x.textContent.replace(/\s+/g,' ').trim())),poolRows=await d.$$eval('.pool .t',e=>e.map(x=>x.textContent.replace(/\s+/g,' ').trim()));
   slotRows.length===1&&slotRows[0]==='Bigoli in salsa'&&poolRows.length===1&&poolRows[0].startsWith('Jota triestina')&&poolRows[0].includes('Nuova')
     ?pass('in "Primi e zuppe" la classifica salvata resta e la jota compare fuori classifica come nuova'):fail('righe '+slotRows+' / '+poolRows);
   // il vecchio voto sulle zuppe non conta più, quello sui primi sì

@@ -103,6 +103,7 @@ node build.js          # assembla src/ in index.html (artifact) e docs/index.htm
 node test/flow.js      # artifact: prova end-to-end in Chromium con un db finto in memoria
 node test/sugg.js      # sezione Suggerimenti: solo piatti da proporre, foto e segno AI, Equilibrio, filtri, proposta precompilata, carta dei vini
 node test/rank.js      # voto a posizioni: numero a mano, spostamento dei doppioni, trascinamento (mouse e dito), punteggio, spareggio a cascata, pari merito
+node test/menu-layout.js # scheda Menu: colonne dei giorni e pasti, titoli leggibili (chiaro, scuro, telefono)
 node test/tabs.js      # barra delle schede: frecce, scorrimento, scheda attiva visibile, posizione, fase del progetto
 node test/band.js       # scadenze, countdown, fasi automatiche, voto sul formato, scelta A/B in Proposte, whitelist
 node test/libro.js      # «Giorni Golosi»: vista Il libro, segno Dal libro, filtro, riquadro e ricetta del libro nella scheda
