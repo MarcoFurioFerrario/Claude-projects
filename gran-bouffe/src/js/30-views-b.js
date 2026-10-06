@@ -107,9 +107,38 @@ function dishWarn(r,slotKey){
 }
 function dishRow(r,slotKey){
   const org=isOrg();
-  return `<div class="dish"><div><button class="nm" data-act="open-dish" data-id="${esc(r.id)}">${esc(r.title)}</button>
+  return `<div class="dish" data-mdish="${esc(r.id)}">${org?`<button type="button" class="mgrip" data-mgrip="${esc(r.id)}" aria-label="Trascina «${esc(r.title)}» in un altro pasto" title="Trascina in un altro pasto o negli exit poll">⠿</button>`:''}<div><button class="nm" data-act="open-dish" data-id="${esc(r.id)}">${esc(r.title)}</button>
     <div class="small muted">${chipCat(r.category)} ${esc(ownersOf(r).map(pname).join(', '))}</div>${dishWarn(r,slotKey)}</div>
     ${org?`<select aria-label="Sposta ${esc(r.title)}" data-chg="setslot" data-id="${esc(r.id)}"><option value="">Togli dal menu</option>${SLOTS.map(s=>`<option value="${s.key}" ${s.key===slotKey?'selected':''}>${s.label}</option>`).join('')}</select>`:''}</div>`;
+}
+/* Exit poll: i piatti più votati finora, per portata (solo i primi XP_N); si trascinano nel menu */
+const XP_N=5;
+function exitPoll(org){
+  const st=voteStats();
+  const cats=CATS.map(c=>{
+    const all=st[c.key],voted=all.filter(x=>x.score!=null);
+    const rows=voted.slice(0,XP_N).map((x,i)=>{
+      const r=x.r;
+      return `<li class="xpr ${r.slot?'inmenu':''}" data-mdish="${esc(r.id)}">${org?`<button type="button" class="mgrip" data-mgrip="${esc(r.id)}" aria-label="Trascina «${esc(r.title)}» nel menu" title="Trascina nel menu">⠿</button>`:''}
+        <span class="pos num">${i+1}</span>
+        <div class="xpt"><button class="nm" data-act="open-dish" data-id="${esc(r.id)}">${esc(r.title)}</button> ${r.slot?badge('In menu · '+slotLabel(r.slot),'ok'):''}
+          <div class="small muted">${r.region?esc(r.region)+' · ':''}proposta da ${esc(pname(r.proposerId))}</div>
+          <div class="xbar" aria-hidden="true"><i style="width:${x.score}%"></i></div></div>
+        <div class="small num xpv"><b>${x.pts}</b> punti<br><span class="muted">${x.n} su ${x.nv} vot${x.nv===1?'ante':'anti'}</span></div></li>`;
+    }).join('');
+    return `<div class="xp-cat" style="--h:${c.h}"><h4 class="grp" style="--h:${c.h}">${esc(c.label)} <span class="muted small num">${voted.length} con voti</span></h4>
+      ${rows?`<ol class="xpl">${rows}</ol>`:'<p class="small muted">Nessun voto ancora.</p>'}</div>`;
+  }).join('');
+  const rest=CATS.map(c=>[c,st[c.key].filter(x=>!x.r.slot&&!(x.score!=null&&st[c.key].filter(y=>y.score!=null).indexOf(x)<XP_N))]).filter(g=>g[1].length);
+  const nRest=rest.reduce((a,g)=>a+g[1].length,0);
+  const restHtml=nRest?`<details class="panel xp-rest" id="xp-rest" ${isOpen('xp-rest')}><summary style="cursor:pointer;font-weight:600">Altri candidati, fuori dai primi ${XP_N} <span class="muted small num">(${nRest})</span></summary>
+    <div style="display:flex;flex-direction:column;gap:12px;margin-top:10px">${rest.map(([c,xs])=>`<div><h4 class="grp" style="--h:${c.h}">${esc(c.label)}</h4>${xs.map(x=>`<div class="cand"><div><div style="font-weight:600;overflow-wrap:anywhere">${esc(x.r.title)}</div>
+      <div class="small muted">${x.r.region?esc(x.r.region)+' · ':''}proposta da ${esc(pname(x.r.proposerId))}</div></div>
+      <div class="small num muted" style="text-align:right">${x.score==null?'nessun voto':`punteggio <b style="color:var(--ink)">${x.score}</b>`}</div>
+      ${org?`<select aria-label="Assegna ${esc(x.r.title)}" data-chg="setslot" data-id="${esc(x.r.id)}"><option value="">Non in menu</option>${SLOTS.map(s=>`<option value="${s.key}">${s.label}</option>`).join('')}</select>`:'<span></span>'}</div>`).join('')}</div>`).join('')}</div></details>`:'';
+  return `<aside class="xp" ${org?'data-mdrop="out"':''} aria-label="Exit poll">
+    <div class="xp-head"><h3>Exit poll</h3><p class="small muted">I ${XP_N} piatti più votati finora per portata.${org?' Trascinali nel menu a sinistra; trascina un piatto qui per toglierlo dal menu.':''}</p></div>
+    ${cats}${restHtml}</aside>`;
 }
 function vMenu(){
   const org=isOrg(),fm=fmtNow(),capv=fm.cap,sl=slotted(),tot=totalCap(),overTot=sl.length>tot;
@@ -119,20 +148,13 @@ function vMenu(){
     const slots=SLOTS.filter(s=>s.day===d.key).map(s=>{
       const list=rs.filter(r=>r.slot===s.key).sort((a,b)=>catIdx(a.category)-catIdx(b.category)||byTitle(a,b));
       const sc=fm.slot&&fm.slot[s.key];
-      return `<div class="slot"><h4>${s.label}${sc?` <span class="num ${list.length>sc?'bad':''}">${list.length} / ${sc}</span>`:''}</h4>${list.map(r=>dishRow(r,s.key)).join('')||'<p class="small muted">Nessun piatto assegnato.</p>'}</div>`;
+      return `<div class="slot" data-mslot="${s.key}"><h4>${s.label}${sc?` <span class="num ${list.length>sc?'bad':''}">${list.length} / ${sc}</span>`:''}</h4>${list.map(r=>dishRow(r,s.key)).join('')||`<p class="small muted mempty">${org?'Trascina qui un piatto dagli exit poll.':'Nessun piatto assegnato.'}</p>`}</div>`;
     }).join('');
     return `<section class="day ${over?'over':''}"><header><h3>${d.label}</h3><span class="num">${fm.libero?`<b>${rs.length}</b> piatt${rs.length===1?'o':'i'}`:`<b>${rs.length}</b> / ${cap}${over?' · troppi':''}`}</span></header>
-      <div class="slot">${fm.libero?'':`<div class="capbar"><i style="width:${cap?Math.min(100,rs.length/cap*100):0}%"></i></div>`}
+      <div class="slot daysum">${fm.libero?'':`<div class="capbar"><i style="width:${cap?Math.min(100,rs.length/cap*100):0}%"></i></div>`}
       <div class="mix">${CATS.filter(c=>mix[c.key]).map(c=>`<span class="chip" style="--h:${c.h}">${esc(c.label)} ${mix[c.key]}</span>`).join('')||'<span class="small muted">Nessun piatto</span>'}</div></div>
       ${slots}</section>`;
   }).join('');
-  const st=voteStats(),cand=CATS.map(c=>[c,st[c.key].filter(x=>!x.r.slot)]).filter(g=>g[1].length);
-  const candHtml=cand.length?cand.map(([c,xs])=>`<div><h3 class="grp">${esc(c.label)} <span class="muted small num">${xs.length}</span></h3>
-    <div class="panel" style="padding:0;overflow:hidden">${xs.map(x=>`<div class="cand"><div><div style="font-weight:600;overflow-wrap:anywhere">${esc(x.r.title)}</div>
-      <div class="small muted">${x.r.region?esc(x.r.region)+' · ':''}proposta da ${esc(pname(x.r.proposerId))}</div></div>
-      <div class="small num muted" style="text-align:right">${x.score==null?'nessun voto':`punteggio <b style="color:var(--ink)">${x.score}</b> · ${x.n} vot${x.n===1?'o':'i'}`}</div>
-      ${org?`<select aria-label="Assegna ${esc(x.r.title)}" data-chg="setslot" data-id="${esc(x.r.id)}"><option value="">Non in menu</option>${SLOTS.map(s=>`<option value="${s.key}">${s.label}</option>`).join('')}</select>`:'<span></span>'}</div>`).join('')}</div></div>`).join('')
-    :`<div class="empty"><p>Nessun altro candidato.</p></div>`;
   const noIng=sl.filter(r=>!(r.ingredients||[]).length).length;
   return `<section class="view">
     <div class="vhead"><div><h2>Menu</h2>
@@ -144,9 +166,9 @@ function vMenu(){
     ${noIng?`<div class="note warn"><b>${noIng}</b> piatt${noIng===1?'o':'i'} del menu senza ingredienti: la lista della spesa è incompleta finché i responsabili non compilano le schede.</div>`:''}
     ${famNote()}
     ${compNote(fm,sl)}
-    <div class="days">${days}</div>
-    ${vCarta()}
-    <h3>Candidati</h3>${candHtml}</section>`;
+    <div class="menu2"><div class="menu2-l"><h3 class="menu2-h">Il menu, pasto per pasto</h3><div class="days">${days}</div></div>
+      <div class="menu2-r">${exitPoll(org)}</div></div>
+    ${vCarta()}</section>`;
 }
 A.suggest=()=>{
   if(!S.recipes.length){toast('Nessuna proposta da selezionare.','err');return;}
@@ -170,10 +192,15 @@ A['clear-menu']=async()=>{
   for(const r of slotted())await write('update','recipes/'+r.id,{slot:''});
   toast('Selezione svuotata');
 };
-CH.setslot=async t=>{
-  const id=t.dataset.id,v=t.value;
-  if(await write('update','recipes/'+id,{slot:v})){const r=R(id);if(v&&r&&!feasible(r,v))toast('Attenzione: i tempi di preparazione non stanno in questo pasto.','err');}
-};
+/* sposta un piatto in un pasto (slotKey) o lo toglie dal menu (''); usata dai menu a tendina e dal trascinamento */
+async function moveDish(id,slotKey){
+  const r=R(id);if(!r||!isOrg()||(r.slot||'')===slotKey)return;
+  if(await write('update','recipes/'+id,{slot:slotKey})){
+    if(slotKey&&!feasible(r,slotKey))toast('Attenzione: i tempi di preparazione non stanno in questo pasto.','err');
+    else toast(slotKey?`«${r.title}» → ${slotLabel(slotKey)}`:`«${r.title}» tolto dal menu`);
+  }
+}
+CH.setslot=t=>moveDish(t.dataset.id,t.value);
 
 /* pasto con portate obbligatorie (venerdì della Bouffetta): avvisa se manca o avanza qualcosa */
 function compNote(fm,sl){

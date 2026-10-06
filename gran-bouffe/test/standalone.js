@@ -32,7 +32,7 @@ const mockFirebase=`
   const page=await ctx.newPage();
   page.on('console',m=>{if(m.type()==='error')errors.push('console: '+m.text());});
   page.on('pageerror',e=>errors.push('pageerror: '+e.message));
-  await page.addInitScript('window.GB_BACKUP_EVERY=3000;window.GB_TICK=1000;');
+  await page.addInitScript('window.GB_BACKUP_EVERY=3000;window.GB_TICK=1000;window.GB_NOW=()=>Date.parse("2026-10-03T12:00:00+02:00");'); // orologio fisso: il test non dipende dal giorno in cui gira
   let cfg='window.GB_FIREBASE=null;';
   const realBuild=(html.match(/const BUILD='([^']+)'/)||[])[1];let served=realBuild;const window_build=()=>served;
   await page.route('**/*',r=>{
@@ -42,6 +42,7 @@ const mockFirebase=`
     if(u==='https://gb.test/config.js')return r.fulfill({status:200,contentType:'application/javascript',body:cfg});
     if(u.includes('firebase-app-compat'))return r.fulfill({status:200,contentType:'application/javascript',body:mockFirebase});
     if(u.includes('firebase-firestore-compat'))return r.fulfill({status:200,contentType:'application/javascript',body:''});
+    if(r.request().resourceType()==='image')return r.fulfill({status:200,contentType:'image/png',body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==','base64')}); // foto di fonti esterne: immagine finta
     return r.abort();
   });
   // 1) senza configurazione

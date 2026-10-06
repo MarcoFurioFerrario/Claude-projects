@@ -25,7 +25,7 @@ function build(){
   if(!UI.migrated&&isOrg()&&!S.readOnly&&S.legacyCats&&Object.keys(S.legacyCats).length){UI.migrated=true;migrateCats();}
   const views={proposte:vProposte,suggerimenti:vSugg,libro:vLibro,voto:vVoto,menu:vMenu,spesa:vSpesa,programma:vProgramma,persone:vPersone};
   const view=UI.dish?vPiatto():(views[UI.tab]||vProposte)();
-  return vHeader()+vNav()+vStatus()+vBand()+`<main class="wrap">${S.offline?`<div class="note warn" style="margin-top:16px"><b>Sei offline.</b> Puoi continuare: le modifiche restano in coda e si salvano appena torna la connessione. Non chiudere la pagina.</div>`:''}${S.readOnly?`<div class="note bad" style="margin-top:16px"><b>Sola lettura.</b> Puoi guardare tutto ma non modificare: chiedi a Marco di darti accesso come collaboratore.</div>`:''}${view}</main>`;
+  return vHeader()+vNav()+vStatus()+(UI.tab==='voto'&&!UI.dish?vBand():'')+`<main class="wrap">${S.offline?`<div class="note warn" style="margin-top:16px"><b>Sei offline.</b> Puoi continuare: le modifiche restano in coda e si salvano appena torna la connessione. Non chiudere la pagina.</div>`:''}${S.readOnly?`<div class="note bad" style="margin-top:16px"><b>Sola lettura.</b> Puoi guardare tutto ma non modificare: chiedi a Marco di darti accesso come collaboratore.</div>`:''}${view}</main>`;
 }
 function render(){
   const root=$('#app');if(!root)return;

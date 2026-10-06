@@ -175,7 +175,7 @@ input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent)}
 .res.cut{background:var(--accent-soft)}
 
 /* menu */
-.days{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:14px;align-items:start}
+.days{display:flex;flex-direction:column;gap:14px}
 .day{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;min-width:0}
 .day>header{padding:12px 14px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:baseline;gap:8px;background:var(--surface-2)}
 .day.over>header{background:var(--bad-soft)}
@@ -506,6 +506,38 @@ body.dragging{user-select:none;-webkit-user-select:none;cursor:grabbing}
   .rkslot{grid-template-columns:26px minmax(0,1fr);padding:6px}
 }
 
+/* menu a due colonne: a sinistra i pasti da venerdì a domenica, a destra gli exit poll */
+.menu2{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:18px;align-items:start;margin-top:14px}
+.menu2-h{margin:0 0 10px}
+.menu2-l,.menu2-r{min-width:0}
+@media (max-width:900px){.menu2{grid-template-columns:minmax(0,1fr)}}
+.day .daysum{padding-block:8px}
+.mempty{margin:0;padding:12px 10px;border:2px dashed var(--line);border-radius:var(--r);text-align:center}
+.slot.mover,.xp.mover{outline:3px dashed var(--accent);outline-offset:-3px;background:var(--accent-soft)}
+.mgrip{touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none;flex:0 0 auto;border:1px solid var(--btn-line);background:var(--surface);color:var(--ink-2);border-radius:8px;width:32px;height:36px;font-size:18px;line-height:1;padding:0;display:inline-flex;align-items:center;justify-content:center}
+.mgrip:hover{background:var(--surface-2);color:var(--ink)}
+.dish.lifted,.xpr.lifted{opacity:.35}
+.mghost{background:var(--surface);border:1px solid var(--accent);border-radius:var(--r);padding:8px 10px;box-shadow:0 10px 28px rgba(0,0,0,.28);opacity:.96;cursor:grabbing;display:flex;gap:10px;align-items:center}
+.mghost select,.mghost .xbar{display:none}
+.xp{display:flex;flex-direction:column;gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;transition:background .12s}
+.xp-head h3{margin:0}
+.xp-head p{margin:4px 0 0}
+.xp-cat .grp{margin:0 0 8px}
+.xpl{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.xpr{display:grid;grid-template-columns:auto 24px minmax(0,1fr) auto;gap:8px;align-items:center;padding:7px 8px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface-2)}
+.xpr:not(:has(.mgrip)){grid-template-columns:24px minmax(0,1fr) auto}
+.xpr.inmenu{background:var(--ok-soft)}
+.xpr .pos{font-family:var(--font-display);font-size:18px;color:var(--ink-2);text-align:center}
+.xpr .nm{font-weight:700;background:none;border:0;padding:0;text-align:left;cursor:pointer;color:var(--accent);overflow-wrap:anywhere}
+.xpr .nm:hover{text-decoration:underline}
+.xpt{min-width:0}
+.xbar{height:5px;border-radius:99px;background:var(--surface);overflow:hidden;margin-top:5px}
+.xbar>i{display:block;height:100%;background:var(--accent);border-radius:99px}
+.xpv{text-align:right;white-space:nowrap}
+.xp-rest{margin-top:2px}
+.dish>.mgrip{margin-top:2px}
+@media (max-width:560px){.dish{flex-wrap:wrap}.dish select{flex:1 1 100%;width:100%}}
+
 </style>
 <div id="app"><p class="boot">Carico Gran Bouffe…</p></div>
 <div id="modal" hidden></div>
@@ -701,7 +733,7 @@ function errMsg(e){
   if(c==='revoked')return 'Accesso alla pagina revocato.';
   return 'Salvataggio non riuscito'+(e&&e.message?': '+e.message:'.');
 }
-const BUILD='muu87b4v';
+const BUILD='mux6pijl';
 const BACKUP_EVERY=window.GB_BACKUP_EVERY||15*60*1000,BACKUP_KEEP=60;
 function saveHtml(){
   if(S.offline)return '<span class="sv warn">Offline: le modifiche restano in coda</span>';
@@ -1569,7 +1601,8 @@ function vChoose(){
   const libere=sugLibere().length,open=canPropose();
   const sg=stage(),motivo={attesa:'la scadenza è passata',voto:'sono aperte le votazioni'}[sg]||'il menu è in definizione';
   const why=!open?`<div class="note"><b>Le proposte sono chiuse:</b> ${motivo}. Un organizzatore può ancora aggiungere piatti o spostare la scadenza.</div>`:'';
-  return `${why}<div class="choose" role="group" aria-label="Come proporre un piatto">
+  const dl=open&&scadOn()?`<p class="small muted" style="margin:0">Le proposte chiudono ${esc(fmtDT(scadMs('propFine')))}.</p>`:'';
+  return `${why}${dl}<div class="choose" role="group" aria-label="Come proporre un piatto">
     <div class="opt a"><span class="optn" aria-hidden="true">A</span>
       <h3>Scegli tra i Suggerimenti</h3>
       <p><b class="num">${libere}</b> piatti del Triveneto ancora da proporre, con foto, link, vino e tempi: scegli e il modulo si compila da solo.</p>
@@ -1828,9 +1861,38 @@ function dishWarn(r,slotKey){
 }
 function dishRow(r,slotKey){
   const org=isOrg();
-  return `<div class="dish"><div><button class="nm" data-act="open-dish" data-id="${esc(r.id)}">${esc(r.title)}</button>
+  return `<div class="dish" data-mdish="${esc(r.id)}">${org?`<button type="button" class="mgrip" data-mgrip="${esc(r.id)}" aria-label="Trascina «${esc(r.title)}» in un altro pasto" title="Trascina in un altro pasto o negli exit poll">⠿</button>`:''}<div><button class="nm" data-act="open-dish" data-id="${esc(r.id)}">${esc(r.title)}</button>
     <div class="small muted">${chipCat(r.category)} ${esc(ownersOf(r).map(pname).join(', '))}</div>${dishWarn(r,slotKey)}</div>
     ${org?`<select aria-label="Sposta ${esc(r.title)}" data-chg="setslot" data-id="${esc(r.id)}"><option value="">Togli dal menu</option>${SLOTS.map(s=>`<option value="${s.key}" ${s.key===slotKey?'selected':''}>${s.label}</option>`).join('')}</select>`:''}</div>`;
+}
+/* Exit poll: i piatti più votati finora, per portata (solo i primi XP_N); si trascinano nel menu */
+const XP_N=5;
+function exitPoll(org){
+  const st=voteStats();
+  const cats=CATS.map(c=>{
+    const all=st[c.key],voted=all.filter(x=>x.score!=null);
+    const rows=voted.slice(0,XP_N).map((x,i)=>{
+      const r=x.r;
+      return `<li class="xpr ${r.slot?'inmenu':''}" data-mdish="${esc(r.id)}">${org?`<button type="button" class="mgrip" data-mgrip="${esc(r.id)}" aria-label="Trascina «${esc(r.title)}» nel menu" title="Trascina nel menu">⠿</button>`:''}
+        <span class="pos num">${i+1}</span>
+        <div class="xpt"><button class="nm" data-act="open-dish" data-id="${esc(r.id)}">${esc(r.title)}</button> ${r.slot?badge('In menu · '+slotLabel(r.slot),'ok'):''}
+          <div class="small muted">${r.region?esc(r.region)+' · ':''}proposta da ${esc(pname(r.proposerId))}</div>
+          <div class="xbar" aria-hidden="true"><i style="width:${x.score}%"></i></div></div>
+        <div class="small num xpv"><b>${x.pts}</b> punti<br><span class="muted">${x.n} su ${x.nv} vot${x.nv===1?'ante':'anti'}</span></div></li>`;
+    }).join('');
+    return `<div class="xp-cat" style="--h:${c.h}"><h4 class="grp" style="--h:${c.h}">${esc(c.label)} <span class="muted small num">${voted.length} con voti</span></h4>
+      ${rows?`<ol class="xpl">${rows}</ol>`:'<p class="small muted">Nessun voto ancora.</p>'}</div>`;
+  }).join('');
+  const rest=CATS.map(c=>[c,st[c.key].filter(x=>!x.r.slot&&!(x.score!=null&&st[c.key].filter(y=>y.score!=null).indexOf(x)<XP_N))]).filter(g=>g[1].length);
+  const nRest=rest.reduce((a,g)=>a+g[1].length,0);
+  const restHtml=nRest?`<details class="panel xp-rest" id="xp-rest" ${isOpen('xp-rest')}><summary style="cursor:pointer;font-weight:600">Altri candidati, fuori dai primi ${XP_N} <span class="muted small num">(${nRest})</span></summary>
+    <div style="display:flex;flex-direction:column;gap:12px;margin-top:10px">${rest.map(([c,xs])=>`<div><h4 class="grp" style="--h:${c.h}">${esc(c.label)}</h4>${xs.map(x=>`<div class="cand"><div><div style="font-weight:600;overflow-wrap:anywhere">${esc(x.r.title)}</div>
+      <div class="small muted">${x.r.region?esc(x.r.region)+' · ':''}proposta da ${esc(pname(x.r.proposerId))}</div></div>
+      <div class="small num muted" style="text-align:right">${x.score==null?'nessun voto':`punteggio <b style="color:var(--ink)">${x.score}</b>`}</div>
+      ${org?`<select aria-label="Assegna ${esc(x.r.title)}" data-chg="setslot" data-id="${esc(x.r.id)}"><option value="">Non in menu</option>${SLOTS.map(s=>`<option value="${s.key}">${s.label}</option>`).join('')}</select>`:'<span></span>'}</div>`).join('')}</div>`).join('')}</div></details>`:'';
+  return `<aside class="xp" ${org?'data-mdrop="out"':''} aria-label="Exit poll">
+    <div class="xp-head"><h3>Exit poll</h3><p class="small muted">I ${XP_N} piatti più votati finora per portata.${org?' Trascinali nel menu a sinistra; trascina un piatto qui per toglierlo dal menu.':''}</p></div>
+    ${cats}${restHtml}</aside>`;
 }
 function vMenu(){
   const org=isOrg(),fm=fmtNow(),capv=fm.cap,sl=slotted(),tot=totalCap(),overTot=sl.length>tot;
@@ -1840,20 +1902,13 @@ function vMenu(){
     const slots=SLOTS.filter(s=>s.day===d.key).map(s=>{
       const list=rs.filter(r=>r.slot===s.key).sort((a,b)=>catIdx(a.category)-catIdx(b.category)||byTitle(a,b));
       const sc=fm.slot&&fm.slot[s.key];
-      return `<div class="slot"><h4>${s.label}${sc?` <span class="num ${list.length>sc?'bad':''}">${list.length} / ${sc}</span>`:''}</h4>${list.map(r=>dishRow(r,s.key)).join('')||'<p class="small muted">Nessun piatto assegnato.</p>'}</div>`;
+      return `<div class="slot" data-mslot="${s.key}"><h4>${s.label}${sc?` <span class="num ${list.length>sc?'bad':''}">${list.length} / ${sc}</span>`:''}</h4>${list.map(r=>dishRow(r,s.key)).join('')||`<p class="small muted mempty">${org?'Trascina qui un piatto dagli exit poll.':'Nessun piatto assegnato.'}</p>`}</div>`;
     }).join('');
     return `<section class="day ${over?'over':''}"><header><h3>${d.label}</h3><span class="num">${fm.libero?`<b>${rs.length}</b> piatt${rs.length===1?'o':'i'}`:`<b>${rs.length}</b> / ${cap}${over?' · troppi':''}`}</span></header>
-      <div class="slot">${fm.libero?'':`<div class="capbar"><i style="width:${cap?Math.min(100,rs.length/cap*100):0}%"></i></div>`}
+      <div class="slot daysum">${fm.libero?'':`<div class="capbar"><i style="width:${cap?Math.min(100,rs.length/cap*100):0}%"></i></div>`}
       <div class="mix">${CATS.filter(c=>mix[c.key]).map(c=>`<span class="chip" style="--h:${c.h}">${esc(c.label)} ${mix[c.key]}</span>`).join('')||'<span class="small muted">Nessun piatto</span>'}</div></div>
       ${slots}</section>`;
   }).join('');
-  const st=voteStats(),cand=CATS.map(c=>[c,st[c.key].filter(x=>!x.r.slot)]).filter(g=>g[1].length);
-  const candHtml=cand.length?cand.map(([c,xs])=>`<div><h3 class="grp">${esc(c.label)} <span class="muted small num">${xs.length}</span></h3>
-    <div class="panel" style="padding:0;overflow:hidden">${xs.map(x=>`<div class="cand"><div><div style="font-weight:600;overflow-wrap:anywhere">${esc(x.r.title)}</div>
-      <div class="small muted">${x.r.region?esc(x.r.region)+' · ':''}proposta da ${esc(pname(x.r.proposerId))}</div></div>
-      <div class="small num muted" style="text-align:right">${x.score==null?'nessun voto':`punteggio <b style="color:var(--ink)">${x.score}</b> · ${x.n} vot${x.n===1?'o':'i'}`}</div>
-      ${org?`<select aria-label="Assegna ${esc(x.r.title)}" data-chg="setslot" data-id="${esc(x.r.id)}"><option value="">Non in menu</option>${SLOTS.map(s=>`<option value="${s.key}">${s.label}</option>`).join('')}</select>`:'<span></span>'}</div>`).join('')}</div></div>`).join('')
-    :`<div class="empty"><p>Nessun altro candidato.</p></div>`;
   const noIng=sl.filter(r=>!(r.ingredients||[]).length).length;
   return `<section class="view">
     <div class="vhead"><div><h2>Menu</h2>
@@ -1865,9 +1920,9 @@ function vMenu(){
     ${noIng?`<div class="note warn"><b>${noIng}</b> piatt${noIng===1?'o':'i'} del menu senza ingredienti: la lista della spesa è incompleta finché i responsabili non compilano le schede.</div>`:''}
     ${famNote()}
     ${compNote(fm,sl)}
-    <div class="days">${days}</div>
-    ${vCarta()}
-    <h3>Candidati</h3>${candHtml}</section>`;
+    <div class="menu2"><div class="menu2-l"><h3 class="menu2-h">Il menu, pasto per pasto</h3><div class="days">${days}</div></div>
+      <div class="menu2-r">${exitPoll(org)}</div></div>
+    ${vCarta()}</section>`;
 }
 A.suggest=()=>{
   if(!S.recipes.length){toast('Nessuna proposta da selezionare.','err');return;}
@@ -1891,10 +1946,15 @@ A['clear-menu']=async()=>{
   for(const r of slotted())await write('update','recipes/'+r.id,{slot:''});
   toast('Selezione svuotata');
 };
-CH.setslot=async t=>{
-  const id=t.dataset.id,v=t.value;
-  if(await write('update','recipes/'+id,{slot:v})){const r=R(id);if(v&&r&&!feasible(r,v))toast('Attenzione: i tempi di preparazione non stanno in questo pasto.','err');}
-};
+/* sposta un piatto in un pasto (slotKey) o lo toglie dal menu (''); usata dai menu a tendina e dal trascinamento */
+async function moveDish(id,slotKey){
+  const r=R(id);if(!r||!isOrg()||(r.slot||'')===slotKey)return;
+  if(await write('update','recipes/'+id,{slot:slotKey})){
+    if(slotKey&&!feasible(r,slotKey))toast('Attenzione: i tempi di preparazione non stanno in questo pasto.','err');
+    else toast(slotKey?`«${r.title}» → ${slotLabel(slotKey)}`:`«${r.title}» tolto dal menu`);
+  }
+}
+CH.setslot=t=>moveDish(t.dataset.id,t.value);
 
 /* pasto con portate obbligatorie (venerdì della Bouffetta): avvisa se manca o avanza qualcosa */
 function compNote(fm,sl){
@@ -1994,6 +2054,67 @@ A['copy-carta']=()=>copyText(cartaText(),'Carta copiata: incollala dove vuoi');
     ghost.style.cssText=`position:fixed;left:${r.left}px;top:${r.top}px;width:${r.width}px;pointer-events:none;z-index:300`;
     document.body.appendChild(ghost);row.classList.add('lifted');document.body.classList.add('dragging');
     d={id:row.dataset.dish,ghost,row,dx:e.clientX-r.left,dy:e.clientY-r.top,pid:e.pointerId,hot:null,x:e.clientX,y:e.clientY,raf:0};
+    UI.dragging=true;
+    try{g.setPointerCapture(e.pointerId);}catch(_){}
+    window.addEventListener('pointermove',move);window.addEventListener('pointerup',up);window.addEventListener('pointercancel',cancel);
+    d.raf=requestAnimationFrame(tick);
+  });
+})();
+
+/* ============ trascinamento dei piatti nel menu (mouse e dito, Pointer Events) ============
+   Solo per gli organizzatori. Si parte dalla maniglia ⠿ di un piatto del menu o di un exit poll e si rilascia:
+   - su un pasto del menu → il piatto passa a quel pasto;
+   - sugli exit poll → il piatto esce dal menu.
+   Durante il trascinamento la pagina non si ridisegna (render() aspetta la fine). */
+(function(){
+  let d=null;
+  const target=(x,y)=>{
+    const e=document.elementFromPoint(x,y);if(!e)return null;
+    const s=e.closest('[data-mslot]');if(s)return{k:'slot',key:s.dataset.mslot,el:s};
+    const o=e.closest('[data-mdrop="out"]');return o?{k:'out',el:o}:null;
+  };
+  const mark=t=>{
+    if(d.hot&&(!t||d.hot.el!==t.el))d.hot.el.classList.remove('mover');
+    if(t&&(!d.hot||d.hot.el!==t.el))t.el.classList.add('mover');
+    d.hot=t;
+  };
+  function move(e){
+    if(!d||e.pointerId!==d.pid)return;
+    d.x=e.clientX;d.y=e.clientY;
+    d.ghost.style.left=(d.x-d.dx)+'px';d.ghost.style.top=(d.y-d.dy)+'px';
+    mark(target(d.x,d.y));
+  }
+  function tick(){
+    if(!d)return;
+    const m=70,h=window.innerHeight;
+    if(d.y<m)window.scrollBy(0,-Math.ceil((m-d.y)/5));else if(d.y>h-m)window.scrollBy(0,Math.ceil((d.y-(h-m))/5));
+    mark(target(d.x,d.y));
+    d.raf=requestAnimationFrame(tick);
+  }
+  function end(e,drop){
+    if(!d||(e&&e.pointerId!==d.pid))return;
+    const x=d;d=null;
+    cancelAnimationFrame(x.raf);
+    window.removeEventListener('pointermove',move);window.removeEventListener('pointerup',up);window.removeEventListener('pointercancel',cancel);
+    x.ghost.remove();x.row.classList.remove('lifted');if(x.hot)x.hot.el.classList.remove('mover');
+    document.body.classList.remove('dragging');UI.dragging=false;
+    const t=drop?target(e.clientX,e.clientY):null;
+    const pend=UI.dragPending;UI.dragPending=false;
+    if(t)moveDish(x.id,t.k==='slot'?t.key:'');
+    if(pend)render();
+  }
+  const up=e=>end(e,true),cancel=e=>end(e,false);
+  document.addEventListener('pointerdown',e=>{
+    const g=e.target.closest&&e.target.closest('.mgrip');
+    if(!g||g.disabled||(e.pointerType==='mouse'&&e.button!==0)||d||!isOrg())return;
+    const row=g.closest('[data-mdish]');if(!row)return;
+    e.preventDefault();
+    const r=row.getBoundingClientRect(),ghost=row.cloneNode(true);
+    ghost.querySelectorAll('[id]').forEach(n=>n.removeAttribute('id'));
+    ghost.classList.add('mghost');
+    ghost.style.cssText=`position:fixed;left:${r.left}px;top:${r.top}px;width:${r.width}px;pointer-events:none;z-index:300`;
+    document.body.appendChild(ghost);row.classList.add('lifted');document.body.classList.add('dragging');
+    d={id:row.dataset.mdish,ghost,row,dx:e.clientX-r.left,dy:e.clientY-r.top,pid:e.pointerId,hot:null,x:e.clientX,y:e.clientY,raf:0};
     UI.dragging=true;
     try{g.setPointerCapture(e.pointerId);}catch(_){}
     window.addEventListener('pointermove',move);window.addEventListener('pointerup',up);window.addEventListener('pointercancel',cancel);
@@ -2950,7 +3071,7 @@ function build(){
   if(!UI.migrated&&isOrg()&&!S.readOnly&&S.legacyCats&&Object.keys(S.legacyCats).length){UI.migrated=true;migrateCats();}
   const views={proposte:vProposte,suggerimenti:vSugg,libro:vLibro,voto:vVoto,menu:vMenu,spesa:vSpesa,programma:vProgramma,persone:vPersone};
   const view=UI.dish?vPiatto():(views[UI.tab]||vProposte)();
-  return vHeader()+vNav()+vStatus()+vBand()+`<main class="wrap">${S.offline?`<div class="note warn" style="margin-top:16px"><b>Sei offline.</b> Puoi continuare: le modifiche restano in coda e si salvano appena torna la connessione. Non chiudere la pagina.</div>`:''}${S.readOnly?`<div class="note bad" style="margin-top:16px"><b>Sola lettura.</b> Puoi guardare tutto ma non modificare: chiedi a Marco di darti accesso come collaboratore.</div>`:''}${view}</main>`;
+  return vHeader()+vNav()+vStatus()+(UI.tab==='voto'&&!UI.dish?vBand():'')+`<main class="wrap">${S.offline?`<div class="note warn" style="margin-top:16px"><b>Sei offline.</b> Puoi continuare: le modifiche restano in coda e si salvano appena torna la connessione. Non chiudere la pagina.</div>`:''}${S.readOnly?`<div class="note bad" style="margin-top:16px"><b>Sola lettura.</b> Puoi guardare tutto ma non modificare: chiedi a Marco di darti accesso come collaboratore.</div>`:''}${view}</main>`;
 }
 function render(){
   const root=$('#app');if(!root)return;

@@ -111,7 +111,8 @@ function vChoose(){
   const libere=sugLibere().length,open=canPropose();
   const sg=stage(),motivo={attesa:'la scadenza è passata',voto:'sono aperte le votazioni'}[sg]||'il menu è in definizione';
   const why=!open?`<div class="note"><b>Le proposte sono chiuse:</b> ${motivo}. Un organizzatore può ancora aggiungere piatti o spostare la scadenza.</div>`:'';
-  return `${why}<div class="choose" role="group" aria-label="Come proporre un piatto">
+  const dl=open&&scadOn()?`<p class="small muted" style="margin:0">Le proposte chiudono ${esc(fmtDT(scadMs('propFine')))}.</p>`:'';
+  return `${why}${dl}<div class="choose" role="group" aria-label="Come proporre un piatto">
     <div class="opt a"><span class="optn" aria-hidden="true">A</span>
       <h3>Scegli tra i Suggerimenti</h3>
       <p><b class="num">${libere}</b> piatti del Triveneto ancora da proporre, con foto, link, vino e tempi: scegli e il modulo si compila da solo.</p>

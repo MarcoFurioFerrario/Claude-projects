@@ -20,11 +20,17 @@ const ranks={};['p_teo','p_tia','p_jack'].forEach(p=>{ranks[p]={};['antipasti','
   const logout=async()=>{await d.click('[data-act=logout]');await d.waitForSelector('.names');};
   const clock=async iso=>{await d.evaluate(t=>{window.__now=t;__db.notify();},T(iso));};
   const cdTitle=()=>d.textContent('.cd-t b');
-  const waitTitle=async t=>{await d.waitForFunction(x=>{const e=document.querySelector('.cd-t b');return e&&e.textContent===x;},t,{timeout:8000});};
+  const onVoto=async()=>{await d.click('.tab:has-text("Votazioni")');await d.waitForSelector('.band');};
+  const waitTitle=async t=>{if(!(await d.$('.cd-t b')))await onVoto();await d.waitForFunction(x=>{const e=document.querySelector('.cd-t b');return e&&e.textContent===x;},t,{timeout:8000});};
   const vote=id=>d.evaluate(i=>__db.data.get('votes/'+i),id);
 
   // --- countdown e tappe
   await login('Fede');
+  const altre=['Suggerimenti','Il libro','Proposte','Menu','Spesa','Programma','Persone'];
+  const presenti=[];for(const t of altre){await d.click('.tab:has-text("'+t+'")');await d.waitForTimeout(120);if(await d.$('.band'))presenti.push(t);}
+  presenti.length===0?pass('la banda bordata (scadenze e voto sul formato) non compare in nessuna scheda tranne Votazioni ('+altre.length+' schede controllate)'):fail('banda presente in '+presenti);
+  await onVoto();
+  (await d.$$('.band')).length===1?pass('in Votazioni la banda c’è, una sola volta'):fail('banda in Votazioni');
   const cd=(await d.textContent('.cd [data-cd]')).trim();
   cd==='1 g 09 h 00 min 00 s'?pass('countdown alle proposte: '+cd+' (sab 3 ott 12:00 → dom 4 ott 21:00)'):fail('countdown '+cd);
   (await d.textContent('.cd-t')).includes('domenica 4 ottobre, ore 21:00')?pass('scadenza scritta per esteso: domenica 4 ottobre, ore 21:00'):fail('testo scadenza '+await d.textContent('.cd-t'));
@@ -76,8 +82,10 @@ const ranks={};['p_teo','p_tia','p_jack'].forEach(p=>{ranks[p]={};['antipasti','
   pass('allo scadere il countdown passa da solo a "Proposte chiuse"');
   (await d.textContent('.cd-t')).includes('lunedì 5 ottobre, ore 00:00')?pass('prossima tappa: voto sui piatti lunedì 5 ottobre, ore 00:00'):fail('prossima tappa '+await d.textContent('.cd-t'));
   (await d.$('.rail li.next'))&&(await d.textContent('.rail li.next')).includes('Voto')?pass('barra delle fasi: Proposte fatta, Voto in arrivo'):fail('rail');
+  await d.click('.tab:has-text("Proposte")');await d.waitForSelector('.choose');
   (await d.$eval('[data-act=new-recipe]',e=>e.disabled))===true?pass('Fede non può più proporre (pulsante disattivato)'):fail('proposta ancora aperta');
   (await d.textContent('.view')).includes('Le proposte sono chiuse')?pass('avviso "Le proposte sono chiuse"'):fail('avviso chiuse');
+  await onVoto();
   await d.click('.fm-sum [data-act=fmt-x]').catch(()=>{});
   await d.waitForSelector('.fmo');
   (await d.$$('.fmo[disabled]')).length===3?pass('voto sul formato chiuso: schede disattivate'):fail('formato non chiuso');
@@ -89,12 +97,13 @@ const ranks={};['p_teo','p_tia','p_jack'].forEach(p=>{ranks[p]={};['antipasti','
   (await d.$eval('[data-act=new-recipe]',e=>e.disabled))===false?pass('l’organizzatore può proporre anche dopo la scadenza'):fail('organizzatore bloccato');
 
   // --- organizzatore fissa il formato
-  await d.click('.tab:has-text("Menu")');await d.waitForSelector('.days');
   await d.evaluate(({ranks})=>{for(const [id,rank] of Object.entries(ranks)){const v=__db.data.get('votes/'+id)||{};__db.data.set('votes/'+id,Object.assign({},v,{rank,updatedAt:1}));}__db.notify();},{ranks});
-  await d.waitForSelector('#fx-set');
+  await onVoto();await d.waitForSelector('#fx-set');
   const planned=async f=>{
+    await onVoto();
     await d.selectOption('#fx-set',f);
     await d.waitForFunction(x=>__db.data.get('settings/main').formato===x,f);
+    await d.click('.tab:has-text("Menu")');await d.waitForSelector('.days');
     await d.click('[data-act=suggest]');await d.click('[data-act=suggest-go]');
     await d.waitForFunction(()=>[...__db.data.entries()].filter(e=>e[0].startsWith('recipes/')&&e[1].slot).length>0);
     await d.waitForTimeout(400);
@@ -138,8 +147,10 @@ const ranks={};['p_teo','p_tia','p_jack'].forEach(p=>{ranks[p]={};['antipasti','
   await d.fill('#s-vi','2026-10-05T23:00');await d.fill('#s-vf','2026-10-06T23:00');await d.click('[data-act=save-settings]');
   await d.waitForFunction(()=>__db.data.get('settings/main').scad&&__db.data.get('settings/main').scad.propFine==='2026-10-05T22:00:00+02:00');
   pass('scadenza salvata con offset estivo: 2026-10-05T22:00:00+02:00');
+  await onVoto();
   await d.waitForFunction(()=>{const e=document.querySelector('.cd [data-cd]');return e&&e.textContent.trim().startsWith('2 g 10 h');},null,{timeout:5000})
     .then(()=>pass('il countdown segue la nuova scadenza: 2 g 10 h'),async()=>fail('nuovo countdown '+await d.textContent('.cd [data-cd]')));
+  await d.click('.tab:has-text("Persone")');
   await d.click('.panel:has(h3:text-is("Il weekend")) [data-act=edit-settings]');await d.waitForSelector('#s-pf');
   await d.fill('#s-pf','2026-12-10T10:00');await d.fill('#s-vi','2026-12-11T00:00');await d.fill('#s-vf','2026-12-12T00:00');await d.click('[data-act=save-settings]');
   await d.waitForFunction(()=>__db.data.get('settings/main').scad.propFine==='2026-12-10T10:00:00+01:00');
@@ -147,6 +158,7 @@ const ranks={};['p_teo','p_tia','p_jack'].forEach(p=>{ranks[p]={};['antipasti','
   await d.click('.panel:has(h3:text-is("Il weekend")) [data-act=edit-settings]');await d.waitForSelector('#s-auto');
   await d.uncheck('#s-auto');await d.click('[data-act=save-settings]');
   await d.waitForFunction(()=>__db.data.get('settings/main').scadAuto===false);
+  await onVoto();
   await d.waitForFunction(()=>document.querySelector('.cd-t span').textContent.includes('organizzatore'));
   pass('fasi manuali: niente countdown, decide l’organizzatore');
   (await d.$('.cd [data-cd]'))===null?pass('senza fasi automatiche non compare il conto alla rovescia'):fail('countdown con fasi manuali');
@@ -154,7 +166,7 @@ const ranks={};['p_teo','p_tia','p_jack'].forEach(p=>{ranks[p]={};['antipasti','
   // --- mobile
   const m=await mk(390,844,true);await m.waitForSelector('.login');
   await m.evaluate(({s,recipes})=>{s.forEach(w=>__db.data.set(w.collection+'/'+w.doc_id,w.data));recipes.forEach(r=>__db.data.set(r[0],r[1]));__db.notify();},{s:seed,recipes});
-  await m.click('.names .btn:has-text("Fede")');await m.waitForSelector('.band');
+  await m.click('.names .btn:has-text("Fede")');await m.waitForSelector('.rail');await m.click('.tab:has-text("Votazioni")');await m.waitForSelector('.band');
   await m.screenshot({path:out+'/44-banda-mobile.png'});
   let ov=await m.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);ov<=1?pass('mobile: banda senza scroll orizzontale'):fail('overflow banda '+ov);
   await m.click('.tab:has-text("Proposte")');await m.waitForSelector('.choose');
