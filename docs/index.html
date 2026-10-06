@@ -546,6 +546,8 @@ body.dragging{user-select:none;-webkit-user-select:none;cursor:grabbing}
 .dish>.mgrip{margin-top:2px}
 @media (max-width:560px){.dish{flex-wrap:wrap}.dish select{flex:1 1 100%;width:100%}}
 .xps{margin-top:6px;width:100%;max-width:210px;padding:5px 8px;font-size:13px}
+.ti.fix .dot{background:var(--ink-2);border-radius:3px;width:12px;height:12px;margin-top:5px}
+.ti.fix .what{font-weight:700}
 
 </style>
 
@@ -614,6 +616,8 @@ const SHOPS=[
   {key:'cantina',label:'Vini e bevande',short:'Vini'},
   {key:'altro',label:'Altro (farmacia, ferramenta…)',short:'Altro'}
 ];
+/* Appuntamenti fissi del programma, indipendenti dai piatti (day: 0 venerdì, 1 sabato, 2 domenica; da/a = ora) */
+const PROG_FISSO=[{day:2,da:'16:00',a:'18:00',what:'Rassetto e pulizia'},{day:2,da:'18:30',a:'',what:'Chiusura, saluti e partenza'}];
 const shopOf=k=>SHOPS.find(s=>s.key===k)||SHOPS[3];
 const UNITS=['g','kg','ml','l','pz','spicchi','mazzi','foglie','rametti','cucchiai','cucchiaini','bustine','barattoli','confezioni','fette','bicchieri','bottiglie','teste','coste','pizzichi','q.b.'];
 const PORZ={assaggio:{f:.5,label:'Assaggio (mezza porzione)'},normale:{f:1,label:'Normale'},abbondante:{f:1.5,label:'Abbondante'}};
@@ -748,7 +752,7 @@ function errMsg(e){
   if(c==='revoked')return 'Accesso alla pagina revocato.';
   return 'Salvataggio non riuscito'+(e&&e.message?': '+e.message:'.');
 }
-const BUILD='mux7agso';
+const BUILD='mux7qvms';
 const BACKUP_EVERY=window.GB_BACKUP_EVERY||15*60*1000,BACKUP_KEEP=60;
 function saveHtml(){
   if(S.offline)return '<span class="sv warn">Offline: le modifiche restano in coda</span>';
@@ -1185,6 +1189,11 @@ const fmtNow=()=>FMT(fmtEff().key);
 const capNow=()=>fmtNow().cap;
 const totalCap=()=>{const c=capNow();return num(c.ven)+num(c.sab)+num(c.dom);};
 const slotted=()=>S.recipes.filter(r=>r.slot&&slotDef(r.slot));
+/* I contorni si possono mettere in menu anche oltre il numero di piatti deciso: per il conteggio (formato, giorni, pasti) contano solo antipasti, primi, secondi e dolci. */
+const isCounted=r=>r.category!=='contorni';
+const counted=()=>slotted().filter(isCounted);
+const nExtra=()=>slotted().length-counted().length;
+const extraTxt=n=>n?` + ${n} contorn${n===1?'o':'i'} in più`:'';
 
 /* --- tempi e fattibilità --- */
 const lead=r=>Math.max(0,...(r.fasi||[]).map(f=>num(f.ore)));
@@ -1391,8 +1400,8 @@ const voters=()=>S.participants.filter(p=>S.votes[p.id]&&Object.values(S.votes[p
 const myFmt=()=>{const v=S.votes[S.meId];return v&&FMT(v.formato)?v.formato:'';};
 
 /* --- selezione automatica dai voti --- */
-function quotas(total){
-  const w={antipasti:4,primi:7,secondi:6,contorni:2,dolci:3};
+function quotas(total){ // solo le quattro portate che contano nel totale; i contorni sono extra
+  const w={antipasti:4,primi:7,secondi:6,dolci:3};
   const sw=Object.values(w).reduce((a,b)=>a+b,0);
   const q={},rem=[];let used=0;
   for(const k in w){const x=w[k]*total/sw;q[k]=Math.floor(x);used+=q[k];rem.push([k,x-q[k]]);}
@@ -1400,15 +1409,16 @@ function quotas(total){
   for(let i=0;used<total;i++,used++)q[rem[i%rem.length][0]]++;
   return q;
 }
+const contorniExtra=total=>Math.max(1,Math.round(total*2/22)); // quanti contorni propone il suggerimento, in più rispetto al totale
 const byScore=(a,b)=>((b.pct==null?-1:b.pct)-(a.pct==null?-1:a.pct))||byTitle(a.r,b.r);
 function suggest(){
   const st=voteStats(),fm=fmtNow(),total=totalCap(),q=quotas(total);
-  const chosen=[],left=[];
-  if(fm.libero){ // nessuna quota per portata: i più votati in assoluto
-    const all=[].concat(...CATS.map(c=>st[c.key])).sort(byScore);
+  const chosen=[],left=[],cats4=CATS.filter(c=>c.key!=='contorni');
+  if(fm.libero){ // nessuna quota per portata: i più votati in assoluto (contorni esclusi dal conteggio)
+    const all=[].concat(...cats4.map(c=>st[c.key])).sort(byScore);
     all.slice(0,total).forEach(x=>chosen.push(x));
   }else{
-    for(const c of CATS){
+    for(const c of cats4){
       const list=st[c.key],k=q[c.key]||0;
       list.slice(0,k).forEach(x=>chosen.push(x));
       list.slice(k).forEach(x=>left.push(x));
@@ -1416,6 +1426,7 @@ function suggest(){
     left.sort(byScore);
     while(chosen.length<total&&left.length)chosen.push(left.shift());
   }
+  const extras=(st.contorni||[]).slice(0,contorniExtra(total)); // contorni in più, fuori dal conteggio
   const caps={ven:num(fm.cap.ven),sab:num(fm.cap.sab),dom:num(fm.cap.dom)};
   const cnt={ven:0,sab:0,dom:0},catCnt={ven:{},sab:{},dom:{}},slotCnt={};
   const out={};
@@ -1458,6 +1469,16 @@ function suggest(){
     out[r.id]=pool[0].key;
     cnt[best]++;catCnt[best][r.category]=(catCnt[best][r.category]||0)+1;slotCnt[pool[0].key]=(slotCnt[pool[0].key]||0)+1;
   }
+  /* contorni: sul pasto con più secondi (dove servono), mai su un pasto a portate fisse, senza toccare i contatori */
+  const per={};for(const [id,sk] of Object.entries(out)){const c=(R(id)||{}).category;per[sk]=per[sk]||{};per[sk][c]=(per[sk][c]||0)+1;}
+  for(const x of extras){
+    const r=x.r,free=SLOTS.filter(sl=>!(fm.comp&&fm.comp[sl.key]));
+    const cand=(free.filter(sl=>feasible(r,sl.key)).length?free.filter(sl=>feasible(r,sl.key)):free);
+    cand.sort((a,b)=>((per[b.key]||{}).secondi||0)*2+Object.values(per[b.key]||{}).reduce((p,v)=>p+v,0)*.1-((per[b.key]||{}).contorni||0)*3
+      -(((per[a.key]||{}).secondi||0)*2+Object.values(per[a.key]||{}).reduce((p,v)=>p+v,0)*.1-((per[a.key]||{}).contorni||0)*3));
+    const sk=(cand[0]||SLOTS[SLOTS.length-1]).key;
+    out[r.id]=sk;per[sk]=per[sk]||{};per[sk].contorni=(per[sk].contorni||0)+1;
+  }
   return out;
 }
 
@@ -1471,6 +1492,7 @@ function timeline(){
     if(!rs.length)continue;
     items.push({t:slotAbs(s.key),kind:'meal',what:s.label+' — a tavola ('+rs.length+' piatt'+(rs.length===1?'o':'i')+')'});
   }
+  for(const f of PROG_FISSO)items.push({t:f.day*24+hm(f.da),kind:'fix',what:f.what,fine:f.a});
   for(const r of slotted()){
     const sa=slotAbs(r.slot);
     for(const f of (r.fasi||[])){
@@ -1531,9 +1553,9 @@ function vStatus(){
     const cur=cls==='now'||cls==='next'?'aria-current="step"':'';
     return `<li class="${cls}">${isOrg()?`<button data-act="fase" data-v="${s[0]}" ${cur}>${s[1]}</button>`:`<span ${cur}>${s[1]}</span>`}</li>`;
   }).join('');
-  const sel=slotted().length,tot=totalCap(),nv=voters().length;
+  const sel=counted().length,tot=totalCap(),nv=voters().length;
   return `<div class="wrap status"><div class="railhd">Fase del progetto${isOrg()?' · tocca una fase per cambiarla':''}</div><ol class="rail" aria-label="Fasi del progetto">${rail}</ol>
-  <div class="stats">${(UI.tab==='suggerimenti'&&!UI.dish)?'':`<button class="pill-sug" data-act="tab" data-v="suggerimenti"><b class="num">${sugLibere().length}</b> ricette ancora da proporre <span aria-hidden="true">→</span></button>`}<span><b class="num">${nConf()}</b> confermati</span><span><b class="num">${S.recipes.length}</b> proposte</span>
+  <div class="stats">${(UI.tab==='proposte'&&!UI.dish)?`<button class="pill-sug" data-act="tab" data-v="suggerimenti"><b class="num">${sugLibere().length}</b> ricette ancora da proporre <span aria-hidden="true">→</span></button>`:''}<span><b class="num">${nConf()}</b> confermati</span><span><b class="num">${S.recipes.length}</b> proposte</span>
   <span><b class="num">${nv}</b> hanno votato</span><span><b class="num">${sel}</b>/${tot} piatti in menu</span></div></div>`;
 }
 function vHeader(){
@@ -1546,7 +1568,7 @@ function vHeader(){
 }
 
 function vNav(){
-  const tabs=[['suggerimenti','Suggerimenti',sugLibere().length],['libro','Il libro'],['proposte','Proposte',S.recipes.length],['voto','Votazioni'],['menu','Menu',slotted().length+'/'+totalCap()],['spesa','Spesa'],['programma','Programma'],['persone','Persone',nConf()]];
+  const tabs=[['suggerimenti','Suggerimenti',sugLibere().length],['libro','Il libro'],['proposte','Proposte',S.recipes.length],['voto','Votazioni'],['menu','Menu',counted().length+'/'+totalCap()],['spesa','Spesa'],['programma','Programma'],['persone','Persone',nConf()]];
   return `<nav class="tabs" aria-label="Sezioni del sito"><button class="tabarr l" data-act="tabs-scroll" data-d="-1" aria-label="Mostra le schede a sinistra" hidden>‹</button>
     <div class="in" role="tablist">${tabs.map(t=>
     `<button class="tab${t[0]==='suggerimenti'?' tab-sug':''}" role="tab" data-act="tab" data-v="${t[0]}" ${(UI.tab===t[0]&&!UI.dish)||(UI.dish&&t[0]==='menu')?'aria-current="page" aria-selected="true"':'aria-selected="false"'}>${t[1]}${t[2]!==undefined?`<span class="n">${t[2]}</span>`:''}</button>`).join('')}</div>
@@ -1819,7 +1841,7 @@ function vRank(cat){
     <button class="btn primary" data-act="save-rank" ${canSave?'':'disabled'}>${d.saved&&!d.dirty?'Salvata':(d.dirty||d.saved?'Salva classifica':'Conferma questa classifica')}</button></div></div>`;
 }
 function vRes(cat){
-  const stAll=voteStats()[cat],libero=!!fmtNow().libero,q=libero?0:(quotas(totalCap())[cat]||0);
+  const stAll=voteStats()[cat],libero=!!fmtNow().libero,extra=cat==='contorni',q=(libero||extra)?0:(quotas(totalCap())[cat]||0);
   const done=voters().length,conf=S.participants.filter(p=>p.confirmed);
   const missing=conf.filter(p=>!voters().some(v=>v.id===p.id)).map(p=>p.name);
   const st=stAll;
@@ -1838,7 +1860,7 @@ function vRes(cat){
       <div class="small num" style="text-align:right">${voted(x)?`<b>${x.pts}</b> punti<br><span class="muted">${x.first[0]} primi posti · in classifica per ${x.n} su ${x.nv}</span>`:'<span class="muted">nessun voto</span>'}</div></div>`;
   }).join('');
   return `<div class="note">Hanno votato <b class="num">${done}</b> su <b class="num">${S.participants.length}</b>.${missing.length?` Mancano i confermati: ${esc(missing.join(', '))}.`:''}
-    ${libero?`Formato «${esc(fmtNow().nome)}»: nessuna quota per portata, entrano i più votati in assoluto.`:`Le righe evidenziate rientrano nella quota suggerita per “${esc(catOf(cat).label)}” (<b class="num">${q}</b> su ${totalCap()} piatti, formato ${esc(fmtNow().nome)}).`}</div>
+    ${extra?`I contorni non contano nel numero dei piatti: si possono mettere in menu in più, scegliendo i più votati.`:libero?`Formato «${esc(fmtNow().nome)}»: nessuna quota per portata, entrano i più votati in assoluto.`:`Le righe evidenziate rientrano nella quota suggerita per “${esc(catOf(cat).label)}” (<b class="num">${q}</b> su ${totalCap()} piatti, formato ${esc(fmtNow().nome)}).`}</div>
     ${edge?`<div class="note warn"><b>Pari merito al limite della quota.</b> Anche contando primi, secondi posti e così via i piatti evidenziati “Pari merito” sono identici: decide l’organizzatore.</div>`:''}
     <div class="panel" style="padding:0;overflow:hidden">${rows}</div>
     <p class="hint">Punteggio: 1° posto = ${rankPts(cat,1)} punti, 2° = ${rankPts(cat,2)}… ultimo posto classificabile = 2; fuori classifica 0. La barra mostra i punti rispetto al massimo possibile (tutti i votanti della portata che mettono il piatto primo). A parità di punti: più primi posti, poi più secondi posti, e così via.</p>`;
@@ -1896,7 +1918,7 @@ function exitPoll(org){
           ${org?`<select class="xps" aria-label="${r.slot?'Sposta':'Assegna'} ${esc(r.title)}" data-chg="setslot" data-id="${esc(r.id)}"><option value="">${r.slot?'Togli dal menu':'Metti in menu…'}</option>${SLOTS.map(sl=>`<option value="${sl.key}" ${sl.key===r.slot?'selected':''}>${sl.label}</option>`).join('')}</select>`:''}</div>
         <div class="small num xpv"><b>${x.pts}</b> punti<br><span class="muted">${x.n} su ${x.nv} vot${x.nv===1?'ante':'anti'}</span></div></li>`;
     }).join('');
-    return `<div class="xp-cat" style="--h:${c.h}"><h4 class="grp" style="--h:${c.h}">${esc(c.label)} <span class="muted small num">${voted.length} con voti</span></h4>
+    return `<div class="xp-cat" style="--h:${c.h}"><h4 class="grp" style="--h:${c.h}">${esc(c.label)} <span class="muted small num">${voted.length} con voti</span></h4>${c.key==='contorni'?'<p class="small muted" style="margin:0 0 6px">Extra: non contano nel numero dei piatti, se ne possono aggiungere quanti servono.</p>':''}
       ${rows?`<ol class="xpl">${rows}</ol>`:'<p class="small muted">Nessun voto ancora.</p>'}</div>`;
   }).join('');
   const rest=CATS.map(c=>[c,st[c.key].filter(x=>!x.r.slot&&!(x.score!=null&&st[c.key].filter(y=>y.score!=null).indexOf(x)<XP_N))]).filter(g=>g[1].length);
@@ -1911,31 +1933,31 @@ function exitPoll(org){
     ${cats}${restHtml}</aside>`;
 }
 function vMenu(){
-  const org=isOrg(),fm=fmtNow(),capv=fm.cap,sl=slotted(),tot=totalCap(),overTot=sl.length>tot;
+  const org=isOrg(),fm=fmtNow(),capv=fm.cap,sl=slotted(),cn=counted(),tot=totalCap(),overTot=cn.length>tot;
   const days=DAYS.map(d=>{
-    const rs=sl.filter(r=>slotDay(r.slot)===d.key),cap=num(capv[d.key]),over=fm.libero?false:rs.length>cap;
+    const rs=sl.filter(r=>slotDay(r.slot)===d.key),rc=rs.filter(isCounted),cap=num(capv[d.key]),over=fm.libero?false:rc.length>cap;
     const mix={};rs.forEach(r=>mix[r.category]=(mix[r.category]||0)+1);
     const slots=SLOTS.filter(s=>s.day===d.key).map(s=>{
       const list=rs.filter(r=>r.slot===s.key).sort((a,b)=>catIdx(a.category)-catIdx(b.category)||byTitle(a,b));
-      const sc=fm.slot&&fm.slot[s.key];
-      return `<div class="slot" data-mslot="${s.key}"><h4>${s.label}${sc?` <span class="num ${list.length>sc?'bad':''}">${list.length} / ${sc}</span>`:''}</h4>${list.map(r=>dishRow(r,s.key)).join('')||`<p class="small muted mempty">${org?'Trascina qui un piatto dagli exit poll.':'Nessun piatto assegnato.'}</p>`}</div>`;
+      const sc=fm.slot&&fm.slot[s.key],nl=list.filter(isCounted).length;
+      return `<div class="slot" data-mslot="${s.key}"><h4>${s.label}${sc?` <span class="num ${nl>sc?'bad':''}">${nl} / ${sc}</span>`:''}</h4>${list.map(r=>dishRow(r,s.key)).join('')||`<p class="small muted mempty">${org?'Trascina qui un piatto dagli exit poll.':'Nessun piatto assegnato.'}</p>`}</div>`;
     }).join('');
-    return `<section class="day ${over?'over':''}"><header><h3>${d.label}</h3><span class="num">${fm.libero?`<b>${rs.length}</b> piatt${rs.length===1?'o':'i'}`:`<b>${rs.length}</b> / ${cap}${over?' · troppi':''}`}</span></header>
-      <div class="slot daysum">${fm.libero?'':`<div class="capbar"><i style="width:${cap?Math.min(100,rs.length/cap*100):0}%"></i></div>`}
+    return `<section class="day ${over?'over':''}"><header><h3>${d.label}</h3><span class="num">${fm.libero?`<b>${rc.length}</b> piatt${rc.length===1?'o':'i'}`:`<b>${rc.length}</b> / ${cap}${over?' · troppi':''}`}${rs.length>rc.length?`<span class="small muted">${extraTxt(rs.length-rc.length)}</span>`:''}</span></header>
+      <div class="slot daysum">${fm.libero?'':`<div class="capbar"><i style="width:${cap?Math.min(100,rc.length/cap*100):0}%"></i></div>`}
       <div class="mix">${CATS.filter(c=>mix[c.key]).map(c=>`<span class="chip" style="--h:${c.h}">${esc(c.label)} ${mix[c.key]}</span>`).join('')||'<span class="small muted">Nessun piatto</span>'}</div></div>
       ${slots}</section>`;
   }).join('');
   const noIng=sl.filter(r=>!(r.ingredients||[]).length).length;
   return `<section class="view">
     <div class="vhead"><div><h2>Menu</h2>
-      <p class="lede">Formato <b>${esc(fm.nome)}</b>, ${fm.tot} piatti${fm.libero?', senza vincoli su portata e pasto':': '+num(capv.ven)+' per venerdì sera, '+num(capv.sab)+' per sabato, '+num(capv.dom)+' per domenica'}. In menu: <b class="num ${overTot?'bad':''}">${sl.length}</b> / ${tot}. Tocca un piatto per aprire la sua scheda con squadra, ingredienti e tempi.</p></div>
+      <p class="lede">Formato <b>${esc(fm.nome)}</b>, ${fm.tot} piatti${fm.libero?', senza vincoli su portata e pasto':': '+num(capv.ven)+' per venerdì sera, '+num(capv.sab)+' per sabato, '+num(capv.dom)+' per domenica'}. In menu: <b class="num ${overTot?'bad':''}">${cn.length}</b> / ${tot}${extraTxt(nExtra())} <span class="small muted">(i contorni si possono aggiungere in più: non contano nel numero dei piatti)</span>. Tocca un piatto per aprire la sua scheda con squadra, ingredienti e tempi.</p></div>
       ${org?`<div class="row">${UI.sugg
         ?`<span class="small">Sostituisce la selezione attuale.</span><button class="btn primary sm" data-act="suggest-go">Applica suggerimento</button><button class="btn sm" data-act="suggest-cancel">Annulla</button>`
         :`<button class="btn" data-act="suggest">Suggerisci dai voti</button><button class="btn" data-act="clear-menu" ${sl.length?'':'disabled'}>Svuota</button>`}</div>`:''}</div>
     ${!org?`<div class="note">Solo gli organizzatori assegnano i piatti ai pasti. Qui puoi vedere il menu e aprire le schede.</div>`:''}
     ${noIng?`<div class="note warn"><b>${noIng}</b> piatt${noIng===1?'o':'i'} del menu senza ingredienti: la lista della spesa è incompleta finché i responsabili non compilano le schede.</div>`:''}
     ${famNote()}
-    ${compNote(fm,sl)}
+    ${compNote(fm,cn)}
     <div class="menu2"><div class="menu2-l"><h3 class="menu2-h">Il menu, pasto per pasto</h3><div class="days">${days}</div></div>
       <div class="menu2-r">${exitPoll(org)}</div></div>
     ${vCarta()}</section>`;
@@ -2202,8 +2224,9 @@ function eqRowsData(){
   const cat=CATS.map(c=>{const rs=S.recipes.filter(x=>x.category===c.key);return mk(c.key,c.label,rs,rs.filter(x=>x.slot).length,lib.filter(s=>s.c===c.key),rr,sr,{q:q?q[c.key]:null});});
   const wt=WTYPES.map(w=>{const xs=all.filter(x=>x.s.wt===w),pr=xs.filter(x=>x.st!=='libera').map(x=>x.s);return mk(w,w,pr,xs.filter(x=>x.st==='menu').length,xs.filter(x=>x.st==='libera').map(x=>x.s),sr,sr);});
   /* verdetti in parole: regioni e (senza quote) portate si confrontano con la media; con un formato a quote le portate con i posti nel menu */
-  const media=rows=>rows.reduce((a,r)=>a+r.tot,0)/Math.max(1,rows.length);
+  const media=rows=>{const rr=rows.filter(r=>r.k!=='contorni');return rr.reduce((a,r)=>a+r.tot,0)/Math.max(1,rr.length);};
   const vs=(rows,m)=>rows.forEach(r=>{
+    if(r.k==='contorni'){r.v={k:'extra',c:'info',t:'Extra: fuori dal conteggio dei piatti'};return;}
     if(r.q!=null){
       if(r.tot<r.q)r.v={k:'manca',c:'bad',t:`Ne mancano almeno ${r.q-r.tot}: ${r.tot} proposte per ${r.q} posti`};
       else if(r.tot<r.q*1.5)r.v={k:'poche',c:'warn',t:`Poca scelta: ${r.tot} proposte per ${r.q} posti`};
@@ -2262,7 +2285,7 @@ function vEquilibrio(){
     <div class="legend" aria-label="Legenda dei colori">${REGIONI.map(r=>`<span><i class="lg g" style="--c:${regColor(r)}"></i> ${esc(r)}</span>`).join('')}${[d.reg,d.cat,d.wt].some(rows=>rows.some(x=>x.reg.some(g=>!g.r)))?`<span><i class="lg g" style="--c:${regColor('')}"></i> Regione non indicata</span>`:''}</div>
     <div class="legend"><span><i class="lg g p" style="--c:${regColor(REGIONI[0])}"></i> Colore pieno: già proposti</span><span><i class="lg g l" style="--c:${regColor(REGIONI[0])}"></i> Tratteggiato: ancora da proporre (nei Suggerimenti)</span></div>
     <div class="note" style="margin-top:10px">${righe.join('<br>')}</div>
-    <div class="eqgrid2">${eqBlock('Per regione','Ogni regione ha il suo colore, lo stesso in tutte le barre qui sotto.',d.reg,'reg')}${eqBlock('Per portata',(d.q?'Con i posti che il formato lascia a ogni portata nel menu. ':'Il formato scelto non fissa quote per portata. ')+'Le barre sono divise per regione: se un colore manca, manca quella regione.',d.cat,'cat')}${eqBlock('Per tipo di vino','Solo i piatti del catalogo, per abbinamento di vino e per regione.',d.wt,'wt')}</div></section>`;
+    <div class="eqgrid2">${eqBlock('Per regione','Ogni regione ha il suo colore, lo stesso in tutte le barre qui sotto.',d.reg,'reg')}${eqBlock('Per portata',(d.q?'Con i posti che il formato lascia a ogni portata nel menu. ':'Il formato scelto non fissa quote per portata. ')+'I contorni sono extra: non entrano nel conteggio. Le barre sono divise per regione: se un colore manca, manca quella regione.',d.cat,'cat')}${eqBlock('Per tipo di vino','Solo i piatti del catalogo, per abbinamento di vino e per regione.',d.wt,'wt')}</div></section>`;
 }
 function vSugg(){
   const all=sugList(),list=filterSug(all),lib=all.length;
@@ -2482,7 +2505,7 @@ function vSpesa(){
     <div class="vhead"><div><h2>Spesa</h2><p class="lede">Lista unica: le quantità dei singoli piatti sono sommate e scalate sul numero di confermati. Le dosi sono arrotondate per eccesso, così si compra una volta sola.</p></div>
       <div class="row"><button class="btn" data-act="copy-spesa">Copia per WhatsApp</button>${dlCap?`<button class="btn" data-act="csv-spesa">Scarica CSV</button>`:''}</div></div>
     <div class="panel totals"><div><div class="big num">${n}</div><div class="small muted">persone confermate</div></div>
-      <div><div class="big num">${sl.length}</div><div class="small muted">piatti in menu</div></div>
+      <div><div class="big num">${counted().length}</div><div class="small muted">piatti in menu${extraTxt(nExtra())}</div></div>
       <div><div class="big num">${all.length}</div><div class="small muted">voci da comprare</div></div>
       <div><div class="big num">${boughtN}/${all.length}</div><div class="small muted">già comprate</div></div></div>
     ${noIng.length?`<div class="note warn"><b>Lista incompleta:</b> mancano gli ingredienti di ${noIng.length} piatt${noIng.length===1?'o':'i'} (${esc(noIng.slice(0,5).map(r=>r.title).join(', '))}${noIng.length>5?'…':''}). I responsabili li inseriscono dalla scheda del piatto.</div>`:''}
@@ -2528,8 +2551,6 @@ A['pack-clear']=async t=>{if(await upSpesa(t.dataset.id,{pack:{base:'',size:0}})
 /* --- programma --- */
 function vProgramma(){
   const sl=slotted();
-  if(!sl.length)return `<section class="view"><div class="vhead"><div><h2>Programma</h2></div></div>
-    <div class="empty"><h3>Nessun piatto in menu</h3><p>Il cronoprogramma si costruisce dalle fasi inserite nelle schede dei piatti selezionati.</p><button class="btn" data-act="tab" data-v="menu">Vai al menu</button></div></section>`;
   const bad=sl.filter(r=>!feasible(r,r.slot)),nofasi=sl.filter(r=>!(r.fasi||[]).length),home=sl.filter(r=>r.preparabileACasa);
   const longs=sl.filter(r=>lead(r)>=12&&feasible(r,r.slot));
   const win=SLOTS.map(s=>`<tr><td>${esc(s.label)}</td><td class="num" style="text-align:right"><b>${fmtN(Math.max(0,slotOffset(s.key)),1)} h</b> utili dall’arrivo</td></tr>`).join('');
@@ -2539,7 +2560,7 @@ function vProgramma(){
     const di=Math.floor(it.t/24+1e-9);
     if(di!==curDay){curDay=di;tl+=`<div class="tlday">${esc(dayLabel(di))}</div>`;}
     const who=it.r?ownersOf(it.r).map(pname).join(', '):'';
-    tl+=`<div class="ti ${it.kind}"><div class="tm">${fmtT(it.t-di*24)}</div><div class="dot"></div><div class="what">${it.kind==='meal'?esc(it.what):`${esc(it.what)} — <button class="link" data-act="open-dish" data-id="${esc(it.r.id)}">${esc(it.r.title)}</button> ${it.kind==='pre'?badge('prima della partenza','warn'):''}<div class="small muted">${esc(who)}</div>`}</div></div>`;
+    tl+=`<div class="ti ${it.kind}"><div class="tm">${fmtT(it.t-di*24)}</div><div class="dot"></div><div class="what">${it.kind==='meal'||it.kind==='fix'?esc(it.what)+(it.fine?` <span class="small muted">· fino alle ${esc(it.fine)}</span>`:''):`${esc(it.what)} — <button class="link" data-act="open-dish" data-id="${esc(it.r.id)}">${esc(it.r.title)}</button> ${it.kind==='pre'?badge('prima della partenza','warn'):''}<div class="small muted">${esc(who)}</div>`}</div></div>`;
   }
   const tips=[];
   bad.forEach(r=>{const e=earliest(r);tips.push(`<li><b>${esc(r.title)}</b> è su ${esc(slotLabel(r.slot))} ma richiede ${esc(leadText(lead(r)))} di anticipo. ${e?`Primo pasto possibile: ${esc(e.label)}. ${isOrg()?`<button class="btn sm" data-act="move-slot" data-id="${esc(r.id)}" data-v="${e.key}">Sposta</button>`:''}`:'Preparalo a casa e portalo già pronto.'}</li>`);});
@@ -2551,7 +2572,7 @@ function vProgramma(){
       ${isOrg()?`<button class="btn" data-act="edit-settings">Orari e arrivo</button>`:''}</div>
     <div class="cols"><div class="panel"><h3>Tempo utile per pasto</h3><table class="ing" style="margin-top:8px"><tbody>${win}</tbody></table>
       <p class="hint" style="margin-top:8px">Arrivo ${esc(S.settings.arrivo)}, meno ${fmtN(num(S.settings.riservaOre),1)} h per scaricare la spesa e sistemarsi.</p></div>
-    <div class="panel"><h3>Consigli</h3>${tips.length?`<ul class="steps" style="margin-top:10px;padding-left:18px">${tips.join('')}</ul>`:`<p class="muted" style="margin-top:8px">Tutto sta nei tempi.</p>`}</div></div>
+    <div class="panel"><h3>Consigli</h3>${!sl.length?`<p class="muted" style="margin-top:8px">Nessun piatto in menu: le fasi di preparazione compaiono quando assegni i piatti ai pasti. <button class="btn sm" data-act="tab" data-v="menu">Vai al menu</button></p>`:tips.length?`<ul class="steps" style="margin-top:10px;padding-left:18px">${tips.join('')}</ul>`:`<p class="muted" style="margin-top:8px">Tutto sta nei tempi.</p>`}</div></div>
     <div class="panel"><h3>Cronoprogramma</h3><div class="tl" style="margin-top:8px">${tl}</div></div></section>`;
 }
 

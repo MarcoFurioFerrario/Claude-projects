@@ -26,9 +26,9 @@ function vStatus(){
     const cur=cls==='now'||cls==='next'?'aria-current="step"':'';
     return `<li class="${cls}">${isOrg()?`<button data-act="fase" data-v="${s[0]}" ${cur}>${s[1]}</button>`:`<span ${cur}>${s[1]}</span>`}</li>`;
   }).join('');
-  const sel=slotted().length,tot=totalCap(),nv=voters().length;
+  const sel=counted().length,tot=totalCap(),nv=voters().length;
   return `<div class="wrap status"><div class="railhd">Fase del progetto${isOrg()?' · tocca una fase per cambiarla':''}</div><ol class="rail" aria-label="Fasi del progetto">${rail}</ol>
-  <div class="stats">${(UI.tab==='suggerimenti'&&!UI.dish)?'':`<button class="pill-sug" data-act="tab" data-v="suggerimenti"><b class="num">${sugLibere().length}</b> ricette ancora da proporre <span aria-hidden="true">→</span></button>`}<span><b class="num">${nConf()}</b> confermati</span><span><b class="num">${S.recipes.length}</b> proposte</span>
+  <div class="stats">${(UI.tab==='proposte'&&!UI.dish)?`<button class="pill-sug" data-act="tab" data-v="suggerimenti"><b class="num">${sugLibere().length}</b> ricette ancora da proporre <span aria-hidden="true">→</span></button>`:''}<span><b class="num">${nConf()}</b> confermati</span><span><b class="num">${S.recipes.length}</b> proposte</span>
   <span><b class="num">${nv}</b> hanno votato</span><span><b class="num">${sel}</b>/${tot} piatti in menu</span></div></div>`;
 }
 function vHeader(){
@@ -41,7 +41,7 @@ function vHeader(){
 }
 
 function vNav(){
-  const tabs=[['suggerimenti','Suggerimenti',sugLibere().length],['libro','Il libro'],['proposte','Proposte',S.recipes.length],['voto','Votazioni'],['menu','Menu',slotted().length+'/'+totalCap()],['spesa','Spesa'],['programma','Programma'],['persone','Persone',nConf()]];
+  const tabs=[['suggerimenti','Suggerimenti',sugLibere().length],['libro','Il libro'],['proposte','Proposte',S.recipes.length],['voto','Votazioni'],['menu','Menu',counted().length+'/'+totalCap()],['spesa','Spesa'],['programma','Programma'],['persone','Persone',nConf()]];
   return `<nav class="tabs" aria-label="Sezioni del sito"><button class="tabarr l" data-act="tabs-scroll" data-d="-1" aria-label="Mostra le schede a sinistra" hidden>‹</button>
     <div class="in" role="tablist">${tabs.map(t=>
     `<button class="tab${t[0]==='suggerimenti'?' tab-sug':''}" role="tab" data-act="tab" data-v="${t[0]}" ${(UI.tab===t[0]&&!UI.dish)||(UI.dish&&t[0]==='menu')?'aria-current="page" aria-selected="true"':'aria-selected="false"'}>${t[1]}${t[2]!==undefined?`<span class="n">${t[2]}</span>`:''}</button>`).join('')}</div>

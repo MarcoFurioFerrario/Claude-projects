@@ -50,7 +50,7 @@ function vRank(cat){
     <button class="btn primary" data-act="save-rank" ${canSave?'':'disabled'}>${d.saved&&!d.dirty?'Salvata':(d.dirty||d.saved?'Salva classifica':'Conferma questa classifica')}</button></div></div>`;
 }
 function vRes(cat){
-  const stAll=voteStats()[cat],libero=!!fmtNow().libero,q=libero?0:(quotas(totalCap())[cat]||0);
+  const stAll=voteStats()[cat],libero=!!fmtNow().libero,extra=cat==='contorni',q=(libero||extra)?0:(quotas(totalCap())[cat]||0);
   const done=voters().length,conf=S.participants.filter(p=>p.confirmed);
   const missing=conf.filter(p=>!voters().some(v=>v.id===p.id)).map(p=>p.name);
   const st=stAll;
@@ -69,7 +69,7 @@ function vRes(cat){
       <div class="small num" style="text-align:right">${voted(x)?`<b>${x.pts}</b> punti<br><span class="muted">${x.first[0]} primi posti · in classifica per ${x.n} su ${x.nv}</span>`:'<span class="muted">nessun voto</span>'}</div></div>`;
   }).join('');
   return `<div class="note">Hanno votato <b class="num">${done}</b> su <b class="num">${S.participants.length}</b>.${missing.length?` Mancano i confermati: ${esc(missing.join(', '))}.`:''}
-    ${libero?`Formato «${esc(fmtNow().nome)}»: nessuna quota per portata, entrano i più votati in assoluto.`:`Le righe evidenziate rientrano nella quota suggerita per “${esc(catOf(cat).label)}” (<b class="num">${q}</b> su ${totalCap()} piatti, formato ${esc(fmtNow().nome)}).`}</div>
+    ${extra?`I contorni non contano nel numero dei piatti: si possono mettere in menu in più, scegliendo i più votati.`:libero?`Formato «${esc(fmtNow().nome)}»: nessuna quota per portata, entrano i più votati in assoluto.`:`Le righe evidenziate rientrano nella quota suggerita per “${esc(catOf(cat).label)}” (<b class="num">${q}</b> su ${totalCap()} piatti, formato ${esc(fmtNow().nome)}).`}</div>
     ${edge?`<div class="note warn"><b>Pari merito al limite della quota.</b> Anche contando primi, secondi posti e così via i piatti evidenziati “Pari merito” sono identici: decide l’organizzatore.</div>`:''}
     <div class="panel" style="padding:0;overflow:hidden">${rows}</div>
     <p class="hint">Punteggio: 1° posto = ${rankPts(cat,1)} punti, 2° = ${rankPts(cat,2)}… ultimo posto classificabile = 2; fuori classifica 0. La barra mostra i punti rispetto al massimo possibile (tutti i votanti della portata che mettono il piatto primo). A parità di punti: più primi posti, poi più secondi posti, e così via.</p>`;
@@ -127,7 +127,7 @@ function exitPoll(org){
           ${org?`<select class="xps" aria-label="${r.slot?'Sposta':'Assegna'} ${esc(r.title)}" data-chg="setslot" data-id="${esc(r.id)}"><option value="">${r.slot?'Togli dal menu':'Metti in menu…'}</option>${SLOTS.map(sl=>`<option value="${sl.key}" ${sl.key===r.slot?'selected':''}>${sl.label}</option>`).join('')}</select>`:''}</div>
         <div class="small num xpv"><b>${x.pts}</b> punti<br><span class="muted">${x.n} su ${x.nv} vot${x.nv===1?'ante':'anti'}</span></div></li>`;
     }).join('');
-    return `<div class="xp-cat" style="--h:${c.h}"><h4 class="grp" style="--h:${c.h}">${esc(c.label)} <span class="muted small num">${voted.length} con voti</span></h4>
+    return `<div class="xp-cat" style="--h:${c.h}"><h4 class="grp" style="--h:${c.h}">${esc(c.label)} <span class="muted small num">${voted.length} con voti</span></h4>${c.key==='contorni'?'<p class="small muted" style="margin:0 0 6px">Extra: non contano nel numero dei piatti, se ne possono aggiungere quanti servono.</p>':''}
       ${rows?`<ol class="xpl">${rows}</ol>`:'<p class="small muted">Nessun voto ancora.</p>'}</div>`;
   }).join('');
   const rest=CATS.map(c=>[c,st[c.key].filter(x=>!x.r.slot&&!(x.score!=null&&st[c.key].filter(y=>y.score!=null).indexOf(x)<XP_N))]).filter(g=>g[1].length);
@@ -142,31 +142,31 @@ function exitPoll(org){
     ${cats}${restHtml}</aside>`;
 }
 function vMenu(){
-  const org=isOrg(),fm=fmtNow(),capv=fm.cap,sl=slotted(),tot=totalCap(),overTot=sl.length>tot;
+  const org=isOrg(),fm=fmtNow(),capv=fm.cap,sl=slotted(),cn=counted(),tot=totalCap(),overTot=cn.length>tot;
   const days=DAYS.map(d=>{
-    const rs=sl.filter(r=>slotDay(r.slot)===d.key),cap=num(capv[d.key]),over=fm.libero?false:rs.length>cap;
+    const rs=sl.filter(r=>slotDay(r.slot)===d.key),rc=rs.filter(isCounted),cap=num(capv[d.key]),over=fm.libero?false:rc.length>cap;
     const mix={};rs.forEach(r=>mix[r.category]=(mix[r.category]||0)+1);
     const slots=SLOTS.filter(s=>s.day===d.key).map(s=>{
       const list=rs.filter(r=>r.slot===s.key).sort((a,b)=>catIdx(a.category)-catIdx(b.category)||byTitle(a,b));
-      const sc=fm.slot&&fm.slot[s.key];
-      return `<div class="slot" data-mslot="${s.key}"><h4>${s.label}${sc?` <span class="num ${list.length>sc?'bad':''}">${list.length} / ${sc}</span>`:''}</h4>${list.map(r=>dishRow(r,s.key)).join('')||`<p class="small muted mempty">${org?'Trascina qui un piatto dagli exit poll.':'Nessun piatto assegnato.'}</p>`}</div>`;
+      const sc=fm.slot&&fm.slot[s.key],nl=list.filter(isCounted).length;
+      return `<div class="slot" data-mslot="${s.key}"><h4>${s.label}${sc?` <span class="num ${nl>sc?'bad':''}">${nl} / ${sc}</span>`:''}</h4>${list.map(r=>dishRow(r,s.key)).join('')||`<p class="small muted mempty">${org?'Trascina qui un piatto dagli exit poll.':'Nessun piatto assegnato.'}</p>`}</div>`;
     }).join('');
-    return `<section class="day ${over?'over':''}"><header><h3>${d.label}</h3><span class="num">${fm.libero?`<b>${rs.length}</b> piatt${rs.length===1?'o':'i'}`:`<b>${rs.length}</b> / ${cap}${over?' · troppi':''}`}</span></header>
-      <div class="slot daysum">${fm.libero?'':`<div class="capbar"><i style="width:${cap?Math.min(100,rs.length/cap*100):0}%"></i></div>`}
+    return `<section class="day ${over?'over':''}"><header><h3>${d.label}</h3><span class="num">${fm.libero?`<b>${rc.length}</b> piatt${rc.length===1?'o':'i'}`:`<b>${rc.length}</b> / ${cap}${over?' · troppi':''}`}${rs.length>rc.length?`<span class="small muted">${extraTxt(rs.length-rc.length)}</span>`:''}</span></header>
+      <div class="slot daysum">${fm.libero?'':`<div class="capbar"><i style="width:${cap?Math.min(100,rc.length/cap*100):0}%"></i></div>`}
       <div class="mix">${CATS.filter(c=>mix[c.key]).map(c=>`<span class="chip" style="--h:${c.h}">${esc(c.label)} ${mix[c.key]}</span>`).join('')||'<span class="small muted">Nessun piatto</span>'}</div></div>
       ${slots}</section>`;
   }).join('');
   const noIng=sl.filter(r=>!(r.ingredients||[]).length).length;
   return `<section class="view">
     <div class="vhead"><div><h2>Menu</h2>
-      <p class="lede">Formato <b>${esc(fm.nome)}</b>, ${fm.tot} piatti${fm.libero?', senza vincoli su portata e pasto':': '+num(capv.ven)+' per venerdì sera, '+num(capv.sab)+' per sabato, '+num(capv.dom)+' per domenica'}. In menu: <b class="num ${overTot?'bad':''}">${sl.length}</b> / ${tot}. Tocca un piatto per aprire la sua scheda con squadra, ingredienti e tempi.</p></div>
+      <p class="lede">Formato <b>${esc(fm.nome)}</b>, ${fm.tot} piatti${fm.libero?', senza vincoli su portata e pasto':': '+num(capv.ven)+' per venerdì sera, '+num(capv.sab)+' per sabato, '+num(capv.dom)+' per domenica'}. In menu: <b class="num ${overTot?'bad':''}">${cn.length}</b> / ${tot}${extraTxt(nExtra())} <span class="small muted">(i contorni si possono aggiungere in più: non contano nel numero dei piatti)</span>. Tocca un piatto per aprire la sua scheda con squadra, ingredienti e tempi.</p></div>
       ${org?`<div class="row">${UI.sugg
         ?`<span class="small">Sostituisce la selezione attuale.</span><button class="btn primary sm" data-act="suggest-go">Applica suggerimento</button><button class="btn sm" data-act="suggest-cancel">Annulla</button>`
         :`<button class="btn" data-act="suggest">Suggerisci dai voti</button><button class="btn" data-act="clear-menu" ${sl.length?'':'disabled'}>Svuota</button>`}</div>`:''}</div>
     ${!org?`<div class="note">Solo gli organizzatori assegnano i piatti ai pasti. Qui puoi vedere il menu e aprire le schede.</div>`:''}
     ${noIng?`<div class="note warn"><b>${noIng}</b> piatt${noIng===1?'o':'i'} del menu senza ingredienti: la lista della spesa è incompleta finché i responsabili non compilano le schede.</div>`:''}
     ${famNote()}
-    ${compNote(fm,sl)}
+    ${compNote(fm,cn)}
     <div class="menu2"><div class="menu2-l"><h3 class="menu2-h">Il menu, pasto per pasto</h3><div class="days">${days}</div></div>
       <div class="menu2-r">${exitPoll(org)}</div></div>
     ${vCarta()}</section>`;

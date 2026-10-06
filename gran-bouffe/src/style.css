@@ -533,3 +533,5 @@ body.dragging{user-select:none;-webkit-user-select:none;cursor:grabbing}
 .dish>.mgrip{margin-top:2px}
 @media (max-width:560px){.dish{flex-wrap:wrap}.dish select{flex:1 1 100%;width:100%}}
 .xps{margin-top:6px;width:100%;max-width:210px;padding:5px 8px;font-size:13px}
+.ti.fix .dot{background:var(--ink-2);border-radius:3px;width:12px;height:12px;margin-top:5px}
+.ti.fix .what{font-weight:700}

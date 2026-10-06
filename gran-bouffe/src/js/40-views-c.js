@@ -90,7 +90,7 @@ function vSpesa(){
     <div class="vhead"><div><h2>Spesa</h2><p class="lede">Lista unica: le quantità dei singoli piatti sono sommate e scalate sul numero di confermati. Le dosi sono arrotondate per eccesso, così si compra una volta sola.</p></div>
       <div class="row"><button class="btn" data-act="copy-spesa">Copia per WhatsApp</button>${dlCap?`<button class="btn" data-act="csv-spesa">Scarica CSV</button>`:''}</div></div>
     <div class="panel totals"><div><div class="big num">${n}</div><div class="small muted">persone confermate</div></div>
-      <div><div class="big num">${sl.length}</div><div class="small muted">piatti in menu</div></div>
+      <div><div class="big num">${counted().length}</div><div class="small muted">piatti in menu${extraTxt(nExtra())}</div></div>
       <div><div class="big num">${all.length}</div><div class="small muted">voci da comprare</div></div>
       <div><div class="big num">${boughtN}/${all.length}</div><div class="small muted">già comprate</div></div></div>
     ${noIng.length?`<div class="note warn"><b>Lista incompleta:</b> mancano gli ingredienti di ${noIng.length} piatt${noIng.length===1?'o':'i'} (${esc(noIng.slice(0,5).map(r=>r.title).join(', '))}${noIng.length>5?'…':''}). I responsabili li inseriscono dalla scheda del piatto.</div>`:''}
@@ -136,8 +136,6 @@ A['pack-clear']=async t=>{if(await upSpesa(t.dataset.id,{pack:{base:'',size:0}})
 /* --- programma --- */
 function vProgramma(){
   const sl=slotted();
-  if(!sl.length)return `<section class="view"><div class="vhead"><div><h2>Programma</h2></div></div>
-    <div class="empty"><h3>Nessun piatto in menu</h3><p>Il cronoprogramma si costruisce dalle fasi inserite nelle schede dei piatti selezionati.</p><button class="btn" data-act="tab" data-v="menu">Vai al menu</button></div></section>`;
   const bad=sl.filter(r=>!feasible(r,r.slot)),nofasi=sl.filter(r=>!(r.fasi||[]).length),home=sl.filter(r=>r.preparabileACasa);
   const longs=sl.filter(r=>lead(r)>=12&&feasible(r,r.slot));
   const win=SLOTS.map(s=>`<tr><td>${esc(s.label)}</td><td class="num" style="text-align:right"><b>${fmtN(Math.max(0,slotOffset(s.key)),1)} h</b> utili dall’arrivo</td></tr>`).join('');
@@ -147,7 +145,7 @@ function vProgramma(){
     const di=Math.floor(it.t/24+1e-9);
     if(di!==curDay){curDay=di;tl+=`<div class="tlday">${esc(dayLabel(di))}</div>`;}
     const who=it.r?ownersOf(it.r).map(pname).join(', '):'';
-    tl+=`<div class="ti ${it.kind}"><div class="tm">${fmtT(it.t-di*24)}</div><div class="dot"></div><div class="what">${it.kind==='meal'?esc(it.what):`${esc(it.what)} — <button class="link" data-act="open-dish" data-id="${esc(it.r.id)}">${esc(it.r.title)}</button> ${it.kind==='pre'?badge('prima della partenza','warn'):''}<div class="small muted">${esc(who)}</div>`}</div></div>`;
+    tl+=`<div class="ti ${it.kind}"><div class="tm">${fmtT(it.t-di*24)}</div><div class="dot"></div><div class="what">${it.kind==='meal'||it.kind==='fix'?esc(it.what)+(it.fine?` <span class="small muted">· fino alle ${esc(it.fine)}</span>`:''):`${esc(it.what)} — <button class="link" data-act="open-dish" data-id="${esc(it.r.id)}">${esc(it.r.title)}</button> ${it.kind==='pre'?badge('prima della partenza','warn'):''}<div class="small muted">${esc(who)}</div>`}</div></div>`;
   }
   const tips=[];
   bad.forEach(r=>{const e=earliest(r);tips.push(`<li><b>${esc(r.title)}</b> è su ${esc(slotLabel(r.slot))} ma richiede ${esc(leadText(lead(r)))} di anticipo. ${e?`Primo pasto possibile: ${esc(e.label)}. ${isOrg()?`<button class="btn sm" data-act="move-slot" data-id="${esc(r.id)}" data-v="${e.key}">Sposta</button>`:''}`:'Preparalo a casa e portalo già pronto.'}</li>`);});
@@ -159,7 +157,7 @@ function vProgramma(){
       ${isOrg()?`<button class="btn" data-act="edit-settings">Orari e arrivo</button>`:''}</div>
     <div class="cols"><div class="panel"><h3>Tempo utile per pasto</h3><table class="ing" style="margin-top:8px"><tbody>${win}</tbody></table>
       <p class="hint" style="margin-top:8px">Arrivo ${esc(S.settings.arrivo)}, meno ${fmtN(num(S.settings.riservaOre),1)} h per scaricare la spesa e sistemarsi.</p></div>
-    <div class="panel"><h3>Consigli</h3>${tips.length?`<ul class="steps" style="margin-top:10px;padding-left:18px">${tips.join('')}</ul>`:`<p class="muted" style="margin-top:8px">Tutto sta nei tempi.</p>`}</div></div>
+    <div class="panel"><h3>Consigli</h3>${!sl.length?`<p class="muted" style="margin-top:8px">Nessun piatto in menu: le fasi di preparazione compaiono quando assegni i piatti ai pasti. <button class="btn sm" data-act="tab" data-v="menu">Vai al menu</button></p>`:tips.length?`<ul class="steps" style="margin-top:10px;padding-left:18px">${tips.join('')}</ul>`:`<p class="muted" style="margin-top:8px">Tutto sta nei tempi.</p>`}</div></div>
     <div class="panel"><h3>Cronoprogramma</h3><div class="tl" style="margin-top:8px">${tl}</div></div></section>`;
 }
 

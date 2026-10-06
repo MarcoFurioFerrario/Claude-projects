@@ -62,8 +62,9 @@ function eqRowsData(){
   const cat=CATS.map(c=>{const rs=S.recipes.filter(x=>x.category===c.key);return mk(c.key,c.label,rs,rs.filter(x=>x.slot).length,lib.filter(s=>s.c===c.key),rr,sr,{q:q?q[c.key]:null});});
   const wt=WTYPES.map(w=>{const xs=all.filter(x=>x.s.wt===w),pr=xs.filter(x=>x.st!=='libera').map(x=>x.s);return mk(w,w,pr,xs.filter(x=>x.st==='menu').length,xs.filter(x=>x.st==='libera').map(x=>x.s),sr,sr);});
   /* verdetti in parole: regioni e (senza quote) portate si confrontano con la media; con un formato a quote le portate con i posti nel menu */
-  const media=rows=>rows.reduce((a,r)=>a+r.tot,0)/Math.max(1,rows.length);
+  const media=rows=>{const rr=rows.filter(r=>r.k!=='contorni');return rr.reduce((a,r)=>a+r.tot,0)/Math.max(1,rr.length);};
   const vs=(rows,m)=>rows.forEach(r=>{
+    if(r.k==='contorni'){r.v={k:'extra',c:'info',t:'Extra: fuori dal conteggio dei piatti'};return;}
     if(r.q!=null){
       if(r.tot<r.q)r.v={k:'manca',c:'bad',t:`Ne mancano almeno ${r.q-r.tot}: ${r.tot} proposte per ${r.q} posti`};
       else if(r.tot<r.q*1.5)r.v={k:'poche',c:'warn',t:`Poca scelta: ${r.tot} proposte per ${r.q} posti`};
@@ -122,7 +123,7 @@ function vEquilibrio(){
     <div class="legend" aria-label="Legenda dei colori">${REGIONI.map(r=>`<span><i class="lg g" style="--c:${regColor(r)}"></i> ${esc(r)}</span>`).join('')}${[d.reg,d.cat,d.wt].some(rows=>rows.some(x=>x.reg.some(g=>!g.r)))?`<span><i class="lg g" style="--c:${regColor('')}"></i> Regione non indicata</span>`:''}</div>
     <div class="legend"><span><i class="lg g p" style="--c:${regColor(REGIONI[0])}"></i> Colore pieno: già proposti</span><span><i class="lg g l" style="--c:${regColor(REGIONI[0])}"></i> Tratteggiato: ancora da proporre (nei Suggerimenti)</span></div>
     <div class="note" style="margin-top:10px">${righe.join('<br>')}</div>
-    <div class="eqgrid2">${eqBlock('Per regione','Ogni regione ha il suo colore, lo stesso in tutte le barre qui sotto.',d.reg,'reg')}${eqBlock('Per portata',(d.q?'Con i posti che il formato lascia a ogni portata nel menu. ':'Il formato scelto non fissa quote per portata. ')+'Le barre sono divise per regione: se un colore manca, manca quella regione.',d.cat,'cat')}${eqBlock('Per tipo di vino','Solo i piatti del catalogo, per abbinamento di vino e per regione.',d.wt,'wt')}</div></section>`;
+    <div class="eqgrid2">${eqBlock('Per regione','Ogni regione ha il suo colore, lo stesso in tutte le barre qui sotto.',d.reg,'reg')}${eqBlock('Per portata',(d.q?'Con i posti che il formato lascia a ogni portata nel menu. ':'Il formato scelto non fissa quote per portata. ')+'I contorni sono extra: non entrano nel conteggio. Le barre sono divise per regione: se un colore manca, manca quella regione.',d.cat,'cat')}${eqBlock('Per tipo di vino','Solo i piatti del catalogo, per abbinamento di vino e per regione.',d.wt,'wt')}</div></section>`;
 }
 function vSugg(){
   const all=sugList(),list=filterSug(all),lib=all.length;

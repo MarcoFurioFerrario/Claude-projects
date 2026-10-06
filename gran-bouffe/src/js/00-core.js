@@ -53,6 +53,8 @@ const SHOPS=[
   {key:'cantina',label:'Vini e bevande',short:'Vini'},
   {key:'altro',label:'Altro (farmacia, ferramenta…)',short:'Altro'}
 ];
+/* Appuntamenti fissi del programma, indipendenti dai piatti (day: 0 venerdì, 1 sabato, 2 domenica; da/a = ora) */
+const PROG_FISSO=[{day:2,da:'16:00',a:'18:00',what:'Rassetto e pulizia'},{day:2,da:'18:30',a:'',what:'Chiusura, saluti e partenza'}];
 const shopOf=k=>SHOPS.find(s=>s.key===k)||SHOPS[3];
 const UNITS=['g','kg','ml','l','pz','spicchi','mazzi','foglie','rametti','cucchiai','cucchiaini','bustine','barattoli','confezioni','fette','bicchieri','bottiglie','teste','coste','pizzichi','q.b.'];
 const PORZ={assaggio:{f:.5,label:'Assaggio (mezza porzione)'},normale:{f:1,label:'Normale'},abbondante:{f:1.5,label:'Abbondante'}};

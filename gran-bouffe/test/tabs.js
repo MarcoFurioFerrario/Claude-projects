@@ -15,6 +15,10 @@ const out=require('path').join(__dirname,'shots');require('fs').mkdirSync(out,{r
   (await m.evaluate(()=>{const t=document.querySelector('nav.tabs'),r=document.querySelector('.rail');return !!(t.compareDocumentPosition(r)&Node.DOCUMENT_POSITION_FOLLOWING)&&t.getBoundingClientRect().bottom<260;}))?pass('la barra delle schede sta subito sotto il titolo, prima della fase del progetto e della banda, visibile senza scorrere'):fail('posizione barra');
   (await m.textContent('.railhd')).toLowerCase().includes('fase del progetto')&&(await m.$$eval('.rail button',e=>e.length))===0?pass('la fase del progetto è un indicatore a tratti con etichetta (non cliccabile per chi non organizza), distinto dalle schede'):fail('rail');
   (await m.textContent('#sg-eq')).includes('Ancora nessuna proposta')&&!/null|undefined|NaN/.test(await m.textContent('#sg-eq'))?pass('Equilibrio senza proposte: lo dice (nessun «ben distribuite» a vuoto)'):fail('equilibrio vuoto');
+  // il pulsante «ricette ancora da proporre» compare solo nella scheda Proposte
+  const pillTab=[];for(const t of ['Suggerimenti','Il libro','Proposte','Votazioni','Menu','Spesa','Programma','Persone']){await m.click('.tab:has-text("'+t+'")');await m.waitForTimeout(100);if(await m.$('.pill-sug'))pillTab.push(t);}
+  pillTab.join()==='Proposte'?pass('il pulsante «ricette ancora da proporre» c’è solo nella scheda Proposte'):fail('pillola in '+pillTab);
+  await m.click('.tab:has-text("Suggerimenti")');await m.waitForSelector('.hero-sug');
   await m.screenshot({path:out+'/70-schede-mobile.png',clip:{x:0,y:0,width:390,height:300}});
   await m.click('.tabarr.r');await m.waitForFunction(()=>document.querySelector('.tabs .in').scrollLeft>100);
   s=await st();s.l?pass('la freccia «›» fa scorrere la barra, ora compare «‹»'):fail('freccia sinistra '+JSON.stringify(s));

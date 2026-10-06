@@ -107,17 +107,18 @@ const ranks={};['p_teo','p_tia','p_jack'].forEach(p=>{ranks[p]={};['antipasti','
     await d.click('[data-act=suggest]');await d.click('[data-act=suggest-go]');
     await d.waitForFunction(()=>[...__db.data.entries()].filter(e=>e[0].startsWith('recipes/')&&e[1].slot).length>0);
     await d.waitForTimeout(400);
-    return d.evaluate(()=>{const s=[...__db.data.entries()].filter(e=>e[0].startsWith('recipes/')&&e[1].slot).map(e=>e[1]);const by={};s.forEach(r=>{(by[r.slot]=by[r.slot]||[]).push(r.category);});return {n:s.length,by};});
+    return d.evaluate(()=>{const all=[...__db.data.entries()].filter(e=>e[0].startsWith('recipes/')&&e[1].slot).map(e=>e[1]);const s=all.filter(r=>r.category!=='contorni');const by={};s.forEach(r=>{(by[r.slot]=by[r.slot]||[]).push(r.category);});const cont=all.filter(r=>r.category==='contorni');return {n:s.length,by,extra:cont.length,contSlots:cont.map(r=>r.slot)};}); // n = piatti che contano (senza contorni)
   };
   let p1=await planned('bouffetta');
   const ven=(p1.by['ven-cena']||[]).slice().sort().join(',');
-  p1.n===18?pass('Bouffetta: il suggerimento riempie 18 piatti'):fail('bouffetta n='+p1.n);
+  p1.n===18?pass('Bouffetta: il suggerimento riempie 18 piatti (i contorni sono in più)'):fail('bouffetta n='+p1.n);
+  p1.extra>=1&&!p1.contSlots.includes('ven-cena')?pass('Bouffetta: '+p1.extra+' contorni in più, mai nel venerdì a portate fisse'):fail('contorni bouffetta '+JSON.stringify(p1));
   ven==='antipasti,dolci,primi,secondi'?pass('Bouffetta: venerdì sera = un antipasto, un primo, un secondo, un dolce'):fail('venerdì '+ven);
   (await d.textContent('.lede')).includes('Bouffetta')&&(await d.textContent('.lede')).includes('18 piatti')?pass('il Menu dichiara il formato: Bouffetta, 18 piatti'):fail('lede bouffetta');
   (await d.$$eval('.slot h4 .num',e=>e.length))>=4?pass('Bouffetta: contatori per pasto (n / tetto)'):fail('contatori per pasto');
   await d.screenshot({path:out+'/43-menu-bouffetta.png',fullPage:true});
   p1=await planned('dieta');
-  p1.n===15&&(p1.by['ven-cena']||[]).length===3?pass('Dieta: 15 piatti, venerdì 3'):fail('dieta '+JSON.stringify(p1));
+  p1.n===15&&(p1.by['ven-cena']||[]).length===3&&p1.extra>=1?pass('Dieta: 15 piatti (+ '+p1.extra+' contorni in più), venerdì 3'):fail('dieta '+JSON.stringify(p1));
   p1=await planned('esagerare');
   p1.n===22?pass('Esagerare: 22 piatti, senza quote per portata'):fail('esagerare '+p1.n);
   (await d.textContent('.days')).includes('piatti')&&!(await d.textContent('.days')).includes('troppi')?pass('Esagerare: nessun "troppi" per giorno'):fail('troppi');

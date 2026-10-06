@@ -24,6 +24,11 @@ const fmtNow=()=>FMT(fmtEff().key);
 const capNow=()=>fmtNow().cap;
 const totalCap=()=>{const c=capNow();return num(c.ven)+num(c.sab)+num(c.dom);};
 const slotted=()=>S.recipes.filter(r=>r.slot&&slotDef(r.slot));
+/* I contorni si possono mettere in menu anche oltre il numero di piatti deciso: per il conteggio (formato, giorni, pasti) contano solo antipasti, primi, secondi e dolci. */
+const isCounted=r=>r.category!=='contorni';
+const counted=()=>slotted().filter(isCounted);
+const nExtra=()=>slotted().length-counted().length;
+const extraTxt=n=>n?` + ${n} contorn${n===1?'o':'i'} in più`:'';
 
 /* --- tempi e fattibilità --- */
 const lead=r=>Math.max(0,...(r.fasi||[]).map(f=>num(f.ore)));
@@ -230,8 +235,8 @@ const voters=()=>S.participants.filter(p=>S.votes[p.id]&&Object.values(S.votes[p
 const myFmt=()=>{const v=S.votes[S.meId];return v&&FMT(v.formato)?v.formato:'';};
 
 /* --- selezione automatica dai voti --- */
-function quotas(total){
-  const w={antipasti:4,primi:7,secondi:6,contorni:2,dolci:3};
+function quotas(total){ // solo le quattro portate che contano nel totale; i contorni sono extra
+  const w={antipasti:4,primi:7,secondi:6,dolci:3};
   const sw=Object.values(w).reduce((a,b)=>a+b,0);
   const q={},rem=[];let used=0;
   for(const k in w){const x=w[k]*total/sw;q[k]=Math.floor(x);used+=q[k];rem.push([k,x-q[k]]);}
@@ -239,15 +244,16 @@ function quotas(total){
   for(let i=0;used<total;i++,used++)q[rem[i%rem.length][0]]++;
   return q;
 }
+const contorniExtra=total=>Math.max(1,Math.round(total*2/22)); // quanti contorni propone il suggerimento, in più rispetto al totale
 const byScore=(a,b)=>((b.pct==null?-1:b.pct)-(a.pct==null?-1:a.pct))||byTitle(a.r,b.r);
 function suggest(){
   const st=voteStats(),fm=fmtNow(),total=totalCap(),q=quotas(total);
-  const chosen=[],left=[];
-  if(fm.libero){ // nessuna quota per portata: i più votati in assoluto
-    const all=[].concat(...CATS.map(c=>st[c.key])).sort(byScore);
+  const chosen=[],left=[],cats4=CATS.filter(c=>c.key!=='contorni');
+  if(fm.libero){ // nessuna quota per portata: i più votati in assoluto (contorni esclusi dal conteggio)
+    const all=[].concat(...cats4.map(c=>st[c.key])).sort(byScore);
     all.slice(0,total).forEach(x=>chosen.push(x));
   }else{
-    for(const c of CATS){
+    for(const c of cats4){
       const list=st[c.key],k=q[c.key]||0;
       list.slice(0,k).forEach(x=>chosen.push(x));
       list.slice(k).forEach(x=>left.push(x));
@@ -255,6 +261,7 @@ function suggest(){
     left.sort(byScore);
     while(chosen.length<total&&left.length)chosen.push(left.shift());
   }
+  const extras=(st.contorni||[]).slice(0,contorniExtra(total)); // contorni in più, fuori dal conteggio
   const caps={ven:num(fm.cap.ven),sab:num(fm.cap.sab),dom:num(fm.cap.dom)};
   const cnt={ven:0,sab:0,dom:0},catCnt={ven:{},sab:{},dom:{}},slotCnt={};
   const out={};
@@ -297,6 +304,16 @@ function suggest(){
     out[r.id]=pool[0].key;
     cnt[best]++;catCnt[best][r.category]=(catCnt[best][r.category]||0)+1;slotCnt[pool[0].key]=(slotCnt[pool[0].key]||0)+1;
   }
+  /* contorni: sul pasto con più secondi (dove servono), mai su un pasto a portate fisse, senza toccare i contatori */
+  const per={};for(const [id,sk] of Object.entries(out)){const c=(R(id)||{}).category;per[sk]=per[sk]||{};per[sk][c]=(per[sk][c]||0)+1;}
+  for(const x of extras){
+    const r=x.r,free=SLOTS.filter(sl=>!(fm.comp&&fm.comp[sl.key]));
+    const cand=(free.filter(sl=>feasible(r,sl.key)).length?free.filter(sl=>feasible(r,sl.key)):free);
+    cand.sort((a,b)=>((per[b.key]||{}).secondi||0)*2+Object.values(per[b.key]||{}).reduce((p,v)=>p+v,0)*.1-((per[b.key]||{}).contorni||0)*3
+      -(((per[a.key]||{}).secondi||0)*2+Object.values(per[a.key]||{}).reduce((p,v)=>p+v,0)*.1-((per[a.key]||{}).contorni||0)*3));
+    const sk=(cand[0]||SLOTS[SLOTS.length-1]).key;
+    out[r.id]=sk;per[sk]=per[sk]||{};per[sk].contorni=(per[sk].contorni||0)+1;
+  }
   return out;
 }
 
@@ -310,6 +327,7 @@ function timeline(){
     if(!rs.length)continue;
     items.push({t:slotAbs(s.key),kind:'meal',what:s.label+' — a tavola ('+rs.length+' piatt'+(rs.length===1?'o':'i')+')'});
   }
+  for(const f of PROG_FISSO)items.push({t:f.day*24+hm(f.da),kind:'fix',what:f.what,fine:f.a});
   for(const r of slotted()){
     const sa=slotAbs(r.slot);
     for(const f of (r.fasi||[])){

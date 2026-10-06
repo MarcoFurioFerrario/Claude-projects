@@ -33,12 +33,12 @@ const votes={ // tutti ordinano allo stesso modo: Primo 1..6, Dolce 1..6, Antipa
   meals.map(x=>x[0]).join()==='ven-cena,sab-pranzo,sab-cena,dom-pranzo'&&meals.every((m,i)=>i===0||m[1]>meals[i-1][1])?pass('a sinistra i pasti uno sotto l’altro, da venerdì sera a domenica pranzo'):fail('pasti '+JSON.stringify(meals));
   (await d.$('[data-act=suggest]'))&&(await d.$('[data-act=clear-menu]'))?pass('«Suggerisci dai voti» e «Svuota» ci sono ancora'):fail('suggerisci');
   // --- exit poll: primi 5 per portata
-  const poll=await d.$$eval('.xp .xp-cat',cs=>cs.map(c=>({t:c.querySelector('h4').textContent.replace(/\s+/g,' ').trim(),rows:[...c.querySelectorAll('.xpr .nm')].map(n=>n.textContent),vuoto:(c.querySelector('p.muted')||{}).textContent||''})));
+  const poll=await d.$$eval('.xp .xp-cat',cs=>cs.map(c=>({t:c.querySelector('h4').textContent.replace(/\s+/g,' ').trim(),rows:[...c.querySelectorAll('.xpr .nm')].map(n=>n.textContent),vuoto:[...c.querySelectorAll('p.muted')].map(p=>p.textContent).join(' ')})));
   const by=Object.fromEntries(poll.map(c=>[c.t.split(' ')[0],c]));
   by.Primi.rows.join()==='Primo 1,Primo 2,Primo 3,Primo 4,Primo 5'?pass('Primi: solo i 5 più votati, in ordine (Primo 6 e 7 restano fuori)'):fail('primi '+JSON.stringify(by.Primi));
   by.Dolci.rows.length===5&&by.Dolci.rows[0]==='Dolce 1'?pass('Dolci: 5 righe (7 proposte, 6 votate)'):fail('dolci '+JSON.stringify(by.Dolci));
   by.Antipasti.rows.join()==='Antipasto Uno,Antipasto Due'?pass('Antipasti: solo i piatti con voti (2)'):fail('antipasti '+JSON.stringify(by.Antipasti));
-  by.Contorni.rows.length===0&&by.Contorni.vuoto.includes('Nessun voto')?pass('Contorni senza voti: «Nessun voto ancora»'):fail('contorni '+JSON.stringify(by.Contorni));
+  by.Contorni.rows.length===0&&by.Contorni.vuoto.includes('Nessun voto')&&by.Contorni.vuoto.includes('non contano nel numero dei piatti')?pass('Contorni senza voti: «Nessun voto ancora»'):fail('contorni '+JSON.stringify(by.Contorni));
   poll.length===5?pass('un blocco per ognuna delle 5 portate'):fail('blocchi '+poll.length);
   (await d.textContent('.xpr:has(.nm:text-is("Primo 1")) .badge')).includes('In menu')?pass('un piatto già nel menu è segnato «In menu · pasto» anche nell’exit poll'):fail('badge in menu');
   const xv=await d.textContent('.xpr:has(.nm:text-is("Primo 1")) .xpv');xv.includes('21')&&xv.includes('3 su 3')?pass('punti e votanti: 21 punti (3 votanti × 7 punti del primo posto), 3 su 3'):fail('punti '+xv);
