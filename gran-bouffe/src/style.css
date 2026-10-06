@@ -532,3 +532,4 @@ body.dragging{user-select:none;-webkit-user-select:none;cursor:grabbing}
 .xp-rest{margin-top:2px}
 .dish>.mgrip{margin-top:2px}
 @media (max-width:560px){.dish{flex-wrap:wrap}.dish select{flex:1 1 100%;width:100%}}
+.xps{margin-top:6px;width:100%;max-width:210px;padding:5px 8px;font-size:13px}

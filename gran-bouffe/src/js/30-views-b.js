@@ -123,7 +123,8 @@ function exitPoll(org){
         <span class="pos num">${i+1}</span>
         <div class="xpt"><button class="nm" data-act="open-dish" data-id="${esc(r.id)}">${esc(r.title)}</button> ${r.slot?badge('In menu · '+slotLabel(r.slot),'ok'):''}
           <div class="small muted">${r.region?esc(r.region)+' · ':''}proposta da ${esc(pname(r.proposerId))}</div>
-          <div class="xbar" aria-hidden="true"><i style="width:${x.score}%"></i></div></div>
+          <div class="xbar" aria-hidden="true"><i style="width:${x.score}%"></i></div>
+          ${org?`<select class="xps" aria-label="${r.slot?'Sposta':'Assegna'} ${esc(r.title)}" data-chg="setslot" data-id="${esc(r.id)}"><option value="">${r.slot?'Togli dal menu':'Metti in menu…'}</option>${SLOTS.map(sl=>`<option value="${sl.key}" ${sl.key===r.slot?'selected':''}>${sl.label}</option>`).join('')}</select>`:''}</div>
         <div class="small num xpv"><b>${x.pts}</b> punti<br><span class="muted">${x.n} su ${x.nv} vot${x.nv===1?'ante':'anti'}</span></div></li>`;
     }).join('');
     return `<div class="xp-cat" style="--h:${c.h}"><h4 class="grp" style="--h:${c.h}">${esc(c.label)} <span class="muted small num">${voted.length} con voti</span></h4>
@@ -137,7 +138,7 @@ function exitPoll(org){
       <div class="small num muted" style="text-align:right">${x.score==null?'nessun voto':`punteggio <b style="color:var(--ink)">${x.score}</b>`}</div>
       ${org?`<select aria-label="Assegna ${esc(x.r.title)}" data-chg="setslot" data-id="${esc(x.r.id)}"><option value="">Non in menu</option>${SLOTS.map(s=>`<option value="${s.key}">${s.label}</option>`).join('')}</select>`:'<span></span>'}</div>`).join('')}</div>`).join('')}</div></details>`:'';
   return `<aside class="xp" ${org?'data-mdrop="out"':''} aria-label="Exit poll">
-    <div class="xp-head"><h3>Exit poll</h3><p class="small muted">I ${XP_N} piatti più votati finora per portata.${org?' Trascinali nel menu a sinistra; trascina un piatto qui per toglierlo dal menu.':''}</p></div>
+    <div class="xp-head"><h3>Exit poll</h3><p class="small muted">I ${XP_N} piatti più votati finora per portata. <b>Evidenziati in verde quelli in menu.</b>${org?' Trascinali nel menu a sinistra o scegli il pasto dal menu a tendina; trascina un piatto qui per toglierlo dal menu.':''}</p></div>
     ${cats}${restHtml}</aside>`;
 }
 function vMenu(){

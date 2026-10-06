@@ -44,6 +44,22 @@ const votes={ // tutti ordinano allo stesso modo: Primo 1..6, Dolce 1..6, Antipa
   const xv=await d.textContent('.xpr:has(.nm:text-is("Primo 1")) .xpv');xv.includes('21')&&xv.includes('3 su 3')?pass('punti e votanti: 21 punti (3 votanti × 7 punti del primo posto), 3 su 3'):fail('punti '+xv);
   const rest=await d.textContent('.xp-rest');
   rest.includes('Primo 6')&&rest.includes('Primo 7')&&rest.includes('Dolce 6')&&rest.includes('Dolce 7')&&!(await d.$('.xp-rest[open]'))?pass('gli altri candidati sono in un riquadro chiuso, fuori dai primi 5'):fail('altri candidati');
+  (await d.textContent('.xp-head')).includes('Evidenziati in verde quelli in menu')?pass('il riquadro spiega: «Evidenziati in verde quelli in menu»'):fail('legenda verde');
+  const bg=await d.$eval('.xpr.inmenu',e=>getComputedStyle(e).backgroundColor),bg2=await d.$eval('.xpr:not(.inmenu)',e=>getComputedStyle(e).backgroundColor);
+  bg!==bg2?pass('le righe in menu hanno davvero un colore diverso dalle altre'):fail('colore righe');
+  const nr=(await d.$$('.xpr')).length,ns=(await d.$$('.xpr select.xps')).length;
+  nr===ns&&nr>0?pass('ogni voce degli exit poll ha il menu a tendina per il pasto ('+ns+' su '+nr+')'):fail('select exit poll '+ns+'/'+nr);
+  const o1=await d.$$eval('.xpr:has(.nm:text-is("Primo 3")) select.xps option',e=>e.map(x=>x.textContent));
+  o1[0]==='Metti in menu…'&&o1.length===5?pass('per un piatto non in menu: «Metti in menu…» più i 4 pasti'):fail('opzioni '+o1);
+  (await d.$eval('.xpr:has(.nm:text-is("Primo 1")) select.xps',e=>e.value))==='ven-cena'&&(await d.$eval('.xpr:has(.nm:text-is("Primo 1")) select.xps option',e=>e.textContent))==='Togli dal menu'?pass('per un piatto in menu: il pasto attuale selezionato e «Togli dal menu»'):fail('select in menu');
+  await d.selectOption('.xpr:has(.nm:text-is("Primo 3")) select.xps','sab-cena');
+  await d.waitForFunction(()=>__db.data.get('recipes/p3').slot==='sab-cena');
+  await d.waitForSelector('.xpr.inmenu:has(.nm:text-is("Primo 3"))');
+  pass('dal menu a tendina dell’exit poll: Primo 3 → Sabato cena, e la riga diventa verde');
+  await d.selectOption('.xpr:has(.nm:text-is("Primo 3")) select.xps','');
+  await d.waitForFunction(()=>!__db.data.get('recipes/p3').slot);
+  await d.waitForSelector('.xpr:not(.inmenu):has(.nm:text-is("Primo 3"))');
+  pass('«Togli dal menu» dall’exit poll: Primo 3 esce e la riga torna normale');
   await d.screenshot({path:out+'/91-menu-due-colonne.png',fullPage:true});
 
   // --- trascinamento
@@ -84,8 +100,8 @@ const votes={ // tutti ordinano allo stesso modo: Primo 1..6, Dolce 1..6, Antipa
   const f=await mk(1280,2400,false);await setup(f);
   await f.click('.names .btn:has-text("Fede")');await f.waitForSelector('.rail');
   await f.click('.tab:has-text("Menu")');await f.waitForSelector('.menu2');
-  (await f.$$('.mgrip')).length===0&&(await f.$$('.menu2 select')).length===0&&(await f.$('[data-mdrop]'))===null?pass('chi non è organizzatore: niente maniglie, né menu a tendina, né zona di rilascio'):fail('permessi');
-  (await f.$$('.xpr')).length>=12?pass('...ma vede gli exit poll e il menu'):fail('exit poll visitatore');
+  (await f.$$('.mgrip')).length===0&&(await f.$$('.menu2 select')).length===0&&(await f.$$('.xps')).length===0&&(await f.$('[data-mdrop]'))===null?pass('chi non è organizzatore: niente maniglie, né menu a tendina (nemmeno negli exit poll), né zona di rilascio'):fail('permessi');
+  (await f.$$('.xpr')).length>=12&&(await f.textContent('.xp-head')).includes('Evidenziati in verde')?pass('...ma vede gli exit poll, la legenda e il menu'):fail('exit poll visitatore');
   await f.close();
 
   // --- telefono
