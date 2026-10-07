@@ -1,8 +1,9 @@
 // Prova: Menu a due colonne (pasti a sinistra, exit poll a destra con i primi 5 per portata) e trascinamento dei piatti.
 const {run,seed}=require('./harness');
 const out=require('path').join(__dirname,'shots');require('fs').mkdirSync(out,{recursive:true});
+const FOTO={p1:'https://img.test/p1.png',p2:'https://img.test/p2.png',a1:'https://img.test/a1.png',d1:'https://img.test/d1.png',s1:'https://img.test/s1.png'}; // alcuni piatti hanno la foto, altri no
 const R=(id,title,category,slot)=>[`recipes/${id}`,{title,category,region:'Veneto',link:'https://example.org/'+id,note:'',proposerId:'p_teo',ownerIds:['p_teo'],teamIds:[],createdAt:1000,
-  verifica:{stato:'da_verificare'},slot:slot||'',serves:4,porzione:'normale',ingredients:[{name:'Sale',qty:0,unit:'q.b.',shop:'dispensa'}],steps:[],fasi:[],preparabileACasa:false,vini:[],consigli:''}];
+  verifica:{stato:'da_verificare'},slot:slot||'',serves:4,porzione:'normale',ingredients:[{name:'Sale',qty:0,unit:'q.b.',shop:'dispensa'}],steps:[],fasi:[],preparabileACasa:false,vini:[],consigli:'',foto:FOTO[id]?{url:FOTO[id],pagina:'https://www.cucchiaio.it/ricetta/x/',fonte:'Cucchiaio d’Argento',data:'2026-10-03'}:null}];
 const recipes=[
   R('a1','Antipasto Uno','antipasti','sab-pranzo'),R('a2','Antipasto Due','antipasti'),R('a3','Antipasto Tre','antipasti'),
   ...[1,2,3,4,5,6,7].map(i=>R('p'+i,'Primo '+i,'primi',i===1?'ven-cena':'')),
@@ -60,10 +61,23 @@ const votes={ // tutti ordinano allo stesso modo: Primo 1..6, Dolce 1..6, Antipa
   await d.waitForFunction(()=>!__db.data.get('recipes/p3').slot);
   await d.waitForSelector('.xpr:not(.inmenu):has(.nm:text-is("Primo 3"))');
   pass('«Togli dal menu» dall’exit poll: Primo 3 esce e la riga torna normale');
+  // ---- miniature nel Menu
+  const dishes=await d.$$('.menu2-l .dish'),dtn=await d.$$('.menu2-l .dish .tn');
+  dishes.length>0&&dishes.length===dtn.length?pass('ogni piatto del menu ha la miniatura ('+dtn.length+' su '+dishes.length+')'):fail('miniature nel menu '+dtn.length+'/'+dishes.length);
+  (await d.$$('.xpr .tn')).length===(await d.$$('.xpr')).length?pass('e ogni riga degli exit poll'):fail('miniature exit poll');
+  await d.waitForFunction(()=>[...document.querySelectorAll('.menu2 .tn img')].some(i=>i.complete&&i.naturalWidth>0),null,{timeout:8000}).catch(()=>{});
+  const ts=await d.$$eval('.menu2 .tn',e=>e.map(x=>{const r=x.getBoundingClientRect();return[Math.round(r.width),Math.round(r.height)];}));
+  ts.every(t=>t[0]===64&&t[1]===40)?pass('dimensioni: 64 × 40 px, uguali in tutto il menu'):fail('dimensioni '+JSON.stringify(ts.slice(0,3)));
+  (await d.$$('.xpr .xtn .pos')).length===(await d.$$('.xpr')).length?pass('nel poll il numero della classifica sta sopra la miniatura'):fail('numero poll');
+  const hOf=async()=>({dish:await d.$$eval('.menu2-l .dish',e=>e.map(x=>Math.round(x.getBoundingClientRect().height*10)/10)),xp:await d.$$eval('.xpr',e=>e.map(x=>Math.round(x.getBoundingClientRect().height*10)/10))});
+  const h1=await hOf();await d.addStyleTag({content:'.tn{height:0!important;border:0!important}'});const h0=await hOf();
+  JSON.stringify(h1)===JSON.stringify(h0)?pass('le righe non diventano più alte per la miniatura (piatti: '+h1.dish.join(', ')+' px)'):fail('altezze menu '+JSON.stringify([h1,h0]));
+  const wrap=await d.$$eval('.xpt > .small.muted',e=>e.filter(x=>x.getBoundingClientRect().height>28).length);
+  wrap===0?pass('negli exit poll l’indicazione «regione · proposta da…» resta su una riga'):fail('meta a capo '+wrap);
   await d.screenshot({path:out+'/91-menu-due-colonne.png',fullPage:true});
 
   // --- trascinamento
-  const box=async sel=>(await d.locator(sel).first().boundingBox());
+  const box=async sel=>{for(let i=0;i<30;i++){const b=await d.locator(sel).first().boundingBox({timeout:1500}).catch(()=>null);if(b)return b;await d.waitForTimeout(100);}return null;}; // la pagina si ridisegna a ogni scrittura: si riprova
   const drag=async(from,to,steps)=>{const a=await box(from),b=await box(to);
     await d.mouse.move(a.x+a.width/2,a.y+a.height/2);await d.mouse.down();await d.mouse.move(b.x+b.width/2,b.y+Math.min(b.height/2,24),{steps:steps||10});};
   await drag('.xpr [data-mgrip=p2]','[data-mslot="sab-cena"]');
@@ -111,6 +125,12 @@ const votes={ // tutti ordinano allo stesso modo: Primo 1..6, Dolce 1..6, Antipa
   const ml=await m.locator('.menu2-l').boundingBox(),mr=await m.locator('.menu2-r').boundingBox();
   mr.y>ml.y+ml.height-5&&Math.abs(ml.x-mr.x)<5?pass('telefono: una colonna, prima il menu poi gli exit poll'):fail('mobile colonne '+JSON.stringify([ml,mr]));
   const ov=await m.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);ov<=1?pass('telefono: nessuno scroll orizzontale'):fail('overflow '+ov);
+  const tsm=await m.$$eval('.menu2 .tn',e=>e.map(x=>{const r=x.getBoundingClientRect();return Math.round(r.width);}));
+  tsm.length>0&&tsm.every(w=>w<=52)?pass('telefono: miniature ridotte ('+[...new Set(tsm)].join(' e ')+' px di larghezza)'):fail('miniature telefono '+tsm);
+  const mh1=await m.$$eval('.menu2-l .dish, .xpr',e=>e.map(x=>Math.round(x.getBoundingClientRect().height)));
+  await m.addStyleTag({content:'.tn{height:0!important;border:0!important}'});
+  const mh0=await m.$$eval('.menu2-l .dish, .xpr',e=>e.map(x=>Math.round(x.getBoundingClientRect().height)));
+  mh1.every((h,i)=>Math.abs(h-mh0[i])<=1)?pass('telefono: le righe non crescono per la miniatura'):fail('altezze telefono '+mh1+' / '+mh0);
   const nm=await m.$$eval('.menu2 .nm',e=>e.map(n=>Math.round(n.getBoundingClientRect().height)));
   nm.every(h=>h<=90)?pass('telefono: titoli leggibili'):fail('titoli alti '+nm);
   await m.screenshot({path:out+'/93-menu-telefono.png',fullPage:true});

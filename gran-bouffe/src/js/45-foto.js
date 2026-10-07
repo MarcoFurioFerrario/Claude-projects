@@ -18,10 +18,23 @@ const fotoFig=(r,cls)=>{const f=fotoOf(r);return f?fotoMarkup(f,'Foto: '+r.title
 const sugFotoFig=s=>{const f=SUG_FOTO[s.id];return f?fotoMarkup(f,'Foto: '+s.t,'sug:'+s.id,'thumb'):'';};
 /* immagine che non si carica (sito che blocca il collegamento diretto, indirizzo cambiato): niente icona rotta, si mostra il link alla fonte */
 document.addEventListener('error',e=>{
-  const im=e.target;if(!im||im.tagName!=='IMG'||!im.dataset||!im.dataset.foto)return;
+  const im=e.target;if(!im||im.tagName!=='IMG'||!im.dataset)return;
+  if(im.dataset.tn){ // miniatura di una riga: resta il riquadro vuoto, senza ridisegnare la pagina
+    const r=R(im.dataset.tn),f=fotoOf(r);if(f){UI.fotoKo=UI.fotoKo||{};UI.fotoKo[fotoKey(r.id,f)]=1;}
+    const t=im.parentElement;if(t)t.classList.add('none');im.remove();return;
+  }
+  if(!im.dataset.foto)return;
   const key=im.dataset.foto,f=key.indexOf('sug:')===0?SUG_FOTO[key.slice(4)]:fotoOf(R(key));if(!f)return;
   UI.fotoKo=UI.fotoKo||{};UI.fotoKo[fotoKey(key,f)]=1;schedule();
 },true);
+
+/* miniatura per le righe di voto e risultati: la stessa foto della scheda in un riquadro fisso (così le colonne restano allineate);
+   senza foto, o se non si carica, resta il riquadro vuoto. Le immagini create con AI portano la sigla «AI». */
+function fotoThumb(r){
+  const f=fotoOf(r);
+  if(!f||(UI.fotoKo&&UI.fotoKo[fotoKey(r.id,f)]))return '<span class="tn none" aria-hidden="true"></span>';
+  return `<span class="tn${f.ai?' ai':''}"${f.ai?' title="Immagine creata con AI"':''}><img src="${esc(f.url)}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" data-tn="${esc(r.id)}"></span>`;
+}
 
 /* nella scheda del piatto: la foto, oppure il riquadro per aggiungerla */
 function fotoBlock(r){

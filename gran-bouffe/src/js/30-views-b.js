@@ -27,6 +27,7 @@ function vRank(cat){
     return `<div class="dr" data-dish="${esc(id)}"><button type="button" class="grip" data-grip="${esc(id)}" aria-label="Trascina «${esc(r.title)}»" title="Trascina" ${open?'':'disabled'}>⠿</button>
       <div class="dt"><div class="t">${esc(r.title)} ${fresh?badge('Nuova','warn'):''}</div>
       <div class="small muted">${r.region?esc(r.region)+' · ':''}proposta da ${esc(pname(r.proposerId))} · <a href="${esc(safeHref(r.link))}" target="_blank" rel="noopener noreferrer">ricetta ↗</a></div></div>
+      ${fotoThumb(r)}
       <label class="pp"><span class="sr">Posizione di ${esc(r.title)}</span><select id="rk-${esc(id)}" data-chg="rkpos" data-id="${esc(id)}" ${open?'':'disabled'}>${opts(pos)}</select></label></div>`;
   };
   const slots=d.slots.map((id,i)=>`<li class="rkslot ${id?'on':''}" data-slot="${i}"><div class="pos num">${i+1}</div>${id?row(id,i+1):`<div class="rkempty">${open?'Trascina qui un piatto o sceglilo dall’elenco sotto':'Posizione libera'}</div>`}</li>`).join('');
@@ -65,6 +66,7 @@ function vRes(cat){
     const inQ=voted(x)&&i<q,pari=voted(x)&&tie(i);
     return `<div class="res ${i<3&&voted(x)?'top3':''} ${inQ?'cut':''}"><div class="pos num">${i+1}</div>
       <div><div style="font-weight:600;overflow-wrap:anywhere">${esc(x.r.title)} ${pari?badge('Pari merito',edgeAt(i)?'warn':'muted'):''}</div><div class="small muted">${x.r.region?esc(x.r.region)+' · ':''}${esc(pname(x.r.proposerId))}${x.r.slot?' · '+badge('In menu','ok'):''}</div></div>
+      ${fotoThumb(x.r)}
       <div class="bar" title="Punteggio"><i style="width:${voted(x)?x.score:0}%"></i></div>
       <div class="small num" style="text-align:right">${voted(x)?`<b>${x.pts}</b> punti<br><span class="muted">${x.first[0]} primi posti · in classifica per ${x.n} su ${x.nv}</span>`:'<span class="muted">nessun voto</span>'}</div></div>`;
   }).join('');
@@ -107,7 +109,7 @@ function dishWarn(r,slotKey){
 }
 function dishRow(r,slotKey){
   const org=isOrg();
-  return `<div class="dish" data-mdish="${esc(r.id)}">${org?`<button type="button" class="mgrip" data-mgrip="${esc(r.id)}" aria-label="Trascina «${esc(r.title)}» in un altro pasto" title="Trascina in un altro pasto o negli exit poll">⠿</button>`:''}<div><button class="nm" data-act="open-dish" data-id="${esc(r.id)}">${esc(r.title)}</button>
+  return `<div class="dish" data-mdish="${esc(r.id)}">${org?`<button type="button" class="mgrip" data-mgrip="${esc(r.id)}" aria-label="Trascina «${esc(r.title)}» in un altro pasto" title="Trascina in un altro pasto o negli exit poll">⠿</button>`:''}${fotoThumb(r)}<div><button class="nm" data-act="open-dish" data-id="${esc(r.id)}">${esc(r.title)}</button>
     <div class="small muted">${chipCat(r.category)} ${esc(ownersOf(r).map(pname).join(', '))}</div>${dishWarn(r,slotKey)}</div>
     ${org?`<select aria-label="Sposta ${esc(r.title)}" data-chg="setslot" data-id="${esc(r.id)}"><option value="">Togli dal menu</option>${SLOTS.map(s=>`<option value="${s.key}" ${s.key===slotKey?'selected':''}>${s.label}</option>`).join('')}</select>`:''}</div>`;
 }
@@ -120,7 +122,7 @@ function exitPoll(org){
     const rows=voted.slice(0,XP_N).map((x,i)=>{
       const r=x.r;
       return `<li class="xpr ${r.slot?'inmenu':''}" data-mdish="${esc(r.id)}">${org?`<button type="button" class="mgrip" data-mgrip="${esc(r.id)}" aria-label="Trascina «${esc(r.title)}» nel menu" title="Trascina nel menu">⠿</button>`:''}
-        <span class="pos num">${i+1}</span>
+        <span class="xtn">${fotoThumb(r)}<span class="pos num">${i+1}</span></span>
         <div class="xpt"><button class="nm" data-act="open-dish" data-id="${esc(r.id)}">${esc(r.title)}</button> ${r.slot?badge('In menu · '+slotLabel(r.slot),'ok'):''}
           <div class="small muted">${r.region?esc(r.region)+' · ':''}proposta da ${esc(pname(r.proposerId))}</div>
           <div class="xbar" aria-hidden="true"><i style="width:${x.score}%"></i></div>

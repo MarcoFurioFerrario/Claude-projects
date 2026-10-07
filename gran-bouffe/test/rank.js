@@ -103,7 +103,7 @@ const recipes=[...names.map((n,i)=>R('p'+(i+1),n+' di primi','primi')),
   // pari merito vero a cavallo del limite: tre piatti identici al 6°-8° posto, formato Bouffetta (quota primi 6)
   await d.evaluate(()=>{__db.data.get('settings/main').formato='bouffetta';const set=(id,primi)=>__db.data.set('votes/'+id,{rank:{primi},rankAt:{primi:5},updatedAt:5});
     set('p_teo',['p1','p2','p3','p4','p5','p6']);set('p_tia',['p1','p2','p3','p4','p5','p7']);set('p_jack',['p1','p2','p3','p4','p5','p8']);__db.notify();});
-  await d.waitForFunction(()=>document.querySelectorAll('.res').length===8);
+  await d.waitForFunction(()=>document.querySelectorAll('.res .badge.warn').length>=1,null,{timeout:8000}); // aspetta il ridisegno con i nuovi voti
   const txt=await d.textContent('.view');
   const q=/<b[^>]*>(\d+)<\/b> su/.test('')?0:0;
   const edge=await d.$$eval('.res .badge.warn',e=>e.length);
