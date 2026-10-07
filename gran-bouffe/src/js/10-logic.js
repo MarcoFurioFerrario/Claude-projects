@@ -184,7 +184,7 @@ function rankedDraft(cat){
   const at=(v&&v.rankAt&&v.rankAt[cat])||(v&&v.updatedAt)||0;
   const pool=all.filter(r=>!seen.has(r.id)).sort(byTitle);
   const filled=slots.filter(Boolean).length,last=slots.reduce((m,id,i)=>id?i:m,-1);
-  return{slots,pool,n,filled,dirty:!!UI.draft[cat],saved:!!saved,
+  return{slots,pool,n,filled,dirty:!!UI.draft[cat],saved:!!saved,stale:saved?saved.filter(id=>!ok(id)).length:0,
     gaps:slots.slice(0,last+1).some(x=>!x),
     fresh:saved?pool.filter(r=>(r.createdAt||0)>at).map(r=>r.id):[]};
 }

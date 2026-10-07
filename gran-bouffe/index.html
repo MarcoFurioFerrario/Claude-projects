@@ -755,7 +755,7 @@ function errMsg(e){
   if(c==='revoked')return 'Accesso alla pagina revocato.';
   return 'Salvataggio non riuscito'+(e&&e.message?': '+e.message:'.');
 }
-const BUILD='muy67l23';
+const BUILD='muyhtt2r';
 const BACKUP_EVERY=window.GB_BACKUP_EVERY||15*60*1000,BACKUP_KEEP=60;
 function saveHtml(){
   if(S.offline)return '<span class="sv warn">Offline: le modifiche restano in coda</span>';
@@ -1352,7 +1352,7 @@ function rankedDraft(cat){
   const at=(v&&v.rankAt&&v.rankAt[cat])||(v&&v.updatedAt)||0;
   const pool=all.filter(r=>!seen.has(r.id)).sort(byTitle);
   const filled=slots.filter(Boolean).length,last=slots.reduce((m,id,i)=>id?i:m,-1);
-  return{slots,pool,n,filled,dirty:!!UI.draft[cat],saved:!!saved,
+  return{slots,pool,n,filled,dirty:!!UI.draft[cat],saved:!!saved,stale:saved?saved.filter(id=>!ok(id)).length:0,
     gaps:slots.slice(0,last+1).some(x=>!x),
     fresh:saved?pool.filter(r=>(r.createdAt||0)>at).map(r=>r.id):[]};
 }
@@ -1828,13 +1828,15 @@ function vRank(cat){
   const pool=d.pool.map(r=>`<li>${row(r.id,0)}</li>`).join('');
   let status;
   if(d.dirty)status=badge('Modifiche non salvate','warn');
+  else if(d.saved&&d.stale)status=badge('Classifica da aggiornare','warn');
   else if(d.saved&&d.fresh.length)status=badge('Ci sono proposte nuove: decidi se metterle in classifica','warn');
   else if(d.saved)status=badge('Classifica salvata','ok');
   else status=badge('Non hai ancora votato questa portata','muted');
   const hints=[];
   if(d.filled&&d.filled<n)hints.push(`Hai compilato ${d.filled} ${d.filled===1?'posizione':'posizioni'} su ${n}: più posizioni compili, meno pareggi.`);
   if(d.gaps)hints.push('Ci sono posizioni vuote: salvando, quelle sotto salgono a chiuderle.');
-  const canSave=open&&d.filled>0&&(d.dirty||!d.saved);
+  if(d.stale&&!d.dirty){const u=d.stale===1;hints.push(`Nella classifica salvata ${u?'c’era 1 piatto che non c’è più':'c’erano '+d.stale+' piatti che non ci sono più'} in questa portata (eliminat${u?'o':'i'} o spostat${u?'o':'i'} in un’altra): ${u?'non conta':'non contano'} e i piatti sotto sono saliti di posto. Salva per aggiornare il voto.`);}
+  const canSave=open&&d.filled>0&&(d.dirty||!d.saved||d.stale>0);
   return `<div class="rankbox rank">
     <p class="small muted rkinfo">In “${esc(catOf(cat).label)}” classifichi fino a <b class="num">${n}</b> piatti: 1° posto = <b class="num">${rankPts(cat,1)}</b> punti, ${n}° = <b class="num">${rankPts(cat,n)}</b>; fuori classifica 0. Se scegli una posizione già occupata, il piatto che c’era scende alla prima posizione libera sotto, oppure esce.</p>
     <ol class="rkslots" aria-label="La tua classifica">${slots}</ol>
@@ -1842,7 +1844,7 @@ function vRank(cat){
       ${d.pool.length?`<ul class="poolist">${pool}</ul>`:'<p class="small muted">Hai messo in classifica tutte le proposte.</p>'}</div>
     ${hints.length?`<p class="small muted">${hints.join(' ')}</p>`:''}
     <div class="row spread" style="position:sticky;bottom:12px;background:var(--bg);padding:10px 0;border-top:1px solid var(--line)">${status}
-    <button class="btn primary" data-act="save-rank" ${canSave?'':'disabled'}>${d.saved&&!d.dirty?'Salvata':(d.dirty||d.saved?'Salva classifica':'Conferma questa classifica')}</button></div></div>`;
+    <button class="btn primary" data-act="save-rank" ${canSave?'':'disabled'}>${d.saved&&!d.dirty&&!d.stale?'Salvata':(d.dirty||d.saved?'Salva classifica':'Conferma questa classifica')}</button></div></div>`;
 }
 function vRes(cat){
   const stAll=voteStats()[cat],libero=!!fmtNow().libero,extra=cat==='contorni',q=(libero||extra)?0:(quotas(totalCap())[cat]||0);
@@ -1861,7 +1863,7 @@ function vRes(cat){
     return `<div class="res ${i<3&&voted(x)?'top3':''} ${inQ?'cut':''}"><div class="pos num">${i+1}</div>
       <div><div style="font-weight:600;overflow-wrap:anywhere">${esc(x.r.title)} ${pari?badge('Pari merito',edgeAt(i)?'warn':'muted'):''}</div><div class="small muted">${x.r.region?esc(x.r.region)+' · ':''}${esc(pname(x.r.proposerId))}${x.r.slot?' · '+badge('In menu','ok'):''}</div></div>
       ${fotoThumb(x.r)}
-      <div class="bar" title="Punteggio"><i style="width:${voted(x)?x.score:0}%"></i></div>
+      <div class="bar" title="Punti in percentuale del massimo possibile"><i style="width:${voted(x)?x.score:0}%"></i></div>
       <div class="small num" style="text-align:right">${voted(x)?`<b>${x.pts}</b> punti<br><span class="muted">${x.first[0]} primi posti · in classifica per ${x.n} su ${x.nv}</span>`:'<span class="muted">nessun voto</span>'}</div></div>`;
   }).join('');
   return `<div class="note">Hanno votato <b class="num">${done}</b> su <b class="num">${S.participants.length}</b>.${missing.length?` Mancano i confermati: ${esc(missing.join(', '))}.`:''}
@@ -1931,10 +1933,10 @@ function exitPoll(org){
   const restHtml=nRest?`<details class="panel xp-rest" id="xp-rest" ${isOpen('xp-rest')}><summary style="cursor:pointer;font-weight:600">Altri candidati, fuori dai primi ${XP_N} <span class="muted small num">(${nRest})</span></summary>
     <div style="display:flex;flex-direction:column;gap:12px;margin-top:10px">${rest.map(([c,xs])=>`<div><h4 class="grp" style="--h:${c.h}">${esc(c.label)}</h4>${xs.map(x=>`<div class="cand"><div><div style="font-weight:600;overflow-wrap:anywhere">${esc(x.r.title)}</div>
       <div class="small muted">${x.r.region?esc(x.r.region)+' · ':''}proposta da ${esc(pname(x.r.proposerId))}</div></div>
-      <div class="small num muted" style="text-align:right">${x.score==null?'nessun voto':`punteggio <b style="color:var(--ink)">${x.score}</b>`}</div>
+      <div class="small num muted" style="text-align:right">${x.score==null?'nessun voto':`<b style="color:var(--ink)">${x.pts}</b> punti<br>${x.n} su ${x.nv} vot${x.nv===1?'ante':'anti'}`}</div>
       ${org?`<select aria-label="Assegna ${esc(x.r.title)}" data-chg="setslot" data-id="${esc(x.r.id)}"><option value="">Non in menu</option>${SLOTS.map(s=>`<option value="${s.key}">${s.label}</option>`).join('')}</select>`:'<span></span>'}</div>`).join('')}</div>`).join('')}</div></details>`:'';
   return `<aside class="xp" ${org?'data-mdrop="out"':''} aria-label="Exit poll">
-    <div class="xp-head"><h3>Exit poll</h3><p class="small muted">I ${XP_N} piatti più votati finora per portata. <b>Evidenziati in verde quelli in menu.</b>${org?' Trascinali nel menu a sinistra o scegli il pasto dal menu a tendina; trascina un piatto qui per toglierlo dal menu.':''}</p></div>
+    <div class="xp-head"><h3>Exit poll</h3><p class="small muted">I ${XP_N} piatti più votati finora per portata, con gli stessi punti della scheda Votazioni. <b>Evidenziati in verde quelli in menu.</b>${org?' Trascinali nel menu a sinistra o scegli il pasto dal menu a tendina; trascina un piatto qui per toglierlo dal menu.':''}</p></div>
     ${cats}${restHtml}</aside>`;
 }
 function vMenu(){
