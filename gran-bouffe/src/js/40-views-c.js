@@ -88,7 +88,7 @@ function vSpesa(){
       ${L.parts.length?`<button class="btn sm" data-act="pack" data-id="${esc(L.id)}">${L.sp.pack?'Cambia formato':'Formato confezione'}</button>`:''}</div></div>`).join('')}</section>`).join('');
   return `<section class="view">
     <div class="vhead"><div><h2>Spesa</h2><p class="lede">Lista unica: le quantità dei singoli piatti sono sommate e scalate sul numero di confermati. Le dosi sono arrotondate per eccesso, così si compra una volta sola.</p></div>
-      <div class="row"><button class="btn" data-act="copy-spesa">Copia per WhatsApp</button>${dlCap?`<button class="btn" data-act="csv-spesa">Scarica CSV</button>`:''}</div></div>
+      <div class="row"><button class="btn" data-act="copy-spesa">Copia per WhatsApp</button>${dlCap?`<button class="btn" data-act="csv-spesa">Scarica CSV</button><button class="btn" data-act="csv-pivot" title="Tabella ingredienti × piatti, con il totale: serve per controllare a campione le dosi sulle ricette di riferimento">CSV di controllo</button>`:''}</div></div>
     <div class="panel totals"><div><div class="big num">${n}</div><div class="small muted">persone confermate</div></div>
       <div><div class="big num">${counted().length}</div><div class="small muted">piatti in menu${extraTxt(nExtra())}</div></div>
       <div><div class="big num">${all.length}</div><div class="small muted">voci da comprare</div></div>
@@ -102,6 +102,9 @@ function vSpesa(){
     ${groups||`<div class="empty"><p>${all.length?'Hai comprato tutto, con questi filtri.':'Nessuna voce: i piatti in menu non hanno ancora ingredienti.'}</p></div>`}
   </section>`;
 }
+A['csv-pivot']=async()=>{
+  try{await dlCap.save({filename:'spesa-controllo-ingredienti-per-piatto.csv',data:pivotCsv(UI.sday)});}catch(e){if(!e||e.code!=='declined')toast('Download non disponibile in questa vista.','err');}
+};
 CH.sday=t=>{UI.sday=t.value;render();};
 CH.sshop=t=>{UI.sshop=t.value;render();};
 CH.shide=t=>{UI.shide=t.checked;render();};

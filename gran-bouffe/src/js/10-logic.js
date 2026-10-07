@@ -137,6 +137,38 @@ function consolidate(day){
   out.sort((a,b)=>a.name.localeCompare(b.name,'it'));
   return out;
 }
+/* --- tabella di controllo (pivot): righe = voci della spesa, colonne = piatti in menu, celle = quantità del piatto già scalata ---
+   Le celle sono esatte (nessun arrotondamento): la somma di una riga è il "raw" della voce, il totale della lista è lo stesso numero arrotondato per eccesso. */
+const slotIdx=k=>SLOTS.findIndex(s=>s.key===k);
+const fmtExact=(base,v)=>(base==='g'||base==='ml')&&v>=1000?fmtN(v/1000,3)+(base==='g'?' kg':' l'):fmtN(v,2)+' '+base;
+const exactText=(tot,qb)=>{const a=Object.keys(tot).map(b=>fmtExact(b,tot[b]));if(qb)a.push('q.b.');return a.join(' + ');};
+function pivotData(day,lines){
+  const ls=lines||consolidate(day);
+  const cols=slotted().filter(r=>!day||slotDay(r.slot)===day)
+    .sort((a,b)=>slotIdx(a.slot)-slotIdx(b.slot)||catIdx(a.category)-catIdx(b.category)||byTitle(a,b))
+    .map(r=>({r,f:scaleF(r)}));
+  const rows=ls.map(L=>{
+    const cells=new Map();
+    for(const u of L.uses){
+      let c=cells.get(u.r.id);if(!c){c={tot:{},qb:false};cells.set(u.r.id,c);}
+      if(u.txt)c.qb=true;else c.tot[u.base]=(c.tot[u.base]||0)+u.v;
+    }
+    return{L,cells,exact:exactText(L.tot,L.qb)};
+  });
+  return{cols,rows};
+}
+/* CSV di controllo: tabella ingredienti × piatti (solo da scaricare, non è nella pagina). In cima, sotto i titoli, i dati di ogni piatto: pasto, persone della ricetta e fattore di scala, fonte. */
+function pivotCsv(day){
+  const {cols,rows}=pivotData(day),q=v=>'"'+String(v).replace(/"/g,'""')+'"';
+  const src=r=>(r.verifica&&r.verifica.linkAutorevole)||r.link||'';
+  const out=[['Negozio','Ingrediente',...cols.map(c=>c.r.title),'Totale da comprare','Somma esatta'],
+    ['Dati del piatto','Pasto',...cols.map(c=>slotLabel(c.r.slot)),'',''],
+    ['Dati del piatto','Ricetta per → fattore di scala',...cols.map(c=>'per '+(c.r.serves||4)+' → ×'+fmtN(c.f,3)+(c.r.porzione&&c.r.porzione!=='normale'?' ('+c.r.porzione+')':'')),'per '+nConf()+' persone',''],
+    ['Dati del piatto','Fonte di riferimento',...cols.map(c=>src(c.r)),'','']];
+  for(const s of SHOPS)for(const x of rows.filter(y=>y.L.shop===s.key))
+    out.push([s.label,x.L.name,...cols.map(c=>{const v=x.cells.get(c.r.id);return v?exactText(v.tot,v.qb):'';}),x.L.text,x.exact]);
+  return '\ufeff'+out.map(r=>r.map(q).join(';')).join('\r\n');
+}
 function usesText(L){
   return L.uses.map(u=>{
     const t=esc(u.r.title);
